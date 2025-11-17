@@ -13,5 +13,11 @@
 
 extern std::vector<std::vector<double>> read_table(std::string filename);
 
+// Linear interpolation utility for table data
+extern double interpolate_column(const std::vector<std::vector<double>>& table,
+                                 const std::vector<size_t>& range,
+                                 size_t col,
+                                 double t);
+
 #endif /* utilities_hpp */
 

@@ -17,7 +17,7 @@ using namespace std;
 
 
 
-vector<vector<double>> scalar_matrix(double a, const vector<vector<double>> b) {
+vector<vector<double>> scalar_matrix(double a, const vector<vector<double>>& b) {
     vector<vector<double>> result(b.size(), vector<double>(b[0].size()));
     for (size_t i = 0; i < b.size(); ++i) {
         for (size_t j = 0; j < b[0].size(); ++j) {
@@ -46,10 +46,9 @@ vector<double> add_vectors(const vector<vector<double>>& vectors) {
     return result;
 }
 
-vector<double> subtract_vectors(const vector<double> v1, const vector<double> v2) {
+vector<double> subtract_vectors(const vector<double>& v1, const vector<double>& v2) {
     if (v1.empty() || v2.empty()) {
-        // Handle empty input
-        throw "empty vectors!";
+        throw std::invalid_argument("empty vectors!");
     }
     size_t size = v1.size();
 
@@ -62,7 +61,7 @@ vector<double> subtract_vectors(const vector<double> v1, const vector<double> v2
     return result;
 }
 
-vector<double> scalar_vector(double a, vector<double> V) {
+vector<double> scalar_vector(double a, const vector<double>& V) {
     vector<double> result(V.size());
     for (size_t i = 0; i < V.size(); ++i) {
         result[i] = a * V[i];
@@ -70,22 +69,22 @@ vector<double> scalar_vector(double a, vector<double> V) {
     return result;
 }
 
-double dot_product(vector<double> a, vector<double> b)
+double dot_product(const vector<double>& a, const vector<double>& b)
 {
     double result = 0;;
     if(a.size() != b.size())
     {
         throw invalid_argument("Vectors must be the same in size for dot product");
     }
-    
-    for (int i = 0; i < a.size(); i++)
+
+    for (size_t i = 0; i < a.size(); i++)
     {
         result += a[i] * b[i];
     }
     return result;
 }
 
-vector<double> cross_product33(vector<double> a, vector<double> b) {
+vector<double> cross_product33(const vector<double>& a, const vector<double>& b) {
     if (a.size() != 3 || b.size() != 3) {
         throw invalid_argument("Vectors must be of size 3 for cross product.");
     }
@@ -97,7 +96,7 @@ vector<double> cross_product33(vector<double> a, vector<double> b) {
 
     return result;
 }
-double vector_mag(vector<double> a) {
+double vector_mag(const vector<double>& a) {
     double sum_of_squares = 0.0;
     for ( auto element : a) {
         sum_of_squares += element * element;
@@ -105,7 +104,7 @@ double vector_mag(vector<double> a) {
     return sqrt(sum_of_squares);
 }
 
-vector<double> Matrix_multiply_vector(vector<vector<double>> a, vector<double> b) {
+vector<double> Matrix_multiply_vector(const vector<vector<double>>& a, const vector<double>& b) {
     if (a.empty() || a[0].size() != b.size()) {
         throw std::invalid_argument("Invalid matrix or vector dimensions.");
     }
@@ -120,7 +119,7 @@ vector<double> Matrix_multiply_vector(vector<vector<double>> a, vector<double> b
     return result;
 }
 
-vector<double> vector_add(vector<double> a, vector<double> b) {
+vector<double> vector_add(const vector<double>& a, const vector<double>& b) {
     // Check if vectors have the same size
     if (a.size() != b.size()) {
         throw std::invalid_argument("Vectors must have the same size.");
@@ -168,16 +167,16 @@ vector<vector<double>> rotation_matrix_z(double alpha) {
     return Mz;
 }
 
-vector<vector<double>> multiply_matrices( vector<vector<double>> A,  vector<vector<double>> B) {
+vector<vector<double>> multiply_matrices(const vector<vector<double>>& A, const vector<vector<double>>& B) {
     unsigned long rowsA = A.size();
     unsigned long colsA = A[0].size();
     unsigned long colsB = B[0].size();
 
     vector<vector<double>> result(rowsA, vector<double>(colsB, 0));
 
-    for (int i = 0; i < rowsA; ++i) {
-        for (int j = 0; j < colsB; ++j) {
-            for (int k = 0; k < colsA; ++k) {
+    for (size_t i = 0; i < rowsA; ++i) {
+        for (size_t j = 0; j < colsB; ++j) {
+            for (size_t k = 0; k < colsA; ++k) {
                 result[i][j] += A[i][k] * B[k][j];
             }
         }
@@ -186,7 +185,7 @@ vector<vector<double>> multiply_matrices( vector<vector<double>> A,  vector<vect
     return result;
 }
 //发惯至地心惯性坐标系
-vector<double> launch_inertial_to_ECSF(vector<double> Pi) {
+vector<double> launch_inertial_to_ECSF(const vector<double>& Pi) {
     vector<double> result;
     result = vector_add(Pi, R0_vec);
     return result;
@@ -225,7 +224,7 @@ vector<vector<double>> rotation_matrix_inertial_to_launch(double t)
 }
 
 
-vector<vector<double>> rotation_matrix_rocket_to_inertial(vector<double> cmd) {
+vector<vector<double>> rotation_matrix_rocket_to_inertial(const vector<double>& cmd) {
     double phi = -cmd[0];
     double psi = -cmd[1];
     double gamma = -cmd[2];
@@ -238,7 +237,7 @@ vector<vector<double>> rotation_matrix_rocket_to_inertial(vector<double> cmd) {
     return result;
 }
 
-vector<vector<double>> rotation_matrix_inertial_to_rocket(vector<double> cmd)
+vector<vector<double>> rotation_matrix_inertial_to_rocket(const vector<double>& cmd)
 {
     double phi = cmd[0];
     double psi = cmd[1];
@@ -261,13 +260,13 @@ vector<vector<double>> rotation_matrix_velocity_to_body(double alpha, double bet
     return result;
 }
 
-vector<vector<double>> transpose_matrix(vector<vector<double>> matrix) {
+vector<vector<double>> transpose_matrix(const vector<vector<double>>& matrix) {
     unsigned long rows = matrix.size();
     unsigned long cols = matrix[0].size();
     vector<vector<double>> transposed(cols, vector<double>(rows));
 
-    for (int i = 0; i < rows; ++i) {
-        for (int j = 0; j < cols; ++j) {
+    for (size_t i = 0; i < rows; ++i) {
+        for (size_t j = 0; j < cols; ++j) {
             transposed[j][i] = matrix[i][j];
         }
     }
@@ -275,163 +274,160 @@ vector<vector<double>> transpose_matrix(vector<vector<double>> matrix) {
     return transposed;
 }
 
-vector<size_t> ascending_binary_search(vector<vector<double>> table, int coloum, double num)
+vector<size_t> ascending_binary_search(const vector<vector<double>>& table, int column, double num)
 {
-    vector<size_t> result;
-    size_t row_n = table.size();
-
-    size_t left, right;
-    if(coloum > row_n){
-        throw std::invalid_argument("coloum out of range");
+    // Validation
+    if (table.empty()) {
+        throw std::invalid_argument("table is empty");
     }
-    
-    right = row_n - 1;
-    left = 0;
-    if(num > table[right][coloum - 1] || num < table[left][coloum - 1]) {
+    if (column < 1 || static_cast<size_t>(column) > table[0].size()) {
+        throw std::invalid_argument("column out of range");
+    }
+
+    const size_t col_idx = static_cast<size_t>(column - 1);
+    const size_t right = table.size() - 1;
+
+    // Check bounds
+    if (num < table[0][col_idx] || num > table[right][col_idx]) {
         throw std::invalid_argument("value out of range");
     }
-    while(left <= right)
-    {
-        size_t mid = left + (right - left) / 2;
-        if(table[left][coloum - 1] == num) {
-            result = {left, left};
-            return result;
+
+    // Helper for float comparison
+    auto float_equal = [](double a, double b) {
+        return std::abs(a - b) <= std::max(std::abs(a), std::abs(b)) * 1e-9;
+    };
+
+    // Find first element >= num
+    auto it = std::lower_bound(
+        table.begin(),
+        table.end(),
+        num,
+        [col_idx](const vector<double>& row, double val) {
+            return row[col_idx] < val;
         }
-        else if(table[right][coloum - 1] == num) {
-            result = {right, right};
-            return result;
-        }
-        if (table[mid][coloum - 1] > num)
-        {
-            right = mid;
-        }
-        else if (table[mid][coloum - 1] < num)
-        {
-            left = mid;
-        }
-        if(table[mid][coloum - 1] > num && table[mid - 1][coloum-1] < num) {
-            left = mid - 1;
-            result = {left, right};
-            return result;
-        }
-        else if (table[mid][coloum - 1] < num && table[mid + 1][coloum-1] > num)
-        {
-            right = mid + 1;
-            result = {left, right};
-            return result;
-        }
-        else if(table[mid][coloum - 1] == num)
-        {
-            result = {mid, mid};
-            return result;
-        }
+    );
+
+    // If exact match
+    if (it != table.end() && float_equal((*it)[col_idx], num)) {
+        size_t idx = std::distance(table.begin(), it);
+        return {idx, idx};
     }
-    return result;
+
+    // If at beginning (num == first element, caught above)
+    if (it == table.begin()) {
+        return {0, 0};
+    }
+
+    // Standard case: between two elements
+    size_t idx_high = std::distance(table.begin(), it);
+    size_t idx_low = idx_high - 1;
+    return {idx_low, idx_high};
 }
 
-vector<size_t> ascending_binary_search_bounded(vector<vector<double>> table, int coloum, double num, size_t left, size_t right)
+vector<size_t> ascending_binary_search_bounded(const vector<vector<double>>& table, int column, double num, size_t left, size_t right)
 {
-    vector<size_t> result;
-    size_t row_n = table.size();
-    
-    if(coloum > row_n){
-        throw std::invalid_argument("coloum out of range");
+    // Validation
+    if (table.empty()) {
+        throw std::invalid_argument("table is empty");
     }
-    
-    if(num > table[right][coloum - 1] || num < table[left][coloum - 1]) {
+    if (column < 1 || static_cast<size_t>(column) > table[0].size()) {
+        throw std::invalid_argument("column out of range");
+    }
+    if (left >= table.size() || right >= table.size() || left > right) {
+        throw std::invalid_argument("invalid bounds");
+    }
+
+    const size_t col_idx = static_cast<size_t>(column - 1);
+
+    // Check bounds
+    if (num < table[left][col_idx] || num > table[right][col_idx]) {
         throw std::invalid_argument("value out of range");
     }
-    while(left <= right)
-    {
-        size_t mid = left + (right - left) / 2;
-        if(table[left][coloum - 1] == num) {
-            result = {left, left};
-            return result;
+
+    // Helper for float comparison
+    auto float_equal = [](double a, double b) {
+        return std::abs(a - b) <= std::max(std::abs(a), std::abs(b)) * 1e-9;
+    };
+
+    // Find first element >= num within bounds
+    auto it = std::lower_bound(
+        table.begin() + left,
+        table.begin() + right + 1,
+        num,
+        [col_idx](const vector<double>& row, double val) {
+            return row[col_idx] < val;
         }
-        else if(table[right][coloum - 1] == num) {
-            result = {right, right};
-            return result;
-        }
-        if (table[mid][coloum - 1] > num)
-        {
-            right = mid;
-        }
-        else if (table[mid][coloum - 1] < num)
-        {
-            left = mid;
-        }
-        if(table[mid][coloum - 1] > num && table[mid - 1][coloum-1] < num) {
-            left = mid - 1;
-            result = {left, right};
-            return result;
-        }
-        else if (table[mid][coloum - 1] < num && table[mid + 1][coloum-1] > num)
-        {
-            right = mid + 1;
-            result = {left, right};
-            return result;
-        }
-        else if(table[mid][coloum - 1] == num)
-        {
-            result = {mid, mid};
-            return result;
-        }
+    );
+
+    // If exact match
+    if (it != table.begin() + right + 1 && float_equal((*it)[col_idx], num)) {
+        size_t idx = std::distance(table.begin(), it);
+        return {idx, idx};
     }
-    return result;
+
+    // If at beginning of bounded range
+    if (it == table.begin() + left) {
+        return {left, left};
+    }
+
+    // Standard case: between two elements
+    size_t idx_high = std::distance(table.begin(), it);
+    size_t idx_low = idx_high - 1;
+    return {idx_low, idx_high};
 }
 
-vector<size_t> descending_binary_search(vector<vector<double>> table, int coloum, double num)
+vector<size_t> descending_binary_search(const vector<vector<double>>& table, int column, double num)
 {
-    vector<size_t> result;
-    size_t row_n = table.size();
-    size_t left, right;
-    if(coloum > row_n){
-        throw std::invalid_argument("coloum out of range");
+    // Validation
+    if (table.empty()) {
+        throw std::invalid_argument("table is empty");
     }
-    right = row_n - 1;
-    left = 0;
-    while(left <= right)
-    {
-        if(num < table[right][coloum - 1] || num > table[left][coloum - 1]) {
-            throw std::invalid_argument("value out of range");
-        }
-        size_t mid = left + (right - left) / 2;
-        if(table[left][coloum - 1] == num) {
-            result = {left, left};
-            return result;
-        } else if(table[right][coloum - 1] == num) {
-            result = {right, right};
-            return result;
-        }
-        if (table[mid][coloum - 1] > num)
-        {
-            left = mid;
-        }
-        else if (table[mid][coloum - 1] < num)
-        {
-            right = mid;
-        }
-        if(table[mid][coloum - 1] < num && table[mid - 1][coloum-1] > num) {
-            left = mid - 1;
-            result = {left, right};
-            return result;
-        }
-        else if (table[mid][coloum - 1] > num && table[mid + 1][coloum-1] < num)
-        {
-            right = mid + 1;
-            result = {left, right};
-            return result;
-        }
-        else if(table[mid][coloum - 1] == num)
-        {
-            result = {mid, mid};
-            return result;
-        }
+    if (column < 1 || static_cast<size_t>(column) > table[0].size()) {
+        throw std::invalid_argument("column out of range");
     }
-    return result;
+
+    const size_t col_idx = static_cast<size_t>(column - 1);
+    const size_t right = table.size() - 1;
+
+    // Check bounds (descending order: first element is largest)
+    if (num > table[0][col_idx] || num < table[right][col_idx]) {
+        throw std::invalid_argument("value out of range");
+    }
+
+    // Helper for float comparison
+    auto float_equal = [](double a, double b) {
+        return std::abs(a - b) <= std::max(std::abs(a), std::abs(b)) * 1e-9;
+    };
+
+    // For descending order, use lower_bound with reversed comparison
+    // Find first element <= num (in descending order)
+    auto it = std::lower_bound(
+        table.begin(),
+        table.end(),
+        num,
+        [col_idx](const vector<double>& row, double val) {
+            return row[col_idx] > val;  // Reversed comparison for descending
+        }
+    );
+
+    // If exact match
+    if (it != table.end() && float_equal((*it)[col_idx], num)) {
+        size_t idx = std::distance(table.begin(), it);
+        return {idx, idx};
+    }
+
+    // If at beginning (num == first element, caught above)
+    if (it == table.begin()) {
+        return {0, 0};
+    }
+
+    // Standard case: between two elements
+    size_t idx_high = std::distance(table.begin(), it);
+    size_t idx_low = idx_high - 1;
+    return {idx_low, idx_high};
 }
 
-vector<double> coord2carte(const vector<double> coord)
+vector<double> coord2carte(const vector<double>& coord)
 {
     //Geocentric latitude beta
     vector<double> result;

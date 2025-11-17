@@ -4,6 +4,7 @@
 #include "rocket.hpp"
 #include "sim.hpp"
 #include "trajectory.hpp"
+#include "types.hpp"
 class Guidance
 {
 public:
@@ -16,29 +17,50 @@ public:
 
     void initialize();
 
-    void IGM_initialize(std::vector<double> vi_curr, std::vector<double> pi_curr,
-                        std::vector<double> , double);
-    std::vector<double> calc_G(std::vector<double> vi, std::vector<double> pi);
-    inline std::vector<double> get_servo_cmd() {return servo_cmd;};
+    void IGM_initialize(const std::vector<double>& vi_curr, const std::vector<double>& pi_curr,
+                        const std::vector<double>&, double);
+    std::vector<double> calc_G(const std::vector<double>& vi, const std::vector<double>& pi);
+    inline std::vector<double> get_servo_cmd() const {return servo_cmd;};
     inline void set_time(double time) {t = time;};
     inline void set_time_to_go(double time_to_go) {this->time_to_go = time_to_go;};
     inline void set_time_to_go() {time_to_go -= guidance_cycle;};
-    inline double get_time_to_go() {return time_to_go;};
-    inline double get_semi_major_axis() {return a_curr;};
-    inline double getRangeAngle() {return range_angle;};
-    inline std::vector<std::vector<double>> get_terminal_guidance_rotation_matrix(){return C_et;};
+    inline double get_time_to_go() const {return time_to_go;};
+    inline double get_semi_major_axis() const {return a_curr;};
+    inline double getRangeAngle() const {return range_angle;};
+    inline std::vector<std::vector<double>> get_terminal_guidance_rotation_matrix() const {return C_et;};
     inline void set_flight_state(flight_states state) {flight_state = state;};
-    std::vector<double> get_attitude(double t, std::vector<double> g, std::vector<double> Pi, std::vector<double> Vi, double m);
+    std::vector<double> get_attitude(double t, const std::vector<double>& g, const std::vector<double>& Pi, const std::vector<double>& Vi, double m);
     std::vector<double> get_Vi_traj(double t);
     std::vector<double> get_Pi_traj(double t);
     std::vector<double> algor_cmd(double t);
-    
+
     bool MECO();
     bool SECO(const std::vector<double>&, const std::vector<double>&, double time_to_go, double t);
     double calc_semi_major_axis(double r, double v);
     void update_time_to_go(double);
-    void UpdateTimeToGo3(double del_v, std::vector<double> g, std::vector<double> vt, std::vector<double> vc);
-    std::vector<double> IGM_step(std::vector<double> g, std::vector<double> Pi, std::vector<double> Vi, double t, double m);
+    void UpdateTimeToGo3(double del_v, const std::vector<double>& g, const std::vector<double>& vt, const std::vector<double>& vc);
+    std::vector<double> IGM_step(const std::vector<double>& g, const std::vector<double>& Pi, const std::vector<double>& Vi, double t, double m);
+
+private:
+    // IGM_step helper functions
+    IGMCoefficients compute_igm_coefficients(double tau, double time_to_go);
+    void update_terminal_frame(const std::vector<double>& vi, const std::vector<double>& pi,
+                              const std::vector<double>& g, double S);
+    DeltaVelocity compute_delta_velocity(const std::vector<double>& v_c, const std::vector<double>& v_terminal,
+                                         const std::vector<double>& g, double time_to_go);
+    void converge_time_to_go(const std::vector<double>& g, const std::vector<double>& v_terminal,
+                            const std::vector<double>& v_c);
+    SteeringAngles compute_velocity_steering_angles(const DeltaVelocity& del_v);
+    SteeringAngles apply_position_corrections(const SteeringAngles& velocity_angles,
+                                              const IGMCoefficients& coef,
+                                              const std::vector<double>& p_c,
+                                              const std::vector<double>& v_c,
+                                              const std::vector<double>& g);
+    SteeringAngles transform_steering_to_inertial(const SteeringAngles& terminal_angles);
+    SteeringAngles apply_rate_limiting(const SteeringAngles& commanded,
+                                      const SteeringAngles& previous,
+                                      double dt, double max_rate);
+
 protected:
     rkt::rocket& rocket;
     flight_states flight_state;
@@ -57,11 +79,11 @@ protected:
     double beta_e;
     double beta_t;
     std::vector<std::vector<double>> C_et;
-    std::vector<double> Pi_SECO = {x_SECO, y_SECO, z_SECO};
-    std::vector<double> Vi_SECO = {vx_SECO, vy_SECO, vz_SECO};
-    
-    std::vector<double> Pi_TECO = {x_TECO, y_TECO, z_TECO};
-    std::vector<double> Vi_TECO = {vx_TECO, vy_TECO, vz_TECO};
+    Vec3 Pi_SECO{x_SECO, y_SECO, z_SECO};
+    Vec3 Vi_SECO{vx_SECO, vy_SECO, vz_SECO};
+
+    Vec3 Pi_TECO{x_TECO, y_TECO, z_TECO};
+    Vec3 Vi_TECO{vx_TECO, vy_TECO, vz_TECO};
 
     //maximum steering speed
 
@@ -77,19 +99,20 @@ protected:
     double time_to_go;
     double time_to_go_n;
     double tau;
-    double t_igm;
+    double t_igm = 0.0;
     double range_angle;
     
     double eta_c;
     double beta_c;
     
     std::vector<double> euler_angle_cmd;
-    std::vector<double> servo_cmd;
+    std::vector<double> servo_cmd = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
     std::vector<std::vector<double>> euler_angles;
     std::vector<std::vector<double>> V_traj;
     std::vector<std::vector<double>> P_traj;
     double Vx_a, Vy_a, Vx_b, Vy_b;
-    double u_phi,u_psi;
+    double u_phi = 0.0;
+    double u_psi = 0.0;
     //横程诸元
     double dh_dvx = 5.31859760238e-005;
     double dh_dvy = -3.40241925989e-005;

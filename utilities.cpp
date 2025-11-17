@@ -33,3 +33,22 @@ vector<vector<double>> read_table(string filename)
     }
     return result;
 }
+
+double interpolate_column(const vector<vector<double>>& table,
+                         const vector<size_t>& range,
+                         size_t col,
+                         double t)
+{
+    // If indices are the same, no interpolation needed
+    if (range[0] == range[1]) {
+        return table[range[0]][col];
+    }
+
+    // Linear interpolation: v0 + (v1 - v0) / (t1 - t0) * (t - t0)
+    double t0 = table[range[0]][0];
+    double t1 = table[range[1]][0];
+    double v0 = table[range[0]][col];
+    double v1 = table[range[1]][col];
+
+    return v0 + (v1 - v0) / (t1 - t0) * (t - t0);
+}

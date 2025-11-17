@@ -13,9 +13,9 @@
 //pi
 const double PI = 3.141592653589793;
 //rad to degrees
-const double R2D = 180/PI;
+const double R2D = 180.0/PI;
 //degrees to radians
-const double D2R = PI/180;
+const double D2R = PI/180.0;
 //地球旋转角速度 rad/s
 const double omega_e = 7.292115e-5;
 //gravitational constant
@@ -81,5 +81,6 @@ const double m_ox_2 = 75281.6;
 const double m_dot_2 = 309.079;
 
 const double IGM_stop_time = 2;
-
+// Define a suitable epsilon for double comparison
+const double DBL_EPSILON = 1e-9;
 #endif /* constants_h */
