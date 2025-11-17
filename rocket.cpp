@@ -222,10 +222,6 @@ void rkt::rocket::set_table(vector<vector<double>> table, string name)
     {
         Table4Jxyz = table;
     }
-    else if(name == "Table5Jxyz")
-    {
-        Table4Jxyz = table;
-    }
 }
 
 void rkt::rocket::set_states(vector<double> Pi, vector<double> Vi, vector<double> steering_angle,double t, double mass)
