@@ -82,5 +82,5 @@ const double m_dot_2 = 309.079;
 
 const double IGM_stop_time = 2;
 // Define a suitable epsilon for double comparison
-const double DBL_EPSILON = 1e-9;
+const double EPSILON_DBL = 1e-9;
 #endif /* constants_h */

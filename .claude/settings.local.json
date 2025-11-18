@@ -2,7 +2,9 @@
   "permissions": {
     "allow": [
       "Bash(git restore:*)",
-      "Bash(make)"
+      "Bash(make)",
+      "Bash(make:*)",
+      "Bash(clang++:*)"
     ],
     "deny": [],
     "ask": []

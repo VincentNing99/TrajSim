@@ -62,7 +62,8 @@ using namespace std;
        ofstream record(filename);
        record << "time," << "phi," << "psi," << "gamma,"<< "M," << "Px," << "Py," << "Pz," << "Vx," << "Vy," << "Vz," << "Ma,"
        << "H," << "semi_major_axis," << "time_to_go \n";
-       if(!record.is_open()){
+       if(!record.is_open())
+       {
            cerr << "error opening file: " << filename << endl;
        }
       while (!guidance.SECO(rocket.get_PI(), rocket.get_VI(), guidance.get_time_to_go(), t))
