@@ -1,0 +1,258 @@
+# FlightSim .gitignore
+
+# ========================================
+# Build Artifacts
+# ========================================
+
+# Executables
+FlightSimGUI
+*.exe
+*.out
+*.app
+
+# Object files
+*.o
+*.obj
+*.lo
+*.slo
+
+# Precompiled Headers
+*.gch
+*.pch
+
+# Compiled Dynamic libraries
+*.so
+*.dylib
+*.dll
+
+# Compiled Static libraries
+*.lai
+*.la
+*.a
+*.lib
+
+# ========================================
+# CMake
+# ========================================
+build/
+cmake-build-*/
+CMakeCache.txt
+CMakeFiles/
+CMakeScripts/
+cmake_install.cmake
+install_manifest.txt
+compile_commands.json
+CTestTestfile.cmake
+_deps/
+
+# ========================================
+# Xcode
+# ========================================
+*.xcodeproj/*
+!*.xcodeproj/project.pbxproj
+!*.xcodeproj/xcshareddata/
+*.xcworkspace/*
+!*.xcworkspace/contents.xcworkspacedata
+/*.gcno
+**/xcuserdata/
+*.xcuserstate
+*.xccheckout
+*.moved-aside
+*.xcscmblueprint
+DerivedData/
+*.hmap
+*.ipa
+
+# ========================================
+# Visual Studio / Windows
+# ========================================
+.vs/
+out/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+*.VC.db
+*.VC.VC.opendb
+*.sln
+*.vcxproj
+*.vcxproj.filters
+*.vcxproj.user
+x64/
+x86/
+Debug/
+Release/
+*.ilk
+*.pdb
+*.pgc
+*.pgd
+*.rsp
+*.sbr
+*.tlb
+*.tli
+*.tlh
+*.tmp
+*.tmp_proj
+*.log
+*.vspscc
+*.vssscc
+.builds
+*.pidb
+*.svclog
+*.scc
+
+# ========================================
+# macOS
+# ========================================
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+.AppleDB
+.AppleDesktop
+Network Trash Folder
+Temporary Items
+.apdisk
+
+# ========================================
+# Linux
+# ========================================
+*~
+.directory
+.fuse_hidden*
+.nfs*
+
+# ========================================
+# Editors & IDEs
+# ========================================
+
+# VSCode
+.vscode/
+*.code-workspace
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# JetBrains IDEs (CLion, etc.)
+.idea/
+*.iml
+*.iws
+cmake-build-*/
+
+# Vim
+[._]*.s[a-v][a-z]
+[._]*.sw[a-p]
+[._]s[a-rt-v][a-z]
+[._]ss[a-gi-z]
+[._]sw[a-p]
+Session.vim
+.netrwhist
+
+# Emacs
+*~
+\#*\#
+/.emacs.desktop
+/.emacs.desktop.lock
+*.elc
+auto-save-list
+tramp
+.\#*
+
+# ========================================
+# Project Specific
+# ========================================
+
+# ImGui state file (user-specific)
+imgui.ini
+
+# Output CSV files (optional - uncomment if you want to ignore)
+# files/*.csv
+# !files/example.csv
+
+# Temporary simulation outputs
+*.tmp
+*.bak
+*.swp
+
+# Large data files
+*.dat
+*.bin
+
+# Log files
+*.log
+
+# ========================================
+# Dependencies (if vendored)
+# ========================================
+
+# Uncomment if you want to ignore vendor directories
+# vendor/
+# third-party/
+
+# ========================================
+# Documentation Build
+# ========================================
+docs/_build/
+docs/.doctrees/
+*.pdf
+*.html
+
+# ========================================
+# Testing
+# ========================================
+test_output/
+test_results/
+coverage/
+*.gcov
+*.gcda
+*.gcno
+
+# ========================================
+# Miscellaneous
+# ========================================
+*.dSYM/
+*.su
+*.idb
+*.ipch
+*.opendb
+*.db
+*.sdf
+*.opensdf
+
+# Core dumps
+core
+core.*
+*.core
+*.stackdump
+
+# Backup files
+*~
+*.orig
+*.rej
+*.bak
+*.swp
+*.swo
+
+# Compressed files (exclude from repo)
+*.zip
+*.tar.gz
+*.7z
+*.rar
+
+# ========================================
+# Optional: Ignore all CSV except examples
+# ========================================
+# Uncomment these lines if you want to ignore CSV data files
+# but keep example files in the repository
+
+# files/*.csv
+# !files/README.md
+# !files/example_*.csv
