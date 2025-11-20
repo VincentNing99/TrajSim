@@ -1,0 +1,89 @@
+cmake_minimum_required(VERSION 3.15)
+project(FlightSim VERSION 1.0 LANGUAGES CXX)
+
+# Set C++ standard
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+# Find required packages
+find_package(OpenGL REQUIRED)
+find_package(glfw3 REQUIRED)
+
+# ImGui source files
+set(IMGUI_DIR ${CMAKE_CURRENT_SOURCE_DIR}/imgui)
+set(IMGUI_SOURCES
+    ${IMGUI_DIR}/imgui.cpp
+    ${IMGUI_DIR}/imgui_draw.cpp
+    ${IMGUI_DIR}/imgui_tables.cpp
+    ${IMGUI_DIR}/imgui_widgets.cpp
+    ${IMGUI_DIR}/imgui_demo.cpp
+    ${IMGUI_DIR}/backends/imgui_impl_glfw.cpp
+    ${IMGUI_DIR}/backends/imgui_impl_opengl3.cpp
+)
+
+# Simulation source files
+set(SIM_SOURCES
+    rocket.cpp
+    gravity.cpp
+    aerodynamics.cpp
+    Atmosphere_properties.cpp
+    engine_model.cpp
+    utilities.cpp
+    math.cpp
+    GNC.cpp
+    sim_runner.cpp
+)
+
+# Create executable
+add_executable(FlightSimGUI
+    gui_main.cpp
+    ${IMGUI_SOURCES}
+    ${SIM_SOURCES}
+)
+
+# Include directories
+target_include_directories(FlightSimGUI PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}
+    ${IMGUI_DIR}
+    ${IMGUI_DIR}/backends
+)
+
+# Link libraries
+target_link_libraries(FlightSimGUI PRIVATE
+    OpenGL::GL
+    glfw
+)
+
+# Platform-specific settings
+if(APPLE)
+    target_compile_definitions(FlightSimGUI PRIVATE GL_SILENCE_DEPRECATION)
+    # No need for Cocoa framework anymore - we'll use cross-platform file dialogs
+endif()
+
+if(UNIX AND NOT APPLE)
+    # Linux-specific settings
+    find_package(Threads REQUIRED)
+    target_link_libraries(FlightSimGUI PRIVATE Threads::Threads ${CMAKE_DL_LIBS})
+endif()
+
+if(WIN32)
+    # Windows-specific settings
+    # GLFW on Windows might need additional libraries
+    target_link_libraries(FlightSimGUI PRIVATE gdi32)
+endif()
+
+# Set output directory
+set_target_properties(FlightSimGUI PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}
+)
+
+# Installation rules (optional)
+install(TARGETS FlightSimGUI
+    RUNTIME DESTINATION bin
+)
+
+# Print build information
+message(STATUS "Building FlightSim GUI")
+message(STATUS "C++ Standard: ${CMAKE_CXX_STANDARD}")
+message(STATUS "Build Type: ${CMAKE_BUILD_TYPE}")
+message(STATUS "System: ${CMAKE_SYSTEM_NAME}")

@@ -26,6 +26,11 @@ public:
     inline void set_time_to_go() {time_to_go -= guidance_cycle;};
     inline double get_time_to_go() const {return time_to_go;};
     inline double get_semi_major_axis() const {return a_curr;};
+    inline double get_eccentricity() const {return e;};
+    inline double get_inclination() const {return i;};
+    inline double get_right_ascension() const {return RA;};
+    inline double get_argument_of_perigee() const {return w;};
+    inline double get_true_anomaly() const {return TA;};
     inline double getRangeAngle() const {return range_angle;};
     inline std::vector<std::vector<double>> get_terminal_guidance_rotation_matrix() const {return C_et;};
     inline void set_flight_state(flight_states state) {flight_state = state;};
