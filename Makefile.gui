@@ -3,7 +3,8 @@
 
 CXX = clang++
 CXXFLAGS = -std=c++20 -Wall -I. -Iimgui -Iimgui/backends -I/opt/homebrew/include -DGL_SILENCE_DEPRECATION
-LDFLAGS = -framework OpenGL -framework Cocoa -framework IOKit -framework CoreFoundation -framework CoreVideo
+# macOS frameworks (Cocoa removed as we use cross-platform file dialogs)
+LDFLAGS = -framework OpenGL -framework IOKit -framework CoreFoundation -framework CoreVideo
 LDFLAGS += -L/opt/homebrew/lib -lglfw
 
 # ImGui source files
@@ -16,7 +17,7 @@ IMGUI_SOURCES = $(IMGUI_DIR)/imgui.cpp $(IMGUI_DIR)/imgui_draw.cpp \
 
 # Simulation source files
 SIM_SOURCES = rocket.cpp gravity.cpp aerodynamics.cpp Atmosphere_properties.cpp \
-              engine_model.cpp utilities.cpp math.cpp GNC.cpp
+              engine_model.cpp utilities.cpp math.cpp GNC.cpp sim_runner.cpp
 
 # Object files
 IMGUI_OBJS = $(IMGUI_SOURCES:.cpp=.o)
@@ -33,6 +34,9 @@ $(TARGET): gui_main.o $(IMGUI_OBJS) $(SIM_OBJS)
 	@echo "Build complete! Run with ./$(TARGET)"
 
 # Compile source files
+gui_main.o: gui_main.cpp
+	$(CXX) $(CXXFLAGS) -c $< -o $@
+
 %.o: %.cpp
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 

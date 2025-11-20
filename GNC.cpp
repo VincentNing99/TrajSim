@@ -44,18 +44,6 @@ void Guidance::IGM_initialize(const vector<double>& V_initial, const vector<doub
     
     phi_optimal_v = phi_optimal = phi_optimal_n = steering_angle_initial[0];
     psi_optimal_v = psi_optimal = psi_optimal_n = steering_angle_initial[1];
-
-    ofstream rrr("IGMCoefs.csv");
-    if(!rrr.is_open()){
-        cerr << "error opening file: " << "IGMCoefs.csv" << endl;
-    }
-    rrr << "k1," 
-        << "k2,"
-        << "k3,"
-        << "k4,"<< "Ay," << "By," << "Cy," << "Dy," << "Ey," << "Ap," << "Bp," << "Cp,"
-    << "Dp," << "Ep,";
-    rrr << endl;
-    
 }
 
 void Guidance::set_euler_angles(string file)
@@ -222,32 +210,12 @@ bool Guidance::SECO(const vector<double>& pi, const vector<double>& vi, double t
         fabs(e - eccentricity) <= 0.005 &&
         fabs(i - inclination) * R2D <= 0.07)
     {
-        // Improved output using std::cout with fixed precision formatting
-        cout << fixed << setprecision(6);
-        cout << "a = " << a_curr << "  e = " << e
-             << "  i = " << i * R2D << "  ω = " << w * R2D
-             << "  Ω = " << RA * R2D << "  υ = " << TA * R2D << "\n";
-        cout << "δa = " << a_terminal - a_curr << "\n";
-        cout << "δe = " << eccentricity - e << "\n";
-        cout << "δi = " << (inclination - i) * R2D << "\n";
-        cout << "δΩ = " << (right_ascension - (RA + longitude - omega_e * t)) * R2D << "\n";
-        cout << "δυ = " << (true_anomaly - TA) * R2D << "\n";
-        cout << "δω = " << (arugument_of_perigee - w) * R2D << "\n";
-        cout << "δx = " << x_SECO - rocket.get_PI()[0]
-             << ", δy = " << y_SECO - rocket.get_PI()[1]
-             << ", δz = " << z_SECO - rocket.get_PI()[2]
-             << ", δvx = " << vx_SECO - rocket.get_VI()[0]
-             << ", δvy = " << vy_SECO - rocket.get_VI()[1]
-             << ", δvz = " << vz_SECO - rocket.get_VI()[2] << "\n";
         return true;
     }
     
     // Check if maximum allowable time has elapsed
     if ((t - ti) >= t_max)
     {
-        cout << "Fuel depleted, orbit insertion failed\n";
-        cout << "t = " << t << "\n";
-        cout << "x = " << pi[0] << "  y = " << pi[1] << "  z = " << pi[2] << "\n";
         return true;
     }
     

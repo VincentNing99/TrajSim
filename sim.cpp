@@ -34,7 +34,7 @@ using namespace std;
       
       vector<double> Vb_init = subtract_vectors(Vi_init, Ve_init);
 
-      atmosphere_model atm = atmosphere_model(height_initial);
+      atmosphere_model atm = atmosphere_model(gravity.get_altitude(Pi_init));
 
       rkt::rocket rocket = rkt::rocket(t, Pi_init, Vi_init, Vb_init,
                                         aero_angle, 6731.1, flight_states::SJFX,

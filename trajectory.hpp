@@ -12,7 +12,7 @@ const double longitude_to_descending_node_SECO = (174.697  + 90.0) * D2R; //从�
 const double longitude_to_ascending_node_SECO = (174.697  - 90.0) * D2R;
 const double true_anomaly = 154.051241 * D2R;
 const double arugument_of_perigee = 185.130932 * D2R;
-// 卫星为逆行轨道, 从z轴看下去顺时针为负角度
+// 逆行轨道, 从z轴看下去顺时针为负角度
 const double range_angle_initial_AN = arugument_of_perigee + true_anomaly;
 //发惯系x轴与北的夹角 in radians
 const double A0 = 191.47506 * D2R;
@@ -65,5 +65,3 @@ const std::vector<double> launch_coordinates = {longitude, latitude, height_laun
 
 const std::vector<double> Pi_terminal = {x_SECO, y_SECO, z_SECO};
 const std::vector<double> Vi_terminal = {vx_SECO, vy_SECO, vz_SECO};
-
-const double height_initial = 77054.0;
