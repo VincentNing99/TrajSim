@@ -51,26 +51,27 @@ set(IMGUI_SOURCES
 
 # Simulation source files
 set(SIM_SOURCES
-    rocket.cpp
-    gravity.cpp
-    aerodynamics.cpp
-    Atmosphere_properties.cpp
-    engine_model.cpp
-    utilities.cpp
-    math.cpp
-    GNC.cpp
-    sim_runner.cpp
+    src/rocket.cpp
+    src/gravity.cpp
+    src/aerodynamics.cpp
+    src/Atmosphere_properties.cpp
+    src/engine_model.cpp
+    src/utilities.cpp
+    src/math.cpp
+    src/GNC.cpp
+    src/sim_runner.cpp
 )
 
 # Create executable
 add_executable(FlightSimGUI
-    gui_main.cpp
+    src/gui_main.cpp
     ${IMGUI_SOURCES}
     ${SIM_SOURCES}
 )
 
 # Include directories
 target_include_directories(FlightSimGUI PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/src
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${IMGUI_DIR}
     ${IMGUI_DIR}/backends
