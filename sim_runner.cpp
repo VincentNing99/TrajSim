@@ -102,22 +102,10 @@ void SimulationRunner::run_simulation(const SimulationParams params) {
                                          read_table(params.lowspeed_aero_file),
                                          EffectiveArea, L);
 
-        // Open output file for recording
-        ofstream record(params.output_file);
-        record << "time," << "phi," << "psi," << "gamma," << "M," << "Px," << "Py," << "Pz,"
-               << "Vx," << "Vy," << "Vz," << "Ma," << "H," << "semi_major_axis," << "time_to_go\n";
-
-        if (!record.is_open()) {
-            results.error_message = "Error opening output file: " + params.output_file;
-            results.success = false;
-            // Store error results
-            {
-                std::lock_guard<std::mutex> lock(results_mutex_);
-                last_results_ = results;
-            }
-            is_running_ = false;
-            return;
-        }
+        // Buffer for storing simulation data in memory (performance optimization)
+        // Preallocate to avoid dynamic reallocations during simulation
+        std::vector<std::vector<double>> data_buffer;
+        data_buffer.reserve(250000);  // Preallocate ~250k rows (slightly more than typical 200k steps)
 
         // Clear trajectory history at start
         {
@@ -129,9 +117,11 @@ void SimulationRunner::run_simulation(const SimulationParams params) {
         int step_counter = 0;
         int trajectory_sample_counter = 0;
         const int trajectory_sample_interval = 10;  // Store every 10 steps to reduce memory usage
-        
-        // Record initial state before loop
-        vector<double> initial_data = {
+        const int telemetry_update_interval = 100;   // Update telemetry every 100 steps (0.1s @ 1ms step)
+                                                     // GUI runs at 60 Hz (~16ms), so this is more than sufficient
+
+        // Record initial state before loop (buffered in memory)
+        data_buffer.push_back({
             t,
             rocket.get_phi() * R2D,
             rocket.get_psi() * R2D,
@@ -147,11 +137,7 @@ void SimulationRunner::run_simulation(const SimulationParams params) {
             gravity.get_altitude(rocket.get_PI()),
             guidance.get_semi_major_axis(),
             guidance.get_time_to_go()
-        };
-        for (double value : initial_data) {
-            record << fixed << setprecision(6) << value << ",";
-        }
-        record << endl;
+        });
         
         // Store initial trajectory point
         {
@@ -160,8 +146,8 @@ void SimulationRunner::run_simulation(const SimulationParams params) {
         }
         
         while (!guidance.SECO(rocket.get_PI(), rocket.get_VI(), guidance.get_time_to_go(), t)) {
-            // Record current state
-            vector<double> data = {
+            // Record current state (buffered in memory - performance optimization)
+            data_buffer.push_back({
                 t,
                 rocket.get_phi() * R2D,
                 rocket.get_psi() * R2D,
@@ -177,12 +163,7 @@ void SimulationRunner::run_simulation(const SimulationParams params) {
                 gravity.get_altitude(rocket.get_PI()),
                 guidance.get_semi_major_axis(),
                 guidance.get_time_to_go()
-            };
-
-            for (double value : data) {
-                record << fixed << setprecision(6) << value << ",";
-            }
-            record << endl;
+            });
 
             // Store trajectory point periodically (thread-safe)
             if (trajectory_sample_counter % trajectory_sample_interval == 0) {
@@ -191,8 +172,9 @@ void SimulationRunner::run_simulation(const SimulationParams params) {
             }
             trajectory_sample_counter++;
 
-            // Update telemetry (for real-time display) - THREAD-SAFE
-            {
+            // Update telemetry periodically (for real-time display) - THREAD-SAFE
+            // Only update every N steps to reduce mutex contention (performance optimization)
+            if (step_counter % telemetry_update_interval == 0) {
                 std::lock_guard<std::mutex> lock(telemetry_mutex_);
                 telemetry_.current_time = t;
                 telemetry_.time_to_go = guidance.get_time_to_go();
@@ -275,7 +257,7 @@ void SimulationRunner::run_simulation(const SimulationParams params) {
                 telemetry_.delta_vel_y = rocket.get_VI()[1] - vy_SECO;
                 telemetry_.delta_vel_z = rocket.get_VI()[2] - vz_SECO;
                 telemetry_.range_angle = guidance.getRangeAngle() * R2D;
-            }
+            }  // End if (step_counter % telemetry_update_interval == 0)
 
             // Run one RK4 integration step
             rk4(t, step_counter, rocket, gravity, atm, engine, guidance, aero, rocket.get_fstate());
@@ -285,12 +267,55 @@ void SimulationRunner::run_simulation(const SimulationParams params) {
             step_counter++;
         }
 
+        // Write all buffered data to file in one bulk operation (performance optimization)
+        ofstream record(params.output_file);
+        if (!record.is_open()) {
+            results.error_message = "Error opening output file: " + params.output_file;
+            results.success = false;
+            // Store error results
+            {
+                std::lock_guard<std::mutex> lock(results_mutex_);
+                last_results_ = results;
+            }
+            is_running_ = false;
+            return;
+        }
+
+        // Write CSV header
+        record << "time,phi,psi,gamma,M,Px,Py,Pz,Vx,Vy,Vz,Ma,H,semi_major_axis,time_to_go\n";
+
+        // Write all buffered data rows
+        // Use \n instead of endl to avoid unnecessary buffer flushes (performance optimization)
+        for (const auto& row : data_buffer) {
+            record << fixed << setprecision(6);
+            for (size_t i = 0; i < row.size(); ++i) {
+                record << row[i];
+                if (i < row.size() - 1) {
+                    record << ",";
+                }
+            }
+            record << "\n";  // Use \n instead of endl (no flush until file close)
+        }
+
         record.close();
 
-        // Mark telemetry as stopped
+        // Final telemetry update to capture end state
         {
             std::lock_guard<std::mutex> lock(telemetry_mutex_);
-            telemetry_.is_running = false;
+            telemetry_.current_time = t;
+            telemetry_.time_to_go = guidance.get_time_to_go();
+            telemetry_.pos_x = rocket.get_PI()[0];
+            telemetry_.pos_y = rocket.get_PI()[1];
+            telemetry_.pos_z = rocket.get_PI()[2];
+            telemetry_.vel_x = rocket.get_VI()[0];
+            telemetry_.vel_y = rocket.get_VI()[1];
+            telemetry_.vel_z = rocket.get_VI()[2];
+            telemetry_.velocity_magnitude = vector_mag(rocket.get_VI());
+            telemetry_.altitude = gravity.get_altitude(rocket.get_PI());
+            telemetry_.semi_major_axis = guidance.get_semi_major_axis();
+            telemetry_.eccentricity = guidance.get_eccentricity();
+            telemetry_.step_number = step_counter;
+            telemetry_.is_running = false;  // Mark as stopped
         }
 
         // Simulation completed successfully

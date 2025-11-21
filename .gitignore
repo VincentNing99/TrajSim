@@ -170,12 +170,15 @@ tramp
 # Project Specific
 # ========================================
 
+# Claude Code settings (local only)
+.claude/
+
 # ImGui state file (user-specific)
 imgui.ini
 
-# Output CSV files (optional - uncomment if you want to ignore)
-# files/*.csv
-# !files/example.csv
+# Simulation output CSV files (users generate their own)
+files/rk4_IGM_sim.csv
+files/rk4_IGM_sim_MSC.csv
 
 # Temporary simulation outputs
 *.tmp

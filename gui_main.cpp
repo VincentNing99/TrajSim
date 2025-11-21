@@ -151,6 +151,7 @@ int main(int, char**) {
     static float initial_position[3] = {-912205.4f, -13212262.5f, 149163.6f};
     static float initial_velocity[3] = {-7440.6404f, 953.8138f, 294.5883f};
     static float initial_mass = 6731.1f;
+    static float steering_angle = 172.7593f;  // degrees
     static float Pitch = 172.7593f;
     static float Yaw = 0.0f;
     static float Roll = 0.0f;

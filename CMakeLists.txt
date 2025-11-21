@@ -5,6 +5,34 @@ project(FlightSim VERSION 1.0 LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+# Performance optimization flags
+# Set default build type to Release if not specified
+if(NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE Release)
+    message(STATUS "Build type not specified, defaulting to Release")
+endif()
+
+if(CMAKE_BUILD_TYPE STREQUAL "Release")
+    message(STATUS "Building with optimizations enabled")
+    if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+        # GCC/Clang optimization flags:
+        # -O3: Maximum optimization level
+        # -march=native: Optimize for current CPU (enables AVX, SSE, etc.)
+        # -ffast-math: Aggressive floating-point optimizations
+        add_compile_options(-O3 -march=native -ffast-math)
+        message(STATUS "Added optimization flags: -O3 -march=native -ffast-math")
+    elseif(MSVC)
+        # MSVC optimization flags:
+        # /O2: Maximum optimization (speed)
+        # /fp:fast: Fast floating-point model
+        # /arch:AVX2: Use AVX2 instructions
+        add_compile_options(/O2 /fp:fast /arch:AVX2)
+        message(STATUS "Added optimization flags: /O2 /fp:fast /arch:AVX2")
+    endif()
+elseif(CMAKE_BUILD_TYPE STREQUAL "Debug")
+    message(STATUS "Building in Debug mode (optimizations disabled)")
+endif()
+
 # Find required packages
 find_package(OpenGL REQUIRED)
 find_package(glfw3 REQUIRED)

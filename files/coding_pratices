@@ -1,8 +1,0 @@
-1.angles are in radians.
-2.velocities are in m/s.
-3.accelerations are in m/s^2.
-4.masses are in kg.
-5.distances are in meters.
-6.Use local variables unless neccessary
-7. For every block code you wirte, figure out a way to test it before integrating into the system.
-8. use namespace or don't be lazy with names, when project size grow, name conflicts will be common and the risk of unintentional varible misuse increases.

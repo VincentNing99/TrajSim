@@ -2,7 +2,13 @@
 # Usage: make -f Makefile.gui
 
 CXX = clang++
-CXXFLAGS = -std=c++20 -Wall -I. -Iimgui -Iimgui/backends -I/opt/homebrew/include -DGL_SILENCE_DEPRECATION
+# Compiler flags with optimizations:
+# -O3: Maximum optimization level
+# -march=native: Optimize for current CPU architecture (use AVX, SSE, etc.)
+# -ffast-math: Aggressive floating-point optimizations (safe for physics sims)
+CXXFLAGS = -std=c++20 -O3 -march=native -ffast-math -Wall \
+           -I. -Iimgui -Iimgui/backends -I/opt/homebrew/include \
+           -DGL_SILENCE_DEPRECATION
 # macOS frameworks (Cocoa removed as we use cross-platform file dialogs)
 LDFLAGS = -framework OpenGL -framework IOKit -framework CoreFoundation -framework CoreVideo
 LDFLAGS += -L/opt/homebrew/lib -lglfw
