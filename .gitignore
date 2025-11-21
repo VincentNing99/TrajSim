@@ -170,9 +170,6 @@ tramp
 # Project Specific
 # ========================================
 
-# Claude Code settings (local only)
-.claude/
-
 # ImGui state file (user-specific)
 imgui.ini
 

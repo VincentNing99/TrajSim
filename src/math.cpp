@@ -432,8 +432,8 @@ vector<double> coord2carte(const vector<double>& coord)
     //Geocentric latitude beta
     vector<double> result;
     double beta, N, x,y,z;
-    double e = sqrt(1 - (b*b/a*a));
-    beta = atan((b*b/a*a) * tan(coord[0]));
+    double e = sqrt(1 - (b*b)/(a*a));
+    beta = atan((b*b)/(a*a) * tan(coord[0]));
     N = a / sqrt(1 - e * e * sin(beta) * sin(beta));
     x = (N + coord[2]) * cos(beta) * cos(coord[1]);
     y = (N + coord[2]) * cos(beta) * sin(coord[1]);

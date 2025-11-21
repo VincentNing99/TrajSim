@@ -61,14 +61,15 @@ cmake --build . --config Release
 When you first open FlightSimGUI:
 
 ### 1. Load CSV Files (30 seconds)
-Click the "Browse" buttons to select these files from the `files/` directory:
-- ✅ Euler Angles: `files/euler angles.csv`
-- ✅ V Inertial: `files/V_inertial.csv`
-- ✅ P Inertial: `files/P_inertial.csv`
-- ✅ Highspeed Aero: `files/highspeed.csv`
-- ✅ Lowspeed Aero: `files/lowspeed.csv`
+The example trejectory is in the files folder and are loaded by default. To simulate your own trejectory you must upload the following:
 
-### 2. Set Launch Site (30 seconds)
+- ✅ steering angles: `files/euler angles.csv`
+- ✅ Veloctiy_inertial: `files/V_inertial.csv`
+- ✅ P_inertial: `files/P_inertial.csv`
+- ✅ Aerodynamics table(Highspeed): `files/highspeed.csv`
+- ✅ Aerodynamics table(Lowspeed): `files/lowspeed.csv`
+
+2. Set Launch Site (30 seconds)
 Default values are pre-filled, but you can adjust:
 - Azimuth A0: `191.47506°` (Launch azimuth to North)
 - Azimuth B0: `40.80768°` (Launch site geocentric latitude)

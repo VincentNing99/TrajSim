@@ -339,7 +339,7 @@ SteeringAngles Guidance::compute_velocity_steering_angles(const DeltaVelocity& d
 
     double del_pitch = sqrt(pow(del_v.del_v_xi, 2) + pow(del_v.del_v_eta, 2));
     if (del_pitch != 0) {
-        angles.psi = asin(del_v.del_v_zeta / del_pitch);
+        angles.psi = atan2(del_v.del_v_zeta , del_pitch);
     } else {
         angles.psi = (del_v.del_v_zeta >= 0) ? M_PI_2 : -M_PI_2;
     }
@@ -393,6 +393,13 @@ SteeringAngles Guidance::transform_steering_to_inertial(const SteeringAngles& te
 
     SteeringAngles inertial;
     inertial.psi = asin(steeringCos_inertial[2]);
+
+    // Check for gimbal lock condition (psi near ±90°)
+    if (abs(cos(inertial.psi)) < 1e-10) {
+        throw std::runtime_error("IGM gimbal lock: Cannot transform steering angles when psi = ±90° (cos(psi) = 0). "
+                                 "Division by zero in phi calculation. Current psi = " + std::to_string(inertial.psi * R2D) + " degrees.");
+    }
+
     inertial.phi = atan2(steeringCos_inertial[1] / cos(inertial.psi), steeringCos_inertial[0] / cos(inertial.psi));
 
     return inertial;
