@@ -175,11 +175,8 @@ Comprehensive CSV with time-series data including position, velocity, mass, atti
 - Fixed hardcoded trajectory parameters to use GUI inputs
 
 ### Bug Fixes
-- ✅ Fixed hardcoded C_ea launch site rotation matrix
 - ✅ Fixed hardcoded launch longitude in G_matrix calculation
-- ✅ Fixed Earth rotation correction using stage-specific flight times
 - ✅ Fixed time_to_go not updating for third stage
-- ✅ Fixed steering angles using wrong flight state
 
 ## Todos:
 - **Add more guidance algorithms such as Power explict guidance and G-Fold
