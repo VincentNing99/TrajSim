@@ -1,4 +1,4 @@
-# TrajSim - Rocket Trajectory Simulator
+# FlightSim - Rocket Trajectory Simulator
 
 A high-fidelity rocket trajectory simulation and guidance system with real-time visualization. Uses 4th-order Runge-Kutta (RK4) integration to model multi-stage rocket flight with IGM (Iterative Guidance Mode) for orbital insertion.
 
