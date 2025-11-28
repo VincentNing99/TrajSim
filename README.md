@@ -108,7 +108,7 @@ The simulator supports three configurable launch stages:
 
 - **Earth Rotation Correction**: Accounts for Earth rotation during flight using ω_e × total_flight_time
 - **Dynamic Coordinate Transformations**: Real-time calculation of rotation matrices (G_matrix, C_ea) based on orbital elements
-- **Range Angle**: β_e + β_t for second stage, β_e - β_t for first/third stages
+- **Range Angle**: β_e + β_t for second stage, β_e - β_t for third stages
 - **Engine Cutoff Logic**: Multi-criteria cutoff based on orbital parameters (semi-major axis, eccentricity, inclination)
 
 ## Project Structure
