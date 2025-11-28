@@ -16,8 +16,7 @@
 #include "portable-file-dialogs.h"
 
 // Your simulation includes
-#include "sim.hpp"
-#include "sim_runner.hpp"  // NEW: Simulation runner wrapper
+#include "sim_runner.hpp"  // Simulation runner wrapper
 #include "rocket.hpp"
 #include "math.hpp"
 #include "gravity.hpp"
@@ -27,13 +26,6 @@
 #include "engine_model.hpp"
 #include "utilities.hpp"
 #include "trajectory.hpp"
-
-// Stage selection enum
-enum class SimulationStage {
-    LaunchSite,
-    SecondStage,
-    ThirdStage
-};
 
 static void glfw_error_callback(int error, const char* description) {
     fprintf(stderr, "GLFW Error %d: %s\n", error, description);
@@ -64,7 +56,105 @@ std::string open_file_dialog(const char* default_path = nullptr) {
     return "";
 }
 
-// Function removed - initial conditions now entered directly in GUI
+// Function to load default trajectory parameters based on selected stage
+void load_stage_defaults(SimulationStage stage,
+                         float& initial_time_out, float& end_time_out,
+                         float& initial_mass_out,
+                         float initial_position_out[3], float initial_velocity_out[3],
+                        float terminal_position_out[3], float terminal_velocity_out[3],
+                         float& initial_pitch_out, float& initial_yaw_out, float& initial_roll_out
+                         , float& semimajor_axis, float& eccentricity, float& inclination,
+                         float& raan, float& argument_of_perigee, float& true_anomaly) {
+    switch (stage) {
+        case SimulationStage::LaunchSite:
+            // Launch from ground
+            initial_time_out = initial_time1;
+            end_time_out = end_time1;
+            initial_mass_out = initial_mass1;
+            initial_position_out[0] = initial_position1[0];
+            initial_position_out[1] = initial_position1[1];
+            initial_position_out[2] = initial_position1[2];
+            initial_velocity_out[0] = initial_velocity1[0];
+            initial_velocity_out[1] = initial_velocity1[1];
+            initial_velocity_out[2] = initial_velocity1[2];
+            terminal_position_out[0] = terminal_position1[0];
+            terminal_position_out[1] = terminal_position1[1];
+            terminal_position_out[2] = terminal_position1[2];
+            terminal_velocity_out[0] = terminal_velocity1[0];
+            terminal_velocity_out[1] = terminal_velocity1[1];
+            terminal_velocity_out[2] = terminal_velocity1[2];
+            initial_pitch_out = initial_pitch1;
+            initial_yaw_out = initial_yaw1;
+            initial_roll_out = initial_roll1;
+            // First stage doesn't have orbital parameters yet
+            semimajor_axis = 0.0f;
+            eccentricity = 0.0f;
+            inclination = 0.0f;
+            raan = 0.0f;
+            argument_of_perigee = 0.0f;
+            true_anomaly = 0.0f;
+            break;
+
+        case SimulationStage::SecondStage:
+            // From trajectory.hpp: Second Stage parameters
+            initial_time_out = initial_time2;
+            end_time_out = end_time2;
+            initial_mass_out = initial_mass2;
+            initial_position_out[0] = initial_position2[0];
+            initial_position_out[1] = initial_position2[1];
+            initial_position_out[2] = initial_position2[2];
+            initial_velocity_out[0] = initial_velocity2[0];
+            initial_velocity_out[1] = initial_velocity2[1];
+            initial_velocity_out[2] = initial_velocity2[2];
+            terminal_position_out[0] = terminal_position2[0];
+            terminal_position_out[1] = terminal_position2[1];
+            terminal_position_out[2] = terminal_position2[2];
+            terminal_velocity_out[0] = terminal_velocity2[0];
+            terminal_velocity_out[1] = terminal_velocity2[1];
+            terminal_velocity_out[2] = terminal_velocity2[2];
+            initial_pitch_out = initial_pitch2;
+            initial_yaw_out = initial_yaw2;
+            initial_roll_out = initial_roll2;
+            semimajor_axis = a_terminal2 / 1000.0;  // Convert meters to km for display
+            eccentricity = eccentricity2;
+            inclination = inclination2 * R2D;
+            raan = right_ascension2 * R2D;
+            argument_of_perigee = arugument_of_perigee2 * R2D;
+            true_anomaly = true_anomaly2 * R2D;
+            break;
+
+        case SimulationStage::ThirdStage:
+            // From trajectory.hpp: Third Stage parameters
+            initial_time_out = initial_time3;
+            end_time_out = end_time3;
+            initial_mass_out = initial_mass3;
+            initial_position_out[0] = initial_position3[0];
+            initial_position_out[1] = initial_position3[1];
+            initial_position_out[2] = initial_position3[2];
+            initial_velocity_out[0] = initial_velocity3[0];
+            initial_velocity_out[1] = initial_velocity3[1];
+            initial_velocity_out[2] = initial_velocity3[2];
+            terminal_position_out[0] = terminal_position3[0];
+            terminal_position_out[1] = terminal_position3[1];
+            terminal_position_out[2] = terminal_position3[2];
+            terminal_velocity_out[0] = terminal_velocity3[0];
+            terminal_velocity_out[1] = terminal_velocity3[1];
+            terminal_velocity_out[2] = terminal_velocity3[2];
+            initial_pitch_out = initial_pitch3;
+            initial_yaw_out = initial_yaw3;
+            initial_roll_out = initial_roll3;
+            semimajor_axis = a_terminal3 / 1000.0;  // Convert meters to km for display
+            eccentricity = eccentricity3;
+            inclination = inclination3 * R2D;
+            raan = right_ascension3 * R2D;
+            argument_of_perigee = arugument_of_perigee3 * R2D;
+            true_anomaly = true_anomaly3 * R2D;
+            break;
+
+        default:
+            break;
+    }
+}
 
 int main(int, char**) {
     // Setup window
@@ -142,30 +232,34 @@ int main(int, char**) {
     static char highspeed_path[256] = "files/highspeed.csv";
     static char lowspeed_path[256] = "files/lowspeed.csv";
 
-    // Time parameters
-    static float initial_time = 3140.3405f;
-    static float end_time = 3344.5194f;
-
-    // Initial state vectors (inertial frame)
-    
-    static float initial_position[3] = {-912205.4f, -13212262.5f, 149163.6f};
-    static float initial_velocity[3] = {-7440.6404f, 953.8138f, 294.5883f};
-    static float initial_mass = 6731.1f;
-    static float steering_angle = 172.7593f;  // degrees
-    static float Pitch = 172.7593f;
-    static float Yaw = 0.0f;
-    static float Roll = 0.0f;
-
-    // Launch site initialization parameters
-    static float launch_azimuth_A0 = 191.47506f;  // degrees
-    static float launch_azimuth_B0 = 40.80768f;   // degrees
-    static float launch_longitude = 100.13805f;    // degrees
-    static float launch_latitude = 40.80768f;      // degrees
-    static float launch_height = 1000.0f;          // meters
-
     // Stage selection
     static SimulationStage selected_stage = SimulationStage::LaunchSite;
     static const char* stage_names[] = { "Launch Site", "Second Stage", "Third Stage" };
+
+    // Trajectory completion status
+    static bool trajectory_completed = false;
+
+    // GUI parameter variables (modifiable by user)
+    static float launch_azimuth_A0 = 191.47506f;     // degrees
+    static float launch_longitude = 100.13805f;      // degrees
+    static float launch_latitude = 40.80768f;        // degrees
+    static float launch_height = 1000.0f;            // meters
+    static float initial_time = 0.0f;                // seconds
+    static float end_time = 0.0f;                  // seconds
+    static float initial_mass = 0.0f;                // kg
+    static float initial_position[3] = {0.0f, 0.0f, 0.0f};  // meters
+    static float initial_velocity[3] = {0.0f, 0.0f, 0.0f};  // m/s
+    static float initial_pitch = 0.0f;              // degrees
+    static float initial_yaw = 0.0f;                 // degrees
+    static float initial_roll = 0.0f;                // degrees
+    static float semimajor_axis = 0.0f;          // meters
+    static float eccentricity = 0.0f;              // unitless
+    static float inclination = 0.0f;                // degrees
+    static float raan = 0.0f;                        // degrees
+    static float argument_of_perigee = 0.0f;        // degrees
+    static float true_anomaly = 0.0f;                // degrees
+    static float terminal_position[3] = {0.0f, 0.0f, 0.0f};  // meters
+    static float terminal_velocity[3] = {0.0f, 0.0f, 0.0f};  // m/s
 
     // NEW: Simulation state variables
     SimulationRunner sim_runner;
@@ -190,6 +284,12 @@ int main(int, char**) {
     static bool show_telemetry = true;
     static bool show_errors = true;
     static bool show_orbital_elements = true;
+
+    // Load initial stage defaults
+    load_stage_defaults(selected_stage, initial_time, end_time, initial_mass,
+                       initial_position, initial_velocity, terminal_position, terminal_velocity,
+                       initial_pitch, initial_yaw, initial_roll,
+                       semimajor_axis, eccentricity, inclination, raan, argument_of_perigee, true_anomaly);
 
     // Main loop
     while (!glfwWindowShouldClose(window)) {
@@ -302,7 +402,6 @@ int main(int, char**) {
         // Launch Site Parameters
         ImGui::Text("Launch Site Parameters:");
         ImGui::InputFloat("Azimuth A0 (deg)", &launch_azimuth_A0);
-        ImGui::InputFloat("Azimuth B0 (deg)", &launch_azimuth_B0);
         ImGui::InputFloat("Longitude (deg)", &launch_longitude);
         ImGui::InputFloat("Latitude (deg)", &launch_latitude);
         ImGui::InputFloat("Site Height (m)", &launch_height);
@@ -312,9 +411,21 @@ int main(int, char**) {
 
         // Stage selection
         ImGui::Text("Start From Stage:");
-        int current_stage = (int)selected_stage;
-        if (ImGui::Combo("##Stage", &current_stage, stage_names, IM_ARRAYSIZE(stage_names))) {
-            selected_stage = (SimulationStage)current_stage;
+        // Map dropdown index to actual enum values
+        static SimulationStage stage_map[] = {SimulationStage::LaunchSite, SimulationStage::SecondStage, SimulationStage::ThirdStage};
+        // Find current dropdown index
+        int current_stage_index = 0;
+        for (int i = 0; i < 3; i++) {
+            if (stage_map[i] == selected_stage) {
+                current_stage_index = i;
+                break;
+            }
+        }
+        if (ImGui::Combo("##Stage", &current_stage_index, stage_names, IM_ARRAYSIZE(stage_names))) {
+            selected_stage = stage_map[current_stage_index];
+            // Load default parameters for the selected stage
+            load_stage_defaults(selected_stage, initial_time, end_time, initial_mass, initial_position, initial_velocity, terminal_position, terminal_velocity,
+                               initial_pitch, initial_yaw, initial_roll, semimajor_axis, eccentricity, inclination, raan, argument_of_perigee, true_anomaly);
         }
 
         ImGui::Spacing();
@@ -323,8 +434,8 @@ int main(int, char**) {
         // Time and Mass Parameters
         ImGui::Text("Time & Mass Parameters:");
         ImGui::InputFloat("Initial Time (s)", &initial_time);
+        ImGui::InputFloat("End Time (s)", &end_time);
         ImGui::InputFloat("Initial Mass (kg)", &initial_mass);
-        ImGui::InputFloat("Steering Angle (deg)", &steering_angle);
 
         ImGui::Spacing();
         ImGui::Separator();
@@ -340,6 +451,42 @@ int main(int, char**) {
         ImGui::InputFloat("Vx", &initial_velocity[0]);
         ImGui::InputFloat("Vy", &initial_velocity[1]);
         ImGui::InputFloat("Vz", &initial_velocity[2]);
+
+        ImGui::Spacing();
+        ImGui::Separator();
+
+        // Initial Attitude
+        ImGui::Text("Initial Attitude (deg):");
+        ImGui::InputFloat("Pitch", &initial_pitch);
+        ImGui::InputFloat("Yaw", &initial_yaw);
+        ImGui::InputFloat("Roll", &initial_roll);
+
+        ImGui::Spacing();
+        ImGui::Separator();
+
+        // Terminal State Vectors (for guidance)
+        ImGui::Text("Terminal State (Inertial Frame):");
+        ImGui::Text("Terminal Position (m):");
+        ImGui::InputFloat("Px_term", &terminal_position[0]);
+        ImGui::InputFloat("Py_term", &terminal_position[1]);
+        ImGui::InputFloat("Pz_term", &terminal_position[2]);
+
+        ImGui::Text("Terminal Velocity (m/s):");
+        ImGui::InputFloat("Vx_term", &terminal_velocity[0]);
+        ImGui::InputFloat("Vy_term", &terminal_velocity[1]);
+        ImGui::InputFloat("Vz_term", &terminal_velocity[2]);
+
+        ImGui::Spacing();
+        ImGui::Separator();
+
+        // Orbital Elements (for guidance target)
+        ImGui::Text("Target Orbital Elements:");
+        ImGui::InputFloat("Semi-major axis (km)", &semimajor_axis);
+        ImGui::InputFloat("Eccentricity", &eccentricity);
+        ImGui::InputFloat("Inclination (deg)", &inclination);
+        ImGui::InputFloat("RAAN (deg)", &raan);
+        ImGui::InputFloat("Arg of Perigee (deg)", &argument_of_perigee);
+        ImGui::InputFloat("True Anomaly (deg)", &true_anomaly);
 
         ImGui::Spacing();
         ImGui::Separator();
@@ -366,16 +513,33 @@ int main(int, char**) {
         if (button_clicked && !is_sim_running) {
             // Build parameter structure from GUI inputs
             SimulationParams params;
+
+            // Stage selection
+            params.stage = selected_stage;
+
+            // Time parameters
             params.t_start = initial_time;
             params.t_end = end_time;
+
+            // Initial conditions
             params.Pi_init = {initial_position[0], initial_position[1], initial_position[2]};
             params.Vi_init = {initial_velocity[0], initial_velocity[1], initial_velocity[2]};
+            params.Pi_terminal = {terminal_position[0], terminal_position[1], terminal_position[2]};
+            params.Vi_terminal = {terminal_velocity[0], terminal_velocity[1], terminal_velocity[2]};
             params.initial_mass = initial_mass;
-            params.steering_angle_deg = steering_angle;
+            params.steering_angle_deg = initial_pitch;  // Using pitch as steering angle
+
+            // Orbital element targets (convert degrees to radians)
+            params.a_terminal = semimajor_axis * 1000.0;  // Convert km to meters
+            params.eccentricity = eccentricity;
+            params.inclination = inclination * D2R;
+            params.right_ascension = raan * D2R;
+            params.argument_of_perigee = argument_of_perigee * D2R;
+            params.true_anomaly = true_anomaly * D2R;
 
             // Launch site initialization parameters
             params.launch_azimuth_A0_deg = launch_azimuth_A0;
-            params.launch_azimuth_B0_deg = launch_azimuth_B0;
+            params.launch_azimuth_B0_deg = launch_latitude;  // B0 is latitude
             params.launch_longitude_deg = launch_longitude;
             params.launch_latitude_deg = launch_latitude;
             params.launch_height_m = launch_height;

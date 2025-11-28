@@ -77,13 +77,34 @@ void SimulationRunner::run_simulation(const SimulationParams params) {
         // Initialize atmosphere model with GUI parameter
         atmosphere_model atm = atmosphere_model(gravity.get_altitude(Pi_init));
 
-        // Initialize rocket
+        // Select initial flight state based on stage
+        flight_states initial_flight_state;
+        switch (params.stage) {
+            case SimulationStage::LaunchSite:
+                initial_flight_state = flight_states::FIRST_STAGE_FLIGHT;
+                break;
+            case SimulationStage::SecondStage:
+                initial_flight_state = flight_states::SECOND_STAGE_FLIGHT;
+                break;
+            case SimulationStage::ThirdStage:
+                initial_flight_state = flight_states::THIRD_STAGE_FLIGHT;
+                break;
+            default:
+                initial_flight_state = flight_states::THIRD_STAGE_FLIGHT;
+                break;
+        }
+
+        // Initialize rocket with stage-specific flight state
         rkt::rocket rocket = rkt::rocket(t, Pi_init, Vi_init, Vb_init,
-                                          aero_angle, params.initial_mass, flight_states::SJFX,
+                                          aero_angle, params.initial_mass, initial_flight_state,
                                           steering_angle_initial, gravity.get_R_vec());
 
         // Initialize engine
         engine_model engine = engine_model();
+
+        // Terminal conditions from GUI parameters
+        vector<double> Pi_terminal = params.Pi_terminal;
+        vector<double> Vi_terminal = params.Vi_terminal;
 
         // Initialize guidance system - load trajectory tables
         Guidance guidance = Guidance(t,
@@ -92,6 +113,20 @@ void SimulationRunner::run_simulation(const SimulationParams params) {
                                      read_table(params.v_inertial_file),
                                      read_table(params.p_inertial_file));
 
+        // Set the simulation stage for proper time-to-go calculation
+        guidance.set_simulation_stage(initial_flight_state);
+
+        // Set launch site parameters (A0, B0, longitude) from GUI to override hardcoded trajectory.hpp values
+        guidance.set_launch_site_params(A0_rad, B0_rad, longitude_rad);
+
+        // Pass GUI orbital parameters to override trajectory.hpp defaults
+        // This also recalculates the G rotation matrix with Earth rotation correction
+        guidance.set_target_orbit(params.a_terminal, params.eccentricity, params.inclination,
+                                  params.right_ascension, params.argument_of_perigee, params.true_anomaly,
+                                  params.t_end);
+        guidance.set_terminal_conditions(params.Pi_terminal, params.Vi_terminal);
+
+        // Initialize IGM with stage-specific terminal conditions
         guidance.IGM_initialize(Vi_init,
                                 Pi_init,
                                 steering_angle_initial,
@@ -145,7 +180,7 @@ void SimulationRunner::run_simulation(const SimulationParams params) {
             trajectory_history_.push_back({rocket.get_PI()[0], rocket.get_PI()[1], rocket.get_PI()[2]});
         }
         
-        while (!guidance.SECO(rocket.get_PI(), rocket.get_VI(), guidance.get_time_to_go(), t)) {
+        while (!guidance.Cutoff(rocket.get_PI(), rocket.get_VI(), guidance.get_time_to_go(), t)) {
             // Record current state (buffered in memory - performance optimization)
             data_buffer.push_back({
                 t,
@@ -217,13 +252,13 @@ void SimulationRunner::run_simulation(const SimulationParams params) {
                     telemetry_.perigee = 0.0;
                 }
 
-                // Calculate deltas from target orbital elements
-                telemetry_.delta_semi_major_axis = a_terminal - telemetry_.semi_major_axis;
-                telemetry_.delta_eccentricity = eccentricity - telemetry_.eccentricity;
-                telemetry_.delta_inclination = (inclination * R2D) - telemetry_.inclination;
-                telemetry_.delta_right_ascension = (right_ascension * R2D) - telemetry_.right_ascension;
-                telemetry_.delta_argument_of_perigee = (arugument_of_perigee * R2D) - telemetry_.argument_of_perigee;
-                telemetry_.delta_true_anomaly = (true_anomaly * R2D) - telemetry_.true_anomaly;
+                // Calculate deltas from target orbital elements (use params instead of hardcoded trajectory.hpp values)
+                telemetry_.delta_semi_major_axis = params.a_terminal - telemetry_.semi_major_axis;
+                telemetry_.delta_eccentricity = params.eccentricity - telemetry_.eccentricity;
+                telemetry_.delta_inclination = (params.inclination * R2D) - telemetry_.inclination;
+                telemetry_.delta_right_ascension = (params.right_ascension * R2D) - telemetry_.right_ascension;
+                telemetry_.delta_argument_of_perigee = (params.argument_of_perigee * R2D) - telemetry_.argument_of_perigee;
+                telemetry_.delta_true_anomaly = (params.true_anomaly * R2D) - telemetry_.true_anomaly;
 
                 telemetry_.mach_number = atm.get_mach_number();
 
@@ -232,13 +267,13 @@ void SimulationRunner::run_simulation(const SimulationParams params) {
                 telemetry_.thrust = vector_mag(thrust_vec);
 
                 // ISP and exit velocity depend on flight state
-                if (rocket.get_fstate() == flight_states::SJFX) {
+                if (rocket.get_fstate() == flight_states::THIRD_STAGE_FLIGHT) {
                     telemetry_.isp = Isp3;
                     telemetry_.exit_velocity = Vex3;
-                } else if (rocket.get_fstate() == flight_states::EJFX) {
+                } else if (rocket.get_fstate() == flight_states::SECOND_STAGE_FLIGHT) {
                     telemetry_.isp = Isp2;
                     telemetry_.exit_velocity = Vex2;
-                } else if (rocket.get_fstate() == flight_states::YJFX) {
+                } else if (rocket.get_fstate() == flight_states::FIRST_STAGE_FLIGHT) {
                     telemetry_.isp = Isp_SL;
                     telemetry_.exit_velocity = Isp_SL * g0;
                 } else {
@@ -249,13 +284,13 @@ void SimulationRunner::run_simulation(const SimulationParams params) {
                 telemetry_.step_number = step_counter;
                 telemetry_.is_running = true;
 
-                // Target deltas (differences from SECO targets)
-                telemetry_.delta_pos_x = rocket.get_PI()[0] - x_SECO;
-                telemetry_.delta_pos_y = rocket.get_PI()[1] - y_SECO;
-                telemetry_.delta_pos_z = rocket.get_PI()[2] - z_SECO;
-                telemetry_.delta_vel_x = rocket.get_VI()[0] - vx_SECO;
-                telemetry_.delta_vel_y = rocket.get_VI()[1] - vy_SECO;
-                telemetry_.delta_vel_z = rocket.get_VI()[2] - vz_SECO;
+                // Target deltas (differences from terminal targets - use params instead of hardcoded)
+                telemetry_.delta_pos_x = rocket.get_PI()[0] - params.Pi_terminal[0];
+                telemetry_.delta_pos_y = rocket.get_PI()[1] - params.Pi_terminal[1];
+                telemetry_.delta_pos_z = rocket.get_PI()[2] - params.Pi_terminal[2];
+                telemetry_.delta_vel_x = rocket.get_VI()[0] - params.Vi_terminal[0];
+                telemetry_.delta_vel_y = rocket.get_VI()[1] - params.Vi_terminal[1];
+                telemetry_.delta_vel_z = rocket.get_VI()[2] - params.Vi_terminal[2];
                 telemetry_.range_angle = guidance.getRangeAngle() * R2D;
             }  // End if (step_counter % telemetry_update_interval == 0)
 

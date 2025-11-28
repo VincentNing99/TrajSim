@@ -95,7 +95,7 @@ namespace rkt{
 //        std::vector<std::vector<double>> Table
         //transient engine thrust profile at SE ignition
         std::vector<std::vector<double>> Table2_thrust_on;
-        //transient engine thrust profile at SECO
+        //transient engine thrust profile at engine cutoff
         std::vector<std::vector<double>> Table2_thrust_off;
         flight_states f_states;
         double x_ddot, y_ddot, z_ddot;

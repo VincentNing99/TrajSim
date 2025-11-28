@@ -38,26 +38,26 @@ void engine_model::initialize()
 vector<vector<double>> engine_model::thrust(vector<double> servo_cmd, double t,double P_a, flight_states f_states, double COM)
 {
     switch(f_states){
-        case flight_states::YJFX:
+        case flight_states::FIRST_STAGE_FLIGHT:
             if (t <= 0.65) //TODO: add engine start transient behavior
             {
                 P = 9.0*(P01 + S_a1*(P_e - P_a));
-                
+
             }
             else if (t > 0.65)
             {
                 P = 9.0*(P01 + S_a1*(P_e - P_a));
-                
+
             }
             break;
-        case flight_states::YJGJ:
+        case flight_states::FIRST_STAGE_CUTOFF:
             // TODO: add engine shutdown transient behavior
             P = 0.0;
             break;
-        case flight_states::YJFL:
+        case flight_states::FIRST_STAGE_SEPARATION:
             P = 0.0; //TODO: add separation interference
             break;
-        case flight_states::EJFX:
+        case flight_states::SECOND_STAGE_FLIGHT:
             P = P02;
             //delta_phi_psi = sqrt(delta_phi*delta_phi + delta_psi*delta_psi);
             //FC[0] = P*cos(delta_phi_psi);
@@ -67,10 +67,10 @@ vector<vector<double>> engine_model::thrust(vector<double> servo_cmd, double t,d
             //MC[2] = -FC[1] * (delta_r2 - COM + delta_L);
             //TODO: add engine ignition transient behavior
             break;
-        case flight_states::EJGJ:
+        case flight_states::SECOND_STAGE_CUTOFF:
             P = 0.0;
             break;
-        case flight_states::SJFX:
+        case flight_states::THIRD_STAGE_FLIGHT:
             //滑行
             P = P03;
             break;
@@ -87,7 +87,7 @@ vector<vector<double>> engine_model::engine_inertia(flight_states f_states, doub
 
     switch (f_states)
     {
-    case flight_states::YJFX:
+    case flight_states::FIRST_STAGE_FLIGHT:
         FI[0] = 0.0;
         FI[1] = -9.0*Mr1*lr1*delta_theta_ddot;
         FI[2] = 9.0*Mr1*lr1*delta_psi_ddot; // 右手定则
@@ -96,8 +96,8 @@ vector<vector<double>> engine_model::engine_inertia(flight_states f_states, doub
         MI[1] = -9.0*(Jr1 * delta_theta_ddot + Mr1 * lr1 * (delta_r - COM + delta_L) * delta_theta_ddot + n[0] * g0 *Mr1*lr1*delta_theta);
         MI[2] = -9.0*(Jr1 * delta_psi_ddot + Mr1 * lr1 * (delta_r - COM + delta_L) * delta_psi_ddot + n[0] * g0*Mr1*lr1*delta_psi);
         break;
-    case flight_states::EJFX:
-    case flight_states::FS:
+    case flight_states::SECOND_STAGE_FLIGHT:
+    case flight_states::REENTRY:
         FI[0] = 0.0;
         FI[1] = -Mr2*lr2*delta_theta_ddot;
         FI[2] = Mr2*lr2*delta_psi_ddot;
@@ -106,7 +106,7 @@ vector<vector<double>> engine_model::engine_inertia(flight_states f_states, doub
         MI[1] = -(Jr2*delta_theta_ddot + Mr2 * lr2 * (delta_r2 - COM + delta_L)*delta_theta_ddot + n[0] * g0 * Mr2 * lr2 * delta_theta);
         MI[2] = -(Jr2*delta_psi_ddot + Mr2*lr2*(delta_r2 - COM + delta_L)*delta_psi_ddot + n[0] * g0*Mr2*lr2*delta_psi);
         break;
-    case flight_states::SJFX:
+    case flight_states::THIRD_STAGE_FLIGHT:
         FI[0] = 0;
         FI[1] = 0;
         FI[2] = 0;
@@ -135,9 +135,9 @@ void engine_model::thrust_vector(flight_states f_states, vector<double> servo_cm
     
     switch (f_states)
     {
-        case flight_states::YJFX:
-        case flight_states::YJGJ:
-        case flight_states::YJFL:
+        case flight_states::FIRST_STAGE_FLIGHT:
+        case flight_states::FIRST_STAGE_CUTOFF:
+        case flight_states::FIRST_STAGE_SEPARATION:
             delta_1ab = atan(sqrt(pow(tan(servo_cmd[0]), 2) + pow(tan(servo_cmd[1]), 2)));//发动机摆动角度
             delta_1abp = atan2(tan(servo_cmd[0]), tan(servo_cmd[1])); // 伺服夹角
             Fx_Dt1 = P / 9 * cos(delta_1ab);
@@ -251,9 +251,9 @@ void engine_model::thrust_vector(flight_states f_states, vector<double> servo_cm
             M_total = add_vectors(M_comb);
             MC = M_total;
             break;
-        case flight_states::EJFX:
-        case flight_states::FS:
-        case flight_states::EJGJ:
+        case flight_states::SECOND_STAGE_FLIGHT:
+        case flight_states::REENTRY:
+        case flight_states::SECOND_STAGE_CUTOFF:
             FC[0] = P02 * cos(delta_theta) * cos(delta_psi);
             FC[1] = P02 * cos(delta_psi) * sin(delta_theta);
             FC[2] = -P02 * sin(delta_psi);
@@ -261,8 +261,8 @@ void engine_model::thrust_vector(flight_states f_states, vector<double> servo_cm
             MC[1] = FC[2] * (delta_r2 - COM + delta_L);
             MC[2] = FC[1] * (delta_r2 - COM + delta_L);
             break;
-        case flight_states::SJFX:
-        case flight_states::SJGJ:
+        case flight_states::THIRD_STAGE_FLIGHT:
+        case flight_states::THIRD_STAGE_CUTOFF:
             FC[0] = P03 * cos(delta_theta) * cos(delta_psi);
             FC[1] = P03 * cos(delta_psi) * sin(delta_theta);
             FC[2] = -P03 * sin(delta_psi);

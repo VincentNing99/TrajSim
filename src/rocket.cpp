@@ -75,13 +75,13 @@ double rkt::rocket::mass_calc()
 {
     switch (f_states)
     {
-        case flight_states::YJFX:
+        case flight_states::FIRST_STAGE_FLIGHT:
             mass_dot = -2920.3;
             break;
-        case flight_states::EJFX:
+        case flight_states::SECOND_STAGE_FLIGHT:
             mass_dot = -309.079;
             break;
-        case flight_states::SJFX:
+        case flight_states::THIRD_STAGE_FLIGHT:
             mass_dot = -0.973;
             break;
         default:
@@ -100,20 +100,20 @@ void rkt::rocket::mass_properties() // 后续需要更新数据，以及按数�
     vector<vector<double>> table;
     switch(f_states)
     {
-        case flight_states::YJFX:
-        case flight_states::YJFL:
-        case flight_states::YJGJ:
+        case flight_states::FIRST_STAGE_FLIGHT:
+        case flight_states::FIRST_STAGE_SEPARATION:
+        case flight_states::FIRST_STAGE_CUTOFF:
             table = Table1Jxyz;
             break;
-        case flight_states::EJFX:
+        case flight_states::SECOND_STAGE_FLIGHT:
             table = Table2Jxyz;
             break;
-        case flight_states::FS:
-        case flight_states::EJGJ:
+        case flight_states::REENTRY:
+        case flight_states::SECOND_STAGE_CUTOFF:
             table = Table2Jxyz_fs;
             break;
-        case flight_states::SJFX:
-        case flight_states::SJGJ:
+        case flight_states::THIRD_STAGE_FLIGHT:
+        case flight_states::THIRD_STAGE_CUTOFF:
             table = Table3Jxyz;
             break;
     }

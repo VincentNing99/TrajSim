@@ -455,7 +455,7 @@ vector<double> calculate_derivatives(double t, rkt::rocket& rocket,
     const auto& Vi = rocket.get_VI();
     switch(states)
     {
-        case flight_states::YJFX:
+        case flight_states::FIRST_STAGE_FLIGHT:
             // 计算重力加速度
             g = gravity.calc_g(Pi);
             // 计算攻角和侧滑角
@@ -476,8 +476,8 @@ vector<double> calculate_derivatives(double t, rkt::rocket& rocket,
             total_force_inertial = Matrix_multiply_vector(MbI, total_force_body);
             break;
 
-        case flight_states::EJFX:
-        case flight_states::SJFX:
+        case flight_states::SECOND_STAGE_FLIGHT:
+        case flight_states::THIRD_STAGE_FLIGHT:
             g = gravity.calc_g(Pi);
             rocket.angle_calc(rocket.get_attitude());
             MIb = rotation_matrix_inertial_to_rocket(rocket.get_attitude());
@@ -510,7 +510,7 @@ void rk4(double t, int step_counter, rkt::rocket& rocket, gravity_model& gravity
 
     if(step_counter % 10 == 0 && guidance.get_time_to_go() > IGM_stop_time)
     {
-        if(rocket.get_fstate() != flight_states::YJFX)
+        if(rocket.get_fstate() != flight_states::FIRST_STAGE_FLIGHT)
         {
             g_IGM = gravity.get_g_terminal_guidance(rocket.get_PI(),
                                                     {x_SECO,y_SECO,z_SECO},
@@ -518,7 +518,8 @@ void rk4(double t, int step_counter, rkt::rocket& rocket, gravity_model& gravity
         }
         if(step_counter != 0)
         {
-            if(rocket.get_fstate() == flight_states::EJFX)
+            if(rocket.get_fstate() == flight_states::SECOND_STAGE_FLIGHT ||
+               rocket.get_fstate() == flight_states::THIRD_STAGE_FLIGHT)
             {
                 guidance.set_time_to_go();
             }

@@ -37,7 +37,7 @@ using namespace std;
       atmosphere_model atm = atmosphere_model(gravity.get_altitude(Pi_init));
 
       rkt::rocket rocket = rkt::rocket(t, Pi_init, Vi_init, Vb_init,
-                                        aero_angle, 6731.1, flight_states::SJFX,
+                                        aero_angle, 6731.1, flight_states::THIRD_STAGE_FLIGHT,
                                         steering_angle_initial, gravity.get_R_vec());
       
       
@@ -66,7 +66,7 @@ using namespace std;
        {
            cerr << "error opening file: " << filename << endl;
        }
-      while (!guidance.SECO(rocket.get_PI(), rocket.get_VI(), guidance.get_time_to_go(), t))
+      while (!guidance.Cutoff(rocket.get_PI(), rocket.get_VI(), guidance.get_time_to_go(), t))
       {
           //record
           vector<double> data = {t, rocket.get_phi()*R2D, rocket.get_psi()*R2D, rocket.get_gamma()*R2D, rocket.get_mass(), rocket.get_PI()[0], rocket.get_PI()[1], rocket.get_PI()[2], rocket.get_VI()[0],  rocket.get_VI()[1], rocket.get_VI()[2], atm.get_mach_number(), gravity.get_altitude(rocket.get_PI()), guidance.get_semi_major_axis(), guidance.get_time_to_go()};

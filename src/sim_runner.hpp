@@ -15,8 +15,14 @@
 #include <mutex>
 #include <atomic>
 
+// Simulation stage enum
+enum class SimulationStage {LaunchSite, SecondStage, ThirdStage};
+
 // Simulation parameters passed from GUI
 struct SimulationParams {
+    // Simulation stage selection
+    SimulationStage stage;  // Which stage to simulate
+
     // Time parameters
     double t_start;
     double t_end;
@@ -24,8 +30,18 @@ struct SimulationParams {
     // Initial conditions
     std::vector<double> Pi_init;  // Initial position [x, y, z]
     std::vector<double> Vi_init;  // Initial velocity [x, y, z]
+    std::vector<double> Pi_terminal;  // Terminal position target [x, y, z]
+    std::vector<double> Vi_terminal;  // Terminal velocity target [x, y, z]
     double initial_mass;
-    double steering_angle_deg;    // in degrees
+    double steering_angle_deg;    // in degrees (initial pitch for guidance)
+
+    // Orbital element targets
+    double a_terminal;           // Semi-major axis (m)
+    double eccentricity;         // Eccentricity
+    double inclination;          // Inclination (rad)
+    double right_ascension;      // RAAN (rad)
+    double argument_of_perigee;  // Argument of perigee (rad)
+    double true_anomaly;         // True anomaly (rad)
 
     // Launch site initialization
     double launch_azimuth_A0_deg;     // Launch azimuth A0 in degrees
@@ -113,8 +129,8 @@ struct TelemetryData {
     bool is_running;
 
     // Target Deltas (differences from target orbit)
-    double delta_pos_x, delta_pos_y, delta_pos_z;  // Position error from SECO target
-    double delta_vel_x, delta_vel_y, delta_vel_z;  // Velocity error from terminal
+    double delta_pos_x, delta_pos_y, delta_pos_z;  // Position error from terminal target
+    double delta_vel_x, delta_vel_y, delta_vel_z;  // Velocity error from terminal target
     double range_angle;  // Range angle (beta)
 };
 

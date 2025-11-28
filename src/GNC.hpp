@@ -34,16 +34,40 @@ public:
     inline double getRangeAngle() const {return range_angle;};
     inline std::vector<std::vector<double>> get_terminal_guidance_rotation_matrix() const {return C_et;};
     inline void set_flight_state(flight_states state) {flight_state = state;};
+    inline void set_simulation_stage(flight_states state) {
+        simulation_stage = state;
+        // Determine if using HTTW or LTTW based on flight state
+        use_httw = (state == flight_states::SECOND_STAGE_FLIGHT ||
+                    state == flight_states::SECOND_STAGE_CUTOFF);
+    };
+    inline void set_target_orbit(double a_term, double ecc, double incl, double raan, double arg_perigee, double true_anom, double flight_time) {
+        a_terminal = a_term;
+        e = ecc;
+        i = incl;
+        RA = raan;
+        w = arg_perigee;
+        TA = true_anom;
+
+        // Recalculate the G rotation matrix with new orbital elements and flight time
+        recalculate_G_matrix(flight_time);
+    };
+    inline void set_terminal_conditions(const std::vector<double>& pi_term, const std::vector<double>& vi_term) {
+        Pi_cutoff = Vec3{pi_term[0], pi_term[1], pi_term[2]};
+        Vi_cutoff = Vec3{vi_term[0], vi_term[1], vi_term[2]};
+    };
+    void set_launch_site_params(double A0_rad, double B0_rad, double launch_longitude_rad);
+
+    void recalculate_G_matrix(double total_flight_time);
     std::vector<double> get_attitude(double t, const std::vector<double>& g, const std::vector<double>& Pi, const std::vector<double>& Vi, double m);
     std::vector<double> get_Vi_traj(double t);
     std::vector<double> get_Pi_traj(double t);
     std::vector<double> algor_cmd(double t);
 
     bool MECO();
-    bool SECO(const std::vector<double>&, const std::vector<double>&, double time_to_go, double t);
+    bool Cutoff(const std::vector<double>&, const std::vector<double>&, double time_to_go, double t);
     double calc_semi_major_axis(double r, double v);
-    void update_time_to_go(double);
-    void UpdateTimeToGo3(double del_v, const std::vector<double>& g, const std::vector<double>& vt, const std::vector<double>& vc);
+    void UpdateTimeToGo_HTTW(double);
+    void UpdateTimeToGo_LTTW(double del_v, const std::vector<double>& g, const std::vector<double>& vt, const std::vector<double>& vc);
     std::vector<double> IGM_step(const std::vector<double>& g, const std::vector<double>& Pi, const std::vector<double>& Vi, double t, double m);
 
 private:
@@ -69,7 +93,9 @@ private:
 protected:
     rkt::rocket& rocket;
     flight_states flight_state;
-    
+    flight_states simulation_stage;  // Track which stage we're simulating
+    bool use_httw;  // True for second stage (HTTW), false for first/third stage (LTTW)
+
     double aiming_azimuth;
     double launch_lattitude;
     double longitude_to_descending_node;
@@ -84,11 +110,17 @@ protected:
     double beta_e;
     double beta_t;
     std::vector<std::vector<double>> C_et;
-    Vec3 Pi_SECO{x_SECO, y_SECO, z_SECO};
-    Vec3 Vi_SECO{vx_SECO, vy_SECO, vz_SECO};
+    std::vector<std::vector<double>> G_matrix;  // ECSF to terminal frame rotation matrix
+    std::vector<std::vector<double>> C_ea;  // Launch site rotation matrix (ECSF to launch azimuth frame)
+    double longitude_to_ascending_node;  // Calculated from RAAN
+    double launch_longitude;  // Launch site longitude (from GUI)
 
-    Vec3 Pi_TECO{x_TECO, y_TECO, z_TECO};
-    Vec3 Vi_TECO{vx_TECO, vy_TECO, vz_TECO};
+    // Terminal cutoff conditions (MUST be set via set_terminal_conditions() before use)
+    Vec3 Pi_cutoff{0.0, 0.0, 0.0};  // Terminal position at engine cutoff
+    Vec3 Vi_cutoff{0.0, 0.0, 0.0};  // Terminal velocity at engine cutoff
+
+    // Target orbital parameters (can be overridden from GUI)
+    double a_terminal;      // Semi-major axis target (for engine cutoff check)
 
     //maximum steering speed
 

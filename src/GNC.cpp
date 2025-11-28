@@ -16,6 +16,41 @@ void Guidance::initialize()
     flight_state = rocket.get_fstate();
 }
 
+void Guidance::set_launch_site_params(double A0_rad, double B0_rad, double launch_longitude_rad)
+{
+    // Recalculate C_ea matrix from GUI launch azimuth parameters
+    C_ea = {{-cos(A0_rad)*sin(B0_rad), cos(B0_rad), sin(A0_rad)*sin(B0_rad)},
+            {sin(A0_rad), 0, cos(A0_rad)},
+            {cos(A0_rad)*cos(B0_rad), sin(B0_rad), -sin(A0_rad)*cos(B0_rad)}};
+
+    // Store launch longitude for use in recalculate_G_matrix
+    launch_longitude = launch_longitude_rad;
+}
+
+void Guidance::recalculate_G_matrix(double total_flight_time)
+{
+    // Calculate longitude to ascending node with Earth rotation correction
+    // Formula: RA - launch_longitude + omega_e * total_flight_time - 90°
+    double earth_rotation_angle = omega_e * total_flight_time;  // Earth rotation during flight
+    longitude_to_ascending_node = RA - launch_longitude + earth_rotation_angle - M_PI/2.0;
+
+    // Recalculate rotation matrices based on new orbital elements
+    vector<vector<double>> C = {
+        {cos(longitude_to_ascending_node), sin(longitude_to_ascending_node), 0},
+        {-sin(longitude_to_ascending_node), cos(longitude_to_ascending_node), 0},
+        {0, 0, 1}
+    };
+
+    vector<vector<double>> D = {
+        {cos(i), 0, -sin(i)},
+        {0, 1, 0},
+        {sin(i), 0, cos(i)}
+    };
+
+    // G = D * C * C_ea (C_ea is the launch site matrix from trajectory.hpp)
+    G_matrix = multiply_matrices(D, multiply_matrices(C, C_ea));
+}
+
 void Guidance::IGM_initialize(const vector<double>& V_initial, const vector<double>& P_initial,
                               const vector<double>& steering_angle_initial, double tf)
 {
@@ -25,15 +60,18 @@ void Guidance::IGM_initialize(const vector<double>& V_initial, const vector<doub
     t_max = (tf - t) + 10.0;
     time_to_go_n = time_to_go;
 
-    vector<double> p_ECIt = launch_inertial_to_ECSF(Pi_TECO.to_vector());
-    range_angle = range_angle_initial_AN;
+    vector<double> p_ECIt = launch_inertial_to_ECSF(Pi_cutoff.to_vector());
+
+    // Calculate initial range angle from orbital elements (w + TA)
+    range_angle = w + TA;
 
     vector<vector<double>> M_phi = {{cos(range_angle), sin(range_angle) , 0},
                                     {-sin(range_angle), cos(range_angle), 0},
                                     {0, 0, 1}};
 
-    C_et = multiply_matrices(M_phi, G);
-    vector<double> v_terminal = Matrix_multiply_vector(C_et, Vi_TECO.to_vector());
+    // Use the recalculated G_matrix instead of hardcoded G
+    C_et = multiply_matrices(M_phi, G_matrix);
+    vector<double> v_terminal = Matrix_multiply_vector(C_et, Vi_cutoff.to_vector());
     vector<double> p_terminal = Matrix_multiply_vector(C_et, p_ECIt);
     v_xiM = v_terminal[0];
     v_etaM = v_terminal[1];
@@ -62,10 +100,11 @@ vector<double> Guidance::get_attitude(double t, const vector<double>& g, const v
     {
         t_igm += 0.01;
     }
-    
-    switch(flight_state)
+
+    // Use simulation_stage instead of flight_state for consistent behavior
+    switch(simulation_stage)
     {
-        case flight_states::YJFX:
+        case flight_states::FIRST_STAGE_FLIGHT:
             range = ascending_binary_search(euler_angles, 1, t);
             result = {
                 interpolate_column(euler_angles, range, 1, t) * D2R,
@@ -74,8 +113,8 @@ vector<double> Guidance::get_attitude(double t, const vector<double>& g, const v
             };
             return result;
             break;
-        case flight_states::EJFX:
-        case flight_states::SJFX:
+        case flight_states::SECOND_STAGE_FLIGHT:
+        case flight_states::THIRD_STAGE_FLIGHT:
             IGM_cmd = IGM_step(g, pi, vi, t, m);
             return IGM_cmd;
             break;
@@ -145,23 +184,23 @@ vector<double> Guidance::calc_G(const vector<double>& vi, const vector<double>& 
     return {del_H, del_theta};
 }
 
-bool Guidance::SECO(const vector<double>& pi, const vector<double>& vi, double time_to_go, double t)
+bool Guidance::Cutoff(const vector<double>& pi, const vector<double>& vi, double time_to_go, double t)
 {
     // Transform position and velocity from launch inertial to ECSF frame
     vector<double> Pe = Matrix_multiply_vector(C_ea, launch_inertial_to_ECSF(pi));
     vector<double> Ve = Matrix_multiply_vector(C_ea, vi);
     double Pe_mag = vector_mag(Pe);
     double Ve_mag = vector_mag(Ve);
-    
+
     // Compute the current semi-major axis and angular momentum
     a_curr = calc_semi_major_axis(Pe_mag, Ve_mag);
     vector<double> H = cross_product33(Pe, Ve);
     double H_mag = vector_mag(H);
-    
+
     // Compute radial velocity and inclination
     double vr = dot_product(Pe, Ve) / Pe_mag;
     i = acos(H[2] / H_mag);
-    
+
     // Compute right ascension of the ascending node (RA)
     vector<double> N = cross_product33({0, 0, 1}, H);
     double N_mag = vector_mag(N);
@@ -173,13 +212,13 @@ bool Guidance::SECO(const vector<double>& pi, const vector<double>& vi, double t
     } else {
         RA = 0;
     }
-    
+
     // Compute eccentricity vector and magnitude
     vector<double> E = scalar_vector(1 / GM,
                       subtract_vectors(scalar_vector(pow(Ve_mag, 2) - GM / Pe_mag, Pe),
                                        scalar_vector(Pe_mag * vr, Ve)));
     e = vector_mag(E);
-    
+
     // Compute argument of perigee (w) if possible
     if (N_mag != 0.0 && e > Epsilon0) {
         w = acos(dot_product(N, E) / (N_mag * e));
@@ -189,7 +228,7 @@ bool Guidance::SECO(const vector<double>& pi, const vector<double>& vi, double t
     } else {
         w = 0;
     }
-    
+
     // Compute true anomaly (TA)
     if (e > Epsilon0) {
         TA = acos(dot_product(E, Pe) / (e * Pe_mag));
@@ -204,21 +243,21 @@ bool Guidance::SECO(const vector<double>& pi, const vector<double>& vi, double t
         else
             TA = 2 * PI - acos(dot_product(N, Pe) / (N_mag * Pe_mag));
     }
-    
-    // Check SECO conditions by comparing current orbital parameters with target values
+
+    // Check engine cutoff conditions by comparing current orbital parameters with target values
     if (a_curr - a_terminal > 0 &&
         fabs(e - eccentricity) <= 0.005 &&
         fabs(i - inclination) * R2D <= 0.07)
     {
         return true;
     }
-    
+
     // Check if maximum allowable time has elapsed
     if ((t - ti) >= t_max)
     {
         return true;
     }
-    
+
     return false;
 }
 
@@ -227,8 +266,14 @@ Guidance::Guidance(double t, rkt::rocket& obj,
                    std::vector<std::vector<double>> V_table,
                    std::vector<std::vector<double>> P_table)
 : P_traj{P_table}, rocket{obj},
-      euler_angles{table}, V_traj{V_table}
+      euler_angles{table}, V_traj{V_table},
+      simulation_stage{flight_states::THIRD_STAGE_FLIGHT}, use_httw{false},
+      launch_longitude{longitude}  // Initialize with default from trajectory.hpp
 {
+    // Initialize C_ea with default from trajectory.hpp (will be overridden by GUI via set_launch_site_params)
+    C_ea = {{-cos(A0)*sin(B0), cos(B0), sin(A0)*sin(B0)},
+            {sin(A0), 0, cos(A0)},
+            {cos(A0)*cos(B0), sin(B0), -sin(A0)*cos(B0)}};
 
     initialize();
 }
@@ -269,16 +314,17 @@ IGMCoefficients Guidance::compute_igm_coefficients(double tau, double time_to_go
 void Guidance::update_terminal_frame(const vector<double>& vi, const vector<double>& pi,
                                      const vector<double>& g, double S)
 {
-    vector<double> vG = Matrix_multiply_vector(G, vi);
-    vector<double> pG = Matrix_multiply_vector(G, launch_inertial_to_ECSF(pi));
+    // Use the recalculated G_matrix instead of hardcoded G
+    vector<double> vG = Matrix_multiply_vector(G_matrix, vi);
+    vector<double> pG = Matrix_multiply_vector(G_matrix, launch_inertial_to_ECSF(pi));
 
     vector<vector<double>> M_phi = {{cos(range_angle), sin(range_angle), 0},
                                     {-sin(range_angle), cos(range_angle), 0},
                                     {0, 0, 1}};
 
-    C_et = multiply_matrices(M_phi, G);
-    vector<double> p_terminal = Matrix_multiply_vector(C_et, launch_inertial_to_ECSF(Pi_TECO.to_vector()));
-    vector<double> v_terminal = Matrix_multiply_vector(C_et, Vi_TECO.to_vector());
+    C_et = multiply_matrices(M_phi, G_matrix);
+    vector<double> p_terminal = Matrix_multiply_vector(C_et, launch_inertial_to_ECSF(Pi_cutoff.to_vector()));
+    vector<double> v_terminal = Matrix_multiply_vector(C_et, Vi_cutoff.to_vector());
 
     p_xiM = p_terminal[0];
     p_etaM = p_terminal[1];
@@ -289,7 +335,14 @@ void Guidance::update_terminal_frame(const vector<double>& vi, const vector<doub
 
     beta_e = atan2(-pG[0], pG[1]);
     beta_t = 1 / p_etaM * (vG[0] * time_to_go - S + 0.5 * g[0] * pow(time_to_go, 2));
-    range_angle = beta_e - beta_t;
+
+    // Second stage uses beta_e + beta_t, first/third stages use beta_e - beta_t
+    if (simulation_stage == flight_states::SECOND_STAGE_FLIGHT ||
+        simulation_stage == flight_states::SECOND_STAGE_CUTOFF) {
+        range_angle = beta_e + beta_t;  // Second stage
+    } else {
+        range_angle = beta_e - beta_t;  // First/Third stage
+    }
 }
 
 DeltaVelocity Guidance::compute_delta_velocity(const vector<double>& v_c, const vector<double>& v_terminal,
@@ -312,7 +365,16 @@ void Guidance::converge_time_to_go(const vector<double>& g, const vector<double>
     while(abs(time_to_go - time_to_go_n) >= 1e-5 && iteration < max_iterations)
     {
         DeltaVelocity del_v = compute_delta_velocity(v_c, v_terminal, g, time_to_go);
-        UpdateTimeToGo3(del_v.del_v, g, v_terminal, v_c);
+
+        // Use stage-appropriate time-to-go calculation
+        if (use_httw) {
+            // Second stage: High Thrust-to-Weight (HTTW)
+            UpdateTimeToGo_HTTW(del_v.del_v);
+        } else {
+            // First/Third stage: Low Thrust-to-Weight (LTTW)
+            UpdateTimeToGo_LTTW(del_v.del_v, g, v_terminal, v_c);
+        }
+
         iteration++;
 
         // Safety check for NaN/infinity
@@ -446,7 +508,15 @@ vector<double> Guidance::IGM_step(const vector<double>& g, const vector<double>&
 
     // 4. Compute initial delta-V and update time-to-go
     DeltaVelocity del_v = compute_delta_velocity(v_c, v_terminal, g, time_to_go);
-    UpdateTimeToGo3(del_v.del_v, g, v_terminal, v_c);
+
+    // Use stage-appropriate time-to-go calculation
+    if (use_httw) {
+        // Second stage: High Thrust-to-Weight (HTTW)
+        UpdateTimeToGo_HTTW(del_v.del_v);
+    } else {
+        // First/Third stage: Low Thrust-to-Weight (LTTW)
+        UpdateTimeToGo_LTTW(del_v.del_v, g, v_terminal, v_c);
+    }
 
     // 5. Converge time-to-go
     converge_time_to_go(g, v_terminal, v_c);
@@ -481,7 +551,7 @@ vector<double> Guidance::IGM_step(const vector<double>& g, const vector<double>&
 }
 
 
-void Guidance::update_time_to_go(double del_v)
+void Guidance::UpdateTimeToGo_HTTW(double del_v)
 {
     double time_to_go_approx = tau * (1 - exp(-del_v / Vex3));
     time_to_go_n = time_to_go;
@@ -497,7 +567,7 @@ void Guidance::update_time_to_go(double del_v)
 }
 
 
-void Guidance::UpdateTimeToGo3(double del_v, const vector<double>& g, const vector<double>& vt, const vector<double>& vc)
+void Guidance::UpdateTimeToGo_LTTW(double del_v, const vector<double>& g, const vector<double>& vt, const vector<double>& vc)
 {
 
 //    double time_to_go_approx = tau - tau / exp(del_v / Vex3);
