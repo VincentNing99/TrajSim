@@ -87,7 +87,7 @@ The simulator supports three configurable launch stages:
 ### Coordinate Frames
 
 - **ECSF** (Earth-Centered Space-Fixed): Inertial frame for trajectory propagation
-- **Launch Frame**: Local frame defined by launch site parameters
+- **Launch Frame**: Local frame defined by x(Down range direction), y(Up), z(right hand rule)
 - **Terminal Frame**: Rotating frame aligned with target orbit
 
 ## Technical Details
@@ -100,15 +100,11 @@ The simulator supports three configurable launch stages:
 
 ### Guidance Algorithms
 
-- **HTTW** (High Thrust-to-Weight): Used for second stage with high acceleration
-- **LTTW** (Low Thrust-to-Weight): Used for first and third stages with lower acceleration
 - **IGM**: Iterative guidance mode with time-to-go convergence and steering angle calculation
 
 ### Key Features
 
-- **Earth Rotation Correction**: Accounts for Earth rotation during flight using ω_e × total_flight_time
-- **Dynamic Coordinate Transformations**: Real-time calculation of rotation matrices (G_matrix, C_ea) based on orbital elements
-- **Range Angle**: β_e + β_t for second stage, β_e - β_t for third stages
+- **Iterative Guidance Mode for exoatomsphere part of the trejecotry, open-loop guidance for endoatomsphere flights
 - **Engine Cutoff Logic**: Multi-criteria cutoff based on orbital parameters (semi-major axis, eccentricity, inclination)
 
 ## Project Structure
@@ -170,16 +166,11 @@ Comprehensive CSV with time-series data including position, velocity, mass, atti
 - **OpenGL headers missing**: Install Mesa dev libraries on Linux
 - **C++20 errors**: Ensure compiler version is GCC 10+, Clang 12+, or MSVC 19.29+
 
-### Runtime Issues
-- **NaN values in simulation**: Check CSV file formats and initial conditions
-- **GUI lag**: Reduce telemetry history size, close unused windows
-- **File dialogs don't work**: Install zenity on Linux (`apt-get install zenity`)
 
 ## Recent Updates
 
 ### Stage Selection Feature
 - Added GUI stage selection (LaunchSite, SecondStage, ThirdStage)
-- Implemented stage-specific guidance algorithm selection (HTTW/LTTW)
 - Dynamic parameter loading based on selected stage
 - Fixed hardcoded trajectory parameters to use GUI inputs
 
@@ -189,8 +180,10 @@ Comprehensive CSV with time-series data including position, velocity, mass, atti
 - ✅ Fixed Earth rotation correction using stage-specific flight times
 - ✅ Fixed time_to_go not updating for third stage
 - ✅ Fixed steering angles using wrong flight state
-- ✅ Renamed flight states from Chinese pinyin to English
-- ✅ Renamed SECO() to Cutoff() for generic engine cutoff
+
+## Todos:
+- **Add more guidance algorithms such as Power explict guidance and G-Fold
+- **Reorganize codebase for better clearity and readability
 
 ## License
 
@@ -209,5 +202,3 @@ MIT License - see LICENSE file for details.
 - Repository: [TrajSim](https://github.com/VincentNing99/TrajSim)
 
 ---
-
-**Built with precision for spaceflight simulation** 🚀
