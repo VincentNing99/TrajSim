@@ -186,12 +186,6 @@ Comprehensive CSV with time-series data including position, velocity, mass, atti
 
 MIT License - see LICENSE file for details.
 
-## Acknowledgments
-
-- **Dear ImGui**: Omar Cornut (@ocornut)
-- **GLFW**: Marcus Geelnard, Camilla Löwy
-- **Portable File Dialogs**: Sam Hocevar
-
 ## Contact
 
 **Vincent Ning**
