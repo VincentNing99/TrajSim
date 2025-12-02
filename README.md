@@ -104,7 +104,7 @@ The simulator supports three configurable launch stages:
 
 ### Key Features
 
-- **Iterative Guidance Mode for exoatomsphere part of the trejecotry, open-loop guidance for endoatomsphere flights
+- **Iterative Guidance Mode**: for exoatomsphere part of the trejecotry, open-loop guidance for endoatomsphere flights
 - **Engine Cutoff Logic**: Multi-criteria cutoff based on orbital parameters (semi-major axis, eccentricity, inclination)
 
 ## Project Structure
