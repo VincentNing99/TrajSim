@@ -166,6 +166,8 @@ Comprehensive CSV with time-series data including position, velocity, mass, atti
 - **OpenGL headers missing**: Install Mesa dev libraries on Linux
 - **C++20 errors**: Ensure compiler version is GCC 10+, Clang 12+, or MSVC 19.29+
 
+## WIP
+- Currently revamping the entire code base for better readability and efficiency
 
 ## Recent Updates
 
