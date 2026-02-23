@@ -1,0 +1,140 @@
+[
+{
+  "directory": "/Users/vincentning/Desktop/TrajSim/build",
+  "command": "/usr/bin/c++  -I/Users/vincentning/Desktop/TrajSim/include -I/Users/vincentning/Desktop/TrajSim/build/_deps/nlohmann_json-src/include -g -std=gnu++20 -arch arm64 -Wall -Wextra -Wpedantic -Wconversion -Wshadow -o CMakeFiles/trajsim_lib.dir/src/models/aerodynamics.cpp.o -c /Users/vincentning/Desktop/TrajSim/src/models/aerodynamics.cpp",
+  "file": "/Users/vincentning/Desktop/TrajSim/src/models/aerodynamics.cpp",
+  "output": "CMakeFiles/trajsim_lib.dir/src/models/aerodynamics.cpp.o"
+},
+{
+  "directory": "/Users/vincentning/Desktop/TrajSim/build",
+  "command": "/usr/bin/c++  -I/Users/vincentning/Desktop/TrajSim/include -I/Users/vincentning/Desktop/TrajSim/build/_deps/nlohmann_json-src/include -g -std=gnu++20 -arch arm64 -Wall -Wextra -Wpedantic -Wconversion -Wshadow -o CMakeFiles/trajsim_lib.dir/src/models/atmosphere.cpp.o -c /Users/vincentning/Desktop/TrajSim/src/models/atmosphere.cpp",
+  "file": "/Users/vincentning/Desktop/TrajSim/src/models/atmosphere.cpp",
+  "output": "CMakeFiles/trajsim_lib.dir/src/models/atmosphere.cpp.o"
+},
+{
+  "directory": "/Users/vincentning/Desktop/TrajSim/build",
+  "command": "/usr/bin/c++  -I/Users/vincentning/Desktop/TrajSim/include -I/Users/vincentning/Desktop/TrajSim/build/_deps/nlohmann_json-src/include -g -std=gnu++20 -arch arm64 -Wall -Wextra -Wpedantic -Wconversion -Wshadow -o CMakeFiles/trajsim_lib.dir/src/models/gravity.cpp.o -c /Users/vincentning/Desktop/TrajSim/src/models/gravity.cpp",
+  "file": "/Users/vincentning/Desktop/TrajSim/src/models/gravity.cpp",
+  "output": "CMakeFiles/trajsim_lib.dir/src/models/gravity.cpp.o"
+},
+{
+  "directory": "/Users/vincentning/Desktop/TrajSim/build",
+  "command": "/usr/bin/c++  -I/Users/vincentning/Desktop/TrajSim/include -I/Users/vincentning/Desktop/TrajSim/build/_deps/nlohmann_json-src/include -g -std=gnu++20 -arch arm64 -Wall -Wextra -Wpedantic -Wconversion -Wshadow -o CMakeFiles/trajsim_lib.dir/src/models/liquid_engine.cpp.o -c /Users/vincentning/Desktop/TrajSim/src/models/liquid_engine.cpp",
+  "file": "/Users/vincentning/Desktop/TrajSim/src/models/liquid_engine.cpp",
+  "output": "CMakeFiles/trajsim_lib.dir/src/models/liquid_engine.cpp.o"
+},
+{
+  "directory": "/Users/vincentning/Desktop/TrajSim/build",
+  "command": "/usr/bin/c++  -I/Users/vincentning/Desktop/TrajSim/include -I/Users/vincentning/Desktop/TrajSim/build/_deps/nlohmann_json-src/include -g -std=gnu++20 -arch arm64 -Wall -Wextra -Wpedantic -Wconversion -Wshadow -o CMakeFiles/trajsim_lib.dir/src/models/guidance.cpp.o -c /Users/vincentning/Desktop/TrajSim/src/models/guidance.cpp",
+  "file": "/Users/vincentning/Desktop/TrajSim/src/models/guidance.cpp",
+  "output": "CMakeFiles/trajsim_lib.dir/src/models/guidance.cpp.o"
+},
+{
+  "directory": "/Users/vincentning/Desktop/TrajSim/build",
+  "command": "/usr/bin/c++  -I/Users/vincentning/Desktop/TrajSim/include -I/Users/vincentning/Desktop/TrajSim/build/_deps/nlohmann_json-src/include -g -std=gnu++20 -arch arm64 -Wall -Wextra -Wpedantic -Wconversion -Wshadow -o CMakeFiles/trajsim_lib.dir/src/models/dynamics.cpp.o -c /Users/vincentning/Desktop/TrajSim/src/models/dynamics.cpp",
+  "file": "/Users/vincentning/Desktop/TrajSim/src/models/dynamics.cpp",
+  "output": "CMakeFiles/trajsim_lib.dir/src/models/dynamics.cpp.o"
+},
+{
+  "directory": "/Users/vincentning/Desktop/TrajSim/build",
+  "command": "/usr/bin/c++  -I/Users/vincentning/Desktop/TrajSim/include -I/Users/vincentning/Desktop/TrajSim/build/_deps/nlohmann_json-src/include -g -std=gnu++20 -arch arm64 -Wall -Wextra -Wpedantic -Wconversion -Wshadow -o CMakeFiles/trajsim_lib.dir/src/models/integrator.cpp.o -c /Users/vincentning/Desktop/TrajSim/src/models/integrator.cpp",
+  "file": "/Users/vincentning/Desktop/TrajSim/src/models/integrator.cpp",
+  "output": "CMakeFiles/trajsim_lib.dir/src/models/integrator.cpp.o"
+},
+{
+  "directory": "/Users/vincentning/Desktop/TrajSim/build",
+  "command": "/usr/bin/c++  -I/Users/vincentning/Desktop/TrajSim/include -I/Users/vincentning/Desktop/TrajSim/build/_deps/nlohmann_json-src/include -g -std=gnu++20 -arch arm64 -Wall -Wextra -Wpedantic -Wconversion -Wshadow -o CMakeFiles/trajsim_lib.dir/src/config/config_loader.cpp.o -c /Users/vincentning/Desktop/TrajSim/src/config/config_loader.cpp",
+  "file": "/Users/vincentning/Desktop/TrajSim/src/config/config_loader.cpp",
+  "output": "CMakeFiles/trajsim_lib.dir/src/config/config_loader.cpp.o"
+},
+{
+  "directory": "/Users/vincentning/Desktop/TrajSim/build",
+  "command": "/usr/bin/c++  -I/Users/vincentning/Desktop/TrajSim/include -I/Users/vincentning/Desktop/TrajSim/build/_deps/nlohmann_json-src/include -isystem /Users/vincentning/Desktop/TrajSim/build/_deps/googletest-src/googletest/include -isystem /Users/vincentning/Desktop/TrajSim/build/_deps/googletest-src/googletest -g -std=gnu++20 -arch arm64 -Wall -Wextra -Wpedantic -Wconversion -Wshadow -o CMakeFiles/trajsim_tests.dir/tests/test_vec3.cpp.o -c /Users/vincentning/Desktop/TrajSim/tests/test_vec3.cpp",
+  "file": "/Users/vincentning/Desktop/TrajSim/tests/test_vec3.cpp",
+  "output": "CMakeFiles/trajsim_tests.dir/tests/test_vec3.cpp.o"
+},
+{
+  "directory": "/Users/vincentning/Desktop/TrajSim/build",
+  "command": "/usr/bin/c++  -I/Users/vincentning/Desktop/TrajSim/include -I/Users/vincentning/Desktop/TrajSim/build/_deps/nlohmann_json-src/include -isystem /Users/vincentning/Desktop/TrajSim/build/_deps/googletest-src/googletest/include -isystem /Users/vincentning/Desktop/TrajSim/build/_deps/googletest-src/googletest -g -std=gnu++20 -arch arm64 -Wall -Wextra -Wpedantic -Wconversion -Wshadow -o CMakeFiles/trajsim_tests.dir/tests/test_mat3.cpp.o -c /Users/vincentning/Desktop/TrajSim/tests/test_mat3.cpp",
+  "file": "/Users/vincentning/Desktop/TrajSim/tests/test_mat3.cpp",
+  "output": "CMakeFiles/trajsim_tests.dir/tests/test_mat3.cpp.o"
+},
+{
+  "directory": "/Users/vincentning/Desktop/TrajSim/build",
+  "command": "/usr/bin/c++  -I/Users/vincentning/Desktop/TrajSim/include -I/Users/vincentning/Desktop/TrajSim/build/_deps/nlohmann_json-src/include -isystem /Users/vincentning/Desktop/TrajSim/build/_deps/googletest-src/googletest/include -isystem /Users/vincentning/Desktop/TrajSim/build/_deps/googletest-src/googletest -g -std=gnu++20 -arch arm64 -Wall -Wextra -Wpedantic -Wconversion -Wshadow -o CMakeFiles/trajsim_tests.dir/tests/test_aerodynamics.cpp.o -c /Users/vincentning/Desktop/TrajSim/tests/test_aerodynamics.cpp",
+  "file": "/Users/vincentning/Desktop/TrajSim/tests/test_aerodynamics.cpp",
+  "output": "CMakeFiles/trajsim_tests.dir/tests/test_aerodynamics.cpp.o"
+},
+{
+  "directory": "/Users/vincentning/Desktop/TrajSim/build",
+  "command": "/usr/bin/c++  -I/Users/vincentning/Desktop/TrajSim/include -I/Users/vincentning/Desktop/TrajSim/build/_deps/nlohmann_json-src/include -isystem /Users/vincentning/Desktop/TrajSim/build/_deps/googletest-src/googletest/include -isystem /Users/vincentning/Desktop/TrajSim/build/_deps/googletest-src/googletest -g -std=gnu++20 -arch arm64 -Wall -Wextra -Wpedantic -Wconversion -Wshadow -o CMakeFiles/trajsim_tests.dir/tests/test_atmosphere.cpp.o -c /Users/vincentning/Desktop/TrajSim/tests/test_atmosphere.cpp",
+  "file": "/Users/vincentning/Desktop/TrajSim/tests/test_atmosphere.cpp",
+  "output": "CMakeFiles/trajsim_tests.dir/tests/test_atmosphere.cpp.o"
+},
+{
+  "directory": "/Users/vincentning/Desktop/TrajSim/build",
+  "command": "/usr/bin/c++  -I/Users/vincentning/Desktop/TrajSim/include -I/Users/vincentning/Desktop/TrajSim/build/_deps/nlohmann_json-src/include -isystem /Users/vincentning/Desktop/TrajSim/build/_deps/googletest-src/googletest/include -isystem /Users/vincentning/Desktop/TrajSim/build/_deps/googletest-src/googletest -g -std=gnu++20 -arch arm64 -Wall -Wextra -Wpedantic -Wconversion -Wshadow -o CMakeFiles/trajsim_tests.dir/tests/test_gravity.cpp.o -c /Users/vincentning/Desktop/TrajSim/tests/test_gravity.cpp",
+  "file": "/Users/vincentning/Desktop/TrajSim/tests/test_gravity.cpp",
+  "output": "CMakeFiles/trajsim_tests.dir/tests/test_gravity.cpp.o"
+},
+{
+  "directory": "/Users/vincentning/Desktop/TrajSim/build",
+  "command": "/usr/bin/c++  -I/Users/vincentning/Desktop/TrajSim/include -I/Users/vincentning/Desktop/TrajSim/build/_deps/nlohmann_json-src/include -isystem /Users/vincentning/Desktop/TrajSim/build/_deps/googletest-src/googletest/include -isystem /Users/vincentning/Desktop/TrajSim/build/_deps/googletest-src/googletest -g -std=gnu++20 -arch arm64 -Wall -Wextra -Wpedantic -Wconversion -Wshadow -o CMakeFiles/trajsim_tests.dir/tests/test_liquid_engine.cpp.o -c /Users/vincentning/Desktop/TrajSim/tests/test_liquid_engine.cpp",
+  "file": "/Users/vincentning/Desktop/TrajSim/tests/test_liquid_engine.cpp",
+  "output": "CMakeFiles/trajsim_tests.dir/tests/test_liquid_engine.cpp.o"
+},
+{
+  "directory": "/Users/vincentning/Desktop/TrajSim/build",
+  "command": "/usr/bin/c++  -I/Users/vincentning/Desktop/TrajSim/include -I/Users/vincentning/Desktop/TrajSim/build/_deps/nlohmann_json-src/include -isystem /Users/vincentning/Desktop/TrajSim/build/_deps/googletest-src/googletest/include -isystem /Users/vincentning/Desktop/TrajSim/build/_deps/googletest-src/googletest -g -std=gnu++20 -arch arm64 -Wall -Wextra -Wpedantic -Wconversion -Wshadow -o CMakeFiles/trajsim_tests.dir/tests/test_guidance.cpp.o -c /Users/vincentning/Desktop/TrajSim/tests/test_guidance.cpp",
+  "file": "/Users/vincentning/Desktop/TrajSim/tests/test_guidance.cpp",
+  "output": "CMakeFiles/trajsim_tests.dir/tests/test_guidance.cpp.o"
+},
+{
+  "directory": "/Users/vincentning/Desktop/TrajSim/build",
+  "command": "/usr/bin/c++  -I/Users/vincentning/Desktop/TrajSim/include -I/Users/vincentning/Desktop/TrajSim/build/_deps/nlohmann_json-src/include -isystem /Users/vincentning/Desktop/TrajSim/build/_deps/googletest-src/googletest/include -isystem /Users/vincentning/Desktop/TrajSim/build/_deps/googletest-src/googletest -g -std=gnu++20 -arch arm64 -Wall -Wextra -Wpedantic -Wconversion -Wshadow -o CMakeFiles/trajsim_tests.dir/tests/test_integrator.cpp.o -c /Users/vincentning/Desktop/TrajSim/tests/test_integrator.cpp",
+  "file": "/Users/vincentning/Desktop/TrajSim/tests/test_integrator.cpp",
+  "output": "CMakeFiles/trajsim_tests.dir/tests/test_integrator.cpp.o"
+},
+{
+  "directory": "/Users/vincentning/Desktop/TrajSim/build",
+  "command": "/usr/bin/c++  -I/Users/vincentning/Desktop/TrajSim/include -I/Users/vincentning/Desktop/TrajSim/build/_deps/nlohmann_json-src/include -isystem /Users/vincentning/Desktop/TrajSim/build/_deps/googletest-src/googletest/include -isystem /Users/vincentning/Desktop/TrajSim/build/_deps/googletest-src/googletest -g -std=gnu++20 -arch arm64 -Wall -Wextra -Wpedantic -Wconversion -Wshadow -o CMakeFiles/trajsim_tests.dir/tests/test_config_loader.cpp.o -c /Users/vincentning/Desktop/TrajSim/tests/test_config_loader.cpp",
+  "file": "/Users/vincentning/Desktop/TrajSim/tests/test_config_loader.cpp",
+  "output": "CMakeFiles/trajsim_tests.dir/tests/test_config_loader.cpp.o"
+},
+{
+  "directory": "/Users/vincentning/Desktop/TrajSim/build",
+  "command": "/usr/bin/c++  -I/Users/vincentning/Desktop/TrajSim/include -I/Users/vincentning/Desktop/TrajSim/build/_deps/nlohmann_json-src/include -isystem /Users/vincentning/Desktop/TrajSim/build/_deps/googletest-src/googletest/include -isystem /Users/vincentning/Desktop/TrajSim/build/_deps/googletest-src/googletest -g -std=gnu++20 -arch arm64 -Wall -Wextra -Wpedantic -Wconversion -Wshadow -o CMakeFiles/trajsim_tests.dir/tests/test_vehicle.cpp.o -c /Users/vincentning/Desktop/TrajSim/tests/test_vehicle.cpp",
+  "file": "/Users/vincentning/Desktop/TrajSim/tests/test_vehicle.cpp",
+  "output": "CMakeFiles/trajsim_tests.dir/tests/test_vehicle.cpp.o"
+},
+{
+  "directory": "/Users/vincentning/Desktop/TrajSim/build",
+  "command": "/usr/bin/c++  -I/Users/vincentning/Desktop/TrajSim/include -I/Users/vincentning/Desktop/TrajSim/build/_deps/nlohmann_json-src/include -isystem /Users/vincentning/Desktop/TrajSim/build/_deps/googletest-src/googletest/include -isystem /Users/vincentning/Desktop/TrajSim/build/_deps/googletest-src/googletest -g -std=gnu++20 -arch arm64 -Wall -Wextra -Wpedantic -Wconversion -Wshadow -o CMakeFiles/trajsim_tests.dir/tests/test_dynamics.cpp.o -c /Users/vincentning/Desktop/TrajSim/tests/test_dynamics.cpp",
+  "file": "/Users/vincentning/Desktop/TrajSim/tests/test_dynamics.cpp",
+  "output": "CMakeFiles/trajsim_tests.dir/tests/test_dynamics.cpp.o"
+},
+{
+  "directory": "/Users/vincentning/Desktop/TrajSim/build/_deps/googletest-build/googlemock",
+  "command": "/usr/bin/c++  -I/Users/vincentning/Desktop/TrajSim/include -I/Users/vincentning/Desktop/TrajSim/build/_deps/googletest-src/googlemock/include -I/Users/vincentning/Desktop/TrajSim/build/_deps/googletest-src/googlemock -isystem /Users/vincentning/Desktop/TrajSim/build/_deps/googletest-src/googletest/include -isystem /Users/vincentning/Desktop/TrajSim/build/_deps/googletest-src/googletest -g -std=c++20 -arch arm64  -DGTEST_HAS_PTHREAD=1   -Wall -Wextra -Wpedantic -Wconversion -Wshadow -o CMakeFiles/gmock.dir/src/gmock-all.cc.o -c /Users/vincentning/Desktop/TrajSim/build/_deps/googletest-src/googlemock/src/gmock-all.cc",
+  "file": "/Users/vincentning/Desktop/TrajSim/build/_deps/googletest-src/googlemock/src/gmock-all.cc",
+  "output": "_deps/googletest-build/googlemock/CMakeFiles/gmock.dir/src/gmock-all.cc.o"
+},
+{
+  "directory": "/Users/vincentning/Desktop/TrajSim/build/_deps/googletest-build/googlemock",
+  "command": "/usr/bin/c++  -I/Users/vincentning/Desktop/TrajSim/include -isystem /Users/vincentning/Desktop/TrajSim/build/_deps/googletest-src/googlemock/include -isystem /Users/vincentning/Desktop/TrajSim/build/_deps/googletest-src/googlemock -isystem /Users/vincentning/Desktop/TrajSim/build/_deps/googletest-src/googletest/include -isystem /Users/vincentning/Desktop/TrajSim/build/_deps/googletest-src/googletest -g -std=c++20 -arch arm64  -DGTEST_HAS_PTHREAD=1   -Wall -Wextra -Wpedantic -Wconversion -Wshadow -o CMakeFiles/gmock_main.dir/src/gmock_main.cc.o -c /Users/vincentning/Desktop/TrajSim/build/_deps/googletest-src/googlemock/src/gmock_main.cc",
+  "file": "/Users/vincentning/Desktop/TrajSim/build/_deps/googletest-src/googlemock/src/gmock_main.cc",
+  "output": "_deps/googletest-build/googlemock/CMakeFiles/gmock_main.dir/src/gmock_main.cc.o"
+},
+{
+  "directory": "/Users/vincentning/Desktop/TrajSim/build/_deps/googletest-build/googletest",
+  "command": "/usr/bin/c++  -I/Users/vincentning/Desktop/TrajSim/include -I/Users/vincentning/Desktop/TrajSim/build/_deps/googletest-src/googletest/include -I/Users/vincentning/Desktop/TrajSim/build/_deps/googletest-src/googletest -g -std=c++20 -arch arm64  -DGTEST_HAS_PTHREAD=1   -Wall -Wextra -Wpedantic -Wconversion -Wshadow -o CMakeFiles/gtest.dir/src/gtest-all.cc.o -c /Users/vincentning/Desktop/TrajSim/build/_deps/googletest-src/googletest/src/gtest-all.cc",
+  "file": "/Users/vincentning/Desktop/TrajSim/build/_deps/googletest-src/googletest/src/gtest-all.cc",
+  "output": "_deps/googletest-build/googletest/CMakeFiles/gtest.dir/src/gtest-all.cc.o"
+},
+{
+  "directory": "/Users/vincentning/Desktop/TrajSim/build/_deps/googletest-build/googletest",
+  "command": "/usr/bin/c++  -I/Users/vincentning/Desktop/TrajSim/include -isystem /Users/vincentning/Desktop/TrajSim/build/_deps/googletest-src/googletest/include -isystem /Users/vincentning/Desktop/TrajSim/build/_deps/googletest-src/googletest -g -std=c++20 -arch arm64  -DGTEST_HAS_PTHREAD=1   -Wall -Wextra -Wpedantic -Wconversion -Wshadow -o CMakeFiles/gtest_main.dir/src/gtest_main.cc.o -c /Users/vincentning/Desktop/TrajSim/build/_deps/googletest-src/googletest/src/gtest_main.cc",
+  "file": "/Users/vincentning/Desktop/TrajSim/build/_deps/googletest-src/googletest/src/gtest_main.cc",
+  "output": "_deps/googletest-build/googletest/CMakeFiles/gtest_main.dir/src/gtest_main.cc.o"
+}
+]

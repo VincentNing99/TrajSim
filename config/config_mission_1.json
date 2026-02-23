@@ -1,0 +1,63 @@
+{
+    "vehicle": {
+        "mass": 50000
+    },
+    "engines": [
+        {
+            "stage": 1,
+            "propellant": "liquid",
+            "nozzleType": "vacuum",
+            "numberOfEngine": 1,
+            "thrustPerEngine": 3000,
+            "ISP": 315.0,
+            "massFlowRate": 0.973,
+            "exitArea": 0.1637
+        }
+    ],
+    "aerodynamics": {
+        "refArea": 11.341149,
+        "refLength": 70.582,
+        "machMin": 0.1,
+        "machMax": 8.0,
+        "machTransition": 0.3
+    },
+    "simulation": {
+        "timeStepRK4": 0.001,
+        "tolerance": 1e-10,
+        "igmStopTime": 2.0
+    },
+    "guidance": [
+        {
+            "stage": 1,
+            "mode": "IGM",
+            "tolerance": 1e-10,
+            "inclinationTolerance": 0.07,
+            "eccentricityTolerance": 0.005,
+            "maxSteeringRate": 5.0,
+            "guidanceCycle": 0.01,
+            "steeringHoldTime": 15.0,
+            "maxConvergenceIterations": 100,
+            "timeToGoConvergenceTolerance": 1e-5
+        }
+    ],
+    "mission": {
+        "semiMajorAxis": 6903085.00,
+        "longitudeAscendingNode": 260.861370,
+        "inclination": 97.496919,
+        "eccentricity": 8.851433e-06,
+        "trueAnomaly": 154.051241,
+        "argumentOfPeriapsis": 185.130932,
+        "ldnLaunchsite": 264.697,
+        "lanLaunchsite": 84.697,
+        "aimingAzimuth": 191.47506,
+        "latitude": 40.80768,
+        "geocentricLatitude": 40.61741,
+        "launchSiteLongitude": 100.13805,
+        "heightLaunchSite": 1000.0,
+        "velocityTerminal": [-7124.1826, 2631.5395, 249.9496],
+        "positionTerminal": [-2405466.9, -12845047.6, 205013.6],
+        "initialSteeringAngles": [172.7593, 0.0, 0.0],
+        "initialTime": 3140.3405,
+        "cutoffTime": 3344.5194
+    }
+}

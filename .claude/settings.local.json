@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(grep:*)",
+      "Bash(cmake:*)",
+      "Bash(./build/trajsim_tests:*)",
+      "Bash(./trajsim_tests:*)",
+      "Bash(ctest:*)",
+      "Bash(make:*)"
+    ]
+  }
+}
