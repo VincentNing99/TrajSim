@@ -54,12 +54,12 @@ static void warnUnknownKeys(const json& j,
     }
 }
 
-/// @brief Parses guidance mode string to GuidanceMode enum
-static GuidanceMode parseGuidanceMode(const std::string& modeStr, const std::string& context) {
-    if (modeStr == "openLoop") return GuidanceMode::OpenLoop;
-    if (modeStr == "IGM") return GuidanceMode::IGM;
-    throw std::invalid_argument(context + ": invalid guidance mode '" + modeStr +
-                                "' (must be 'openLoop' or 'IGM')");
+/// @brief Validates algorithm type string
+static void validateAlgorithmType(const std::string& type, const std::string& context) {
+    if (type != "IterativeGuidance" && type != "OpenLoopGuidance") {
+        throw std::invalid_argument(context + ": invalid algorithm type '" + type +
+                                    "' (must be 'IterativeGuidance' or 'OpenLoopGuidance')");
+    }
 }
 
 static Vec3 requireVec3(const json& j, const std::string& key, const std::string& context) {
@@ -168,41 +168,38 @@ static SimConfig parseSimulation(const json& j, std::vector<std::string>& warnin
     const std::string ctx = "simulation";
 
     static const std::vector<std::string> knownKeys = {
-        "timeStepRK4", "tolerance", "igmStopTime"
+        "timeStepRK4", "tolerance"
     };
     warnUnknownKeys(j, knownKeys, ctx, warnings);
 
     SimConfig cfg;
     cfg.timeStepRK4 = requireField<double>(j, "timeStepRK4", ctx);
     cfg.tolerance   = requireField<double>(j, "tolerance",   ctx);
-    cfg.igmStopTime = requireField<double>(j, "igmStopTime", ctx);
 
     cfg.validate();
     return cfg;
 }
 
-static Guidance::Config parseGuidance(const json& arr, std::vector<std::string>& warnings) {
-    static const std::vector<std::string> knownKeys = {
-        "stage", "mode", "tolerance", "maxSteeringRate",
-        "inclinationTolerance", "eccentricityTolerance", "guidanceCycle",
-        "steeringHoldTime", "maxConvergenceIterations", "timeToGoConvergenceTolerance"
+static std::vector<Guidance::Config> parseGuidance(const json& arr, std::vector<std::string>& warnings) {
+    static const std::vector<std::string> knownStageKeys = {
+        "stage", "tolerance", "maxSteeringRate", "algorithms"
+    };
+    static const std::vector<std::string> knownIgmKeys = {
+        "type", "guidanceCycle", "steeringHoldTime",
+        "maxConvergenceIterations", "timeToGoConvergenceTolerance", "cutoffCriteria"
+    };
+    static const std::vector<std::string> knownOpenLoopKeys = {
+        "type", "cutoffCriteria"
+    };
+    static const std::vector<std::string> knownIgmCutoffKeys = {
+        "inclinationTolerance", "eccentricityTolerance"
+    };
+    static const std::vector<std::string> knownOpenLoopCutoffKeys = {
+        "range", "altitude"
     };
 
-    Guidance::Config cfg;
-    cfg.stages = static_cast<int>(arr.size());
-    cfg.mode.resize(cfg.stages);
-    cfg.guidanceCycle.resize(cfg.stages);
-    cfg.inclinationTolerance.resize(cfg.stages);
-    cfg.eccentricityTolerance.resize(cfg.stages);
-    cfg.steeringHoldTime.resize(cfg.stages);
-    cfg.maxConvergenceIterations.resize(cfg.stages);
-    cfg.timeToGoConvergenceTolerance.resize(cfg.stages);
-
-    // Shared values (taken from first entry)
-    if (arr.size() > 0 && arr[0].contains("tolerance"))
-        cfg.tolerance = requireField<double>(arr[0], "tolerance", "guidance[0]");
-    if (arr.size() > 0 && arr[0].contains("maxSteeringRate"))
-        cfg.maxSteeringRate = requireField<double>(arr[0], "maxSteeringRate", "guidance[0]");
+    std::vector<Guidance::Config> configs;
+    configs.reserve(arr.size());
 
     for (size_t i = 0; i < arr.size(); ++i) {
         const auto& g = arr[i];
@@ -211,25 +208,65 @@ static Guidance::Config parseGuidance(const json& arr, std::vector<std::string>&
         if (!g.is_object())
             throw std::invalid_argument(ctx + ": each guidance entry must be a JSON object");
 
-        warnUnknownKeys(g, knownKeys, ctx, warnings);
+        warnUnknownKeys(g, knownStageKeys, ctx, warnings);
 
-        int stage = requireField<int>(g, "stage", ctx);
-        if (stage < 1 || stage > cfg.stages)
-            throw std::invalid_argument(ctx + ": stage must be between 1 and " + std::to_string(cfg.stages));
+        Guidance::Config cfg;
+        cfg.stage = requireField<int>(g, "stage", ctx);
+        cfg.tolerance = requireField<double>(g, "tolerance", ctx);
+        cfg.maxSteeringRate = requireField<double>(g, "maxSteeringRate", ctx);
 
-        int idx = stage - 1;  // Convert 1-based to 0-based
-        std::string modeStr = requireField<std::string>(g, "mode", ctx);
-        cfg.mode[idx] = parseGuidanceMode(modeStr, ctx);
-        cfg.guidanceCycle[idx] = g.contains("guidanceCycle") ? g.at("guidanceCycle").get<double>() : -1.0;
-        cfg.inclinationTolerance[idx] = g.contains("inclinationTolerance") ? g.at("inclinationTolerance").get<double>() : -1.0;
-        cfg.eccentricityTolerance[idx] = g.contains("eccentricityTolerance") ? g.at("eccentricityTolerance").get<double>() : -1.0;
-        cfg.steeringHoldTime[idx] = g.contains("steeringHoldTime") ? g.at("steeringHoldTime").get<double>() : -1.0;
-        cfg.maxConvergenceIterations[idx] = g.contains("maxConvergenceIterations") ? g.at("maxConvergenceIterations").get<int>() : -1;
-        cfg.timeToGoConvergenceTolerance[idx] = g.contains("timeToGoConvergenceTolerance") ? g.at("timeToGoConvergenceTolerance").get<double>() : -1.0;
+        if (!g.contains("algorithms") || !g.at("algorithms").is_array() || g.at("algorithms").empty())
+            throw std::invalid_argument(ctx + ": 'algorithms' must be a non-empty JSON array");
+
+        const auto& algoArr = g.at("algorithms");
+        for (size_t j = 0; j < algoArr.size(); ++j) {
+            const auto& a = algoArr[j];
+            const std::string actx = ctx + ".algorithms[" + std::to_string(j) + "]";
+
+            if (!a.is_object())
+                throw std::invalid_argument(actx + ": each algorithm entry must be a JSON object");
+
+            std::string type = requireField<std::string>(a, "type", actx);
+            validateAlgorithmType(type, actx);
+
+            Guidance::AlgorithmEntry entry;
+            entry.type = type;
+
+            if (type == "IterativeGuidance") {
+                warnUnknownKeys(a, knownIgmKeys, actx, warnings);
+                entry.igmConfig.guidanceCycle = requireField<double>(a, "guidanceCycle", actx);
+                entry.igmConfig.steeringHoldTime = requireField<double>(a, "steeringHoldTime", actx);
+                entry.igmConfig.maxConvergenceIterations = requireField<int>(a, "maxConvergenceIterations", actx);
+                entry.igmConfig.timeToGoConvergenceTolerance = requireField<double>(a, "timeToGoConvergenceTolerance", actx);
+
+                if (a.contains("cutoffCriteria")) {
+                    const auto& cc = a.at("cutoffCriteria");
+                    const std::string cctx = actx + ".cutoffCriteria";
+                    warnUnknownKeys(cc, knownIgmCutoffKeys, cctx, warnings);
+                    entry.igmCutoffCriteria.inclinationTolerance = requireField<double>(cc, "inclinationTolerance", cctx);
+                    entry.igmCutoffCriteria.eccentricityTolerance = requireField<double>(cc, "eccentricityTolerance", cctx);
+                }
+            } else if (type == "OpenLoopGuidance") {
+                warnUnknownKeys(a, knownOpenLoopKeys, actx, warnings);
+                entry.openLoopConfig.tolerance = cfg.tolerance;
+
+                if (a.contains("cutoffCriteria")) {
+                    const auto& cc = a.at("cutoffCriteria");
+                    const std::string cctx = actx + ".cutoffCriteria";
+                    warnUnknownKeys(cc, knownOpenLoopCutoffKeys, cctx, warnings);
+                    entry.openLoopCutoffCriteria.range = cc.contains("range") ? cc.at("range").get<double>() : 0.0;
+                    entry.openLoopCutoffCriteria.altitude = cc.contains("altitude") ? cc.at("altitude").get<double>() : 0.0;
+                }
+            }
+
+            cfg.algorithms.push_back(std::move(entry));
+        }
+
+        cfg.validate();
+        configs.push_back(std::move(cfg));
     }
 
-    cfg.validate();
-    return cfg;
+    return configs;
 }
 
 static ReferenceMission parseMission(const json& j, std::vector<std::string>& warnings) {

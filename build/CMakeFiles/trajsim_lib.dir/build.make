@@ -128,24 +128,52 @@ CMakeFiles/trajsim_lib.dir/src/models/liquid_engine.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/trajsim_lib.dir/src/models/liquid_engine.cpp.s"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/vincentning/Desktop/TrajSim/src/models/liquid_engine.cpp -o CMakeFiles/trajsim_lib.dir/src/models/liquid_engine.cpp.s
 
-CMakeFiles/trajsim_lib.dir/src/models/guidance.cpp.o: CMakeFiles/trajsim_lib.dir/flags.make
-CMakeFiles/trajsim_lib.dir/src/models/guidance.cpp.o: /Users/vincentning/Desktop/TrajSim/src/models/guidance.cpp
-CMakeFiles/trajsim_lib.dir/src/models/guidance.cpp.o: CMakeFiles/trajsim_lib.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/vincentning/Desktop/TrajSim/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Building CXX object CMakeFiles/trajsim_lib.dir/src/models/guidance.cpp.o"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/trajsim_lib.dir/src/models/guidance.cpp.o -MF CMakeFiles/trajsim_lib.dir/src/models/guidance.cpp.o.d -o CMakeFiles/trajsim_lib.dir/src/models/guidance.cpp.o -c /Users/vincentning/Desktop/TrajSim/src/models/guidance.cpp
+CMakeFiles/trajsim_lib.dir/src/models/guidance/open_loop_guidance.cpp.o: CMakeFiles/trajsim_lib.dir/flags.make
+CMakeFiles/trajsim_lib.dir/src/models/guidance/open_loop_guidance.cpp.o: /Users/vincentning/Desktop/TrajSim/src/models/guidance/open_loop_guidance.cpp
+CMakeFiles/trajsim_lib.dir/src/models/guidance/open_loop_guidance.cpp.o: CMakeFiles/trajsim_lib.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/vincentning/Desktop/TrajSim/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Building CXX object CMakeFiles/trajsim_lib.dir/src/models/guidance/open_loop_guidance.cpp.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/trajsim_lib.dir/src/models/guidance/open_loop_guidance.cpp.o -MF CMakeFiles/trajsim_lib.dir/src/models/guidance/open_loop_guidance.cpp.o.d -o CMakeFiles/trajsim_lib.dir/src/models/guidance/open_loop_guidance.cpp.o -c /Users/vincentning/Desktop/TrajSim/src/models/guidance/open_loop_guidance.cpp
 
-CMakeFiles/trajsim_lib.dir/src/models/guidance.cpp.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/trajsim_lib.dir/src/models/guidance.cpp.i"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/vincentning/Desktop/TrajSim/src/models/guidance.cpp > CMakeFiles/trajsim_lib.dir/src/models/guidance.cpp.i
+CMakeFiles/trajsim_lib.dir/src/models/guidance/open_loop_guidance.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/trajsim_lib.dir/src/models/guidance/open_loop_guidance.cpp.i"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/vincentning/Desktop/TrajSim/src/models/guidance/open_loop_guidance.cpp > CMakeFiles/trajsim_lib.dir/src/models/guidance/open_loop_guidance.cpp.i
 
-CMakeFiles/trajsim_lib.dir/src/models/guidance.cpp.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/trajsim_lib.dir/src/models/guidance.cpp.s"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/vincentning/Desktop/TrajSim/src/models/guidance.cpp -o CMakeFiles/trajsim_lib.dir/src/models/guidance.cpp.s
+CMakeFiles/trajsim_lib.dir/src/models/guidance/open_loop_guidance.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/trajsim_lib.dir/src/models/guidance/open_loop_guidance.cpp.s"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/vincentning/Desktop/TrajSim/src/models/guidance/open_loop_guidance.cpp -o CMakeFiles/trajsim_lib.dir/src/models/guidance/open_loop_guidance.cpp.s
+
+CMakeFiles/trajsim_lib.dir/src/models/guidance/iterative_guidance.cpp.o: CMakeFiles/trajsim_lib.dir/flags.make
+CMakeFiles/trajsim_lib.dir/src/models/guidance/iterative_guidance.cpp.o: /Users/vincentning/Desktop/TrajSim/src/models/guidance/iterative_guidance.cpp
+CMakeFiles/trajsim_lib.dir/src/models/guidance/iterative_guidance.cpp.o: CMakeFiles/trajsim_lib.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/vincentning/Desktop/TrajSim/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_6) "Building CXX object CMakeFiles/trajsim_lib.dir/src/models/guidance/iterative_guidance.cpp.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/trajsim_lib.dir/src/models/guidance/iterative_guidance.cpp.o -MF CMakeFiles/trajsim_lib.dir/src/models/guidance/iterative_guidance.cpp.o.d -o CMakeFiles/trajsim_lib.dir/src/models/guidance/iterative_guidance.cpp.o -c /Users/vincentning/Desktop/TrajSim/src/models/guidance/iterative_guidance.cpp
+
+CMakeFiles/trajsim_lib.dir/src/models/guidance/iterative_guidance.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/trajsim_lib.dir/src/models/guidance/iterative_guidance.cpp.i"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/vincentning/Desktop/TrajSim/src/models/guidance/iterative_guidance.cpp > CMakeFiles/trajsim_lib.dir/src/models/guidance/iterative_guidance.cpp.i
+
+CMakeFiles/trajsim_lib.dir/src/models/guidance/iterative_guidance.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/trajsim_lib.dir/src/models/guidance/iterative_guidance.cpp.s"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/vincentning/Desktop/TrajSim/src/models/guidance/iterative_guidance.cpp -o CMakeFiles/trajsim_lib.dir/src/models/guidance/iterative_guidance.cpp.s
+
+CMakeFiles/trajsim_lib.dir/src/models/guidance/guidance.cpp.o: CMakeFiles/trajsim_lib.dir/flags.make
+CMakeFiles/trajsim_lib.dir/src/models/guidance/guidance.cpp.o: /Users/vincentning/Desktop/TrajSim/src/models/guidance/guidance.cpp
+CMakeFiles/trajsim_lib.dir/src/models/guidance/guidance.cpp.o: CMakeFiles/trajsim_lib.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/vincentning/Desktop/TrajSim/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_7) "Building CXX object CMakeFiles/trajsim_lib.dir/src/models/guidance/guidance.cpp.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/trajsim_lib.dir/src/models/guidance/guidance.cpp.o -MF CMakeFiles/trajsim_lib.dir/src/models/guidance/guidance.cpp.o.d -o CMakeFiles/trajsim_lib.dir/src/models/guidance/guidance.cpp.o -c /Users/vincentning/Desktop/TrajSim/src/models/guidance/guidance.cpp
+
+CMakeFiles/trajsim_lib.dir/src/models/guidance/guidance.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/trajsim_lib.dir/src/models/guidance/guidance.cpp.i"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/vincentning/Desktop/TrajSim/src/models/guidance/guidance.cpp > CMakeFiles/trajsim_lib.dir/src/models/guidance/guidance.cpp.i
+
+CMakeFiles/trajsim_lib.dir/src/models/guidance/guidance.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/trajsim_lib.dir/src/models/guidance/guidance.cpp.s"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/vincentning/Desktop/TrajSim/src/models/guidance/guidance.cpp -o CMakeFiles/trajsim_lib.dir/src/models/guidance/guidance.cpp.s
 
 CMakeFiles/trajsim_lib.dir/src/models/dynamics.cpp.o: CMakeFiles/trajsim_lib.dir/flags.make
 CMakeFiles/trajsim_lib.dir/src/models/dynamics.cpp.o: /Users/vincentning/Desktop/TrajSim/src/models/dynamics.cpp
 CMakeFiles/trajsim_lib.dir/src/models/dynamics.cpp.o: CMakeFiles/trajsim_lib.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/vincentning/Desktop/TrajSim/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_6) "Building CXX object CMakeFiles/trajsim_lib.dir/src/models/dynamics.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/vincentning/Desktop/TrajSim/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_8) "Building CXX object CMakeFiles/trajsim_lib.dir/src/models/dynamics.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/trajsim_lib.dir/src/models/dynamics.cpp.o -MF CMakeFiles/trajsim_lib.dir/src/models/dynamics.cpp.o.d -o CMakeFiles/trajsim_lib.dir/src/models/dynamics.cpp.o -c /Users/vincentning/Desktop/TrajSim/src/models/dynamics.cpp
 
 CMakeFiles/trajsim_lib.dir/src/models/dynamics.cpp.i: cmake_force
@@ -159,7 +187,7 @@ CMakeFiles/trajsim_lib.dir/src/models/dynamics.cpp.s: cmake_force
 CMakeFiles/trajsim_lib.dir/src/models/integrator.cpp.o: CMakeFiles/trajsim_lib.dir/flags.make
 CMakeFiles/trajsim_lib.dir/src/models/integrator.cpp.o: /Users/vincentning/Desktop/TrajSim/src/models/integrator.cpp
 CMakeFiles/trajsim_lib.dir/src/models/integrator.cpp.o: CMakeFiles/trajsim_lib.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/vincentning/Desktop/TrajSim/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_7) "Building CXX object CMakeFiles/trajsim_lib.dir/src/models/integrator.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/vincentning/Desktop/TrajSim/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_9) "Building CXX object CMakeFiles/trajsim_lib.dir/src/models/integrator.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/trajsim_lib.dir/src/models/integrator.cpp.o -MF CMakeFiles/trajsim_lib.dir/src/models/integrator.cpp.o.d -o CMakeFiles/trajsim_lib.dir/src/models/integrator.cpp.o -c /Users/vincentning/Desktop/TrajSim/src/models/integrator.cpp
 
 CMakeFiles/trajsim_lib.dir/src/models/integrator.cpp.i: cmake_force
@@ -173,7 +201,7 @@ CMakeFiles/trajsim_lib.dir/src/models/integrator.cpp.s: cmake_force
 CMakeFiles/trajsim_lib.dir/src/config/config_loader.cpp.o: CMakeFiles/trajsim_lib.dir/flags.make
 CMakeFiles/trajsim_lib.dir/src/config/config_loader.cpp.o: /Users/vincentning/Desktop/TrajSim/src/config/config_loader.cpp
 CMakeFiles/trajsim_lib.dir/src/config/config_loader.cpp.o: CMakeFiles/trajsim_lib.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/vincentning/Desktop/TrajSim/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_8) "Building CXX object CMakeFiles/trajsim_lib.dir/src/config/config_loader.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/vincentning/Desktop/TrajSim/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_10) "Building CXX object CMakeFiles/trajsim_lib.dir/src/config/config_loader.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/trajsim_lib.dir/src/config/config_loader.cpp.o -MF CMakeFiles/trajsim_lib.dir/src/config/config_loader.cpp.o.d -o CMakeFiles/trajsim_lib.dir/src/config/config_loader.cpp.o -c /Users/vincentning/Desktop/TrajSim/src/config/config_loader.cpp
 
 CMakeFiles/trajsim_lib.dir/src/config/config_loader.cpp.i: cmake_force
@@ -190,7 +218,9 @@ trajsim_lib_OBJECTS = \
 "CMakeFiles/trajsim_lib.dir/src/models/atmosphere.cpp.o" \
 "CMakeFiles/trajsim_lib.dir/src/models/gravity.cpp.o" \
 "CMakeFiles/trajsim_lib.dir/src/models/liquid_engine.cpp.o" \
-"CMakeFiles/trajsim_lib.dir/src/models/guidance.cpp.o" \
+"CMakeFiles/trajsim_lib.dir/src/models/guidance/open_loop_guidance.cpp.o" \
+"CMakeFiles/trajsim_lib.dir/src/models/guidance/iterative_guidance.cpp.o" \
+"CMakeFiles/trajsim_lib.dir/src/models/guidance/guidance.cpp.o" \
 "CMakeFiles/trajsim_lib.dir/src/models/dynamics.cpp.o" \
 "CMakeFiles/trajsim_lib.dir/src/models/integrator.cpp.o" \
 "CMakeFiles/trajsim_lib.dir/src/config/config_loader.cpp.o"
@@ -202,13 +232,15 @@ libtrajsim_lib.a: CMakeFiles/trajsim_lib.dir/src/models/aerodynamics.cpp.o
 libtrajsim_lib.a: CMakeFiles/trajsim_lib.dir/src/models/atmosphere.cpp.o
 libtrajsim_lib.a: CMakeFiles/trajsim_lib.dir/src/models/gravity.cpp.o
 libtrajsim_lib.a: CMakeFiles/trajsim_lib.dir/src/models/liquid_engine.cpp.o
-libtrajsim_lib.a: CMakeFiles/trajsim_lib.dir/src/models/guidance.cpp.o
+libtrajsim_lib.a: CMakeFiles/trajsim_lib.dir/src/models/guidance/open_loop_guidance.cpp.o
+libtrajsim_lib.a: CMakeFiles/trajsim_lib.dir/src/models/guidance/iterative_guidance.cpp.o
+libtrajsim_lib.a: CMakeFiles/trajsim_lib.dir/src/models/guidance/guidance.cpp.o
 libtrajsim_lib.a: CMakeFiles/trajsim_lib.dir/src/models/dynamics.cpp.o
 libtrajsim_lib.a: CMakeFiles/trajsim_lib.dir/src/models/integrator.cpp.o
 libtrajsim_lib.a: CMakeFiles/trajsim_lib.dir/src/config/config_loader.cpp.o
 libtrajsim_lib.a: CMakeFiles/trajsim_lib.dir/build.make
 libtrajsim_lib.a: CMakeFiles/trajsim_lib.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=/Users/vincentning/Desktop/TrajSim/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_9) "Linking CXX static library libtrajsim_lib.a"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=/Users/vincentning/Desktop/TrajSim/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_11) "Linking CXX static library libtrajsim_lib.a"
 	$(CMAKE_COMMAND) -P CMakeFiles/trajsim_lib.dir/cmake_clean_target.cmake
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/trajsim_lib.dir/link.txt --verbose=$(VERBOSE)
 

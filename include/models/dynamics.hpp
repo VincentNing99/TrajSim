@@ -22,7 +22,7 @@
 #include "models/gravity.hpp"
 #include "models/atmosphere.hpp"
 #include "models/vehicle/vehicle.hpp"
-#include "models/guidance.hpp"
+#include "models/guidance/guidance.hpp"
 
 namespace trajsim {
 

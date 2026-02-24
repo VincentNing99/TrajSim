@@ -32,7 +32,7 @@
 ///   - File not found/bad JSON → std::runtime_error thrown (fatal)
 #include "core/constants.hpp"
 #include "models/vehicle/aerodynamics.hpp"
-#include "models/guidance.hpp"
+#include "models/guidance/guidance.hpp"
 #include "models/vehicle/vehicle.hpp"
 #include "models/reference_mission.hpp"
 #include "core/sim.hpp"
@@ -63,7 +63,7 @@ struct AppConfig {
     Vehicle::Config                  vehicle;
     Aerodynamics::Config             aerodynamics;
     SimConfig                        simulation;
-    Guidance::Config                 guidance;
+    std::vector<Guidance::Config>    guidance;
     ReferenceMission                 mission;
 };
 

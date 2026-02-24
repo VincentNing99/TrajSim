@@ -23,21 +23,26 @@
     },
     "simulation": {
         "timeStepRK4": 0.001,
-        "tolerance": 1e-10,
-        "igmStopTime": 2.0
+        "tolerance": 1e-10
     },
     "guidance": [
         {
             "stage": 1,
-            "mode": "IGM",
             "tolerance": 1e-10,
-            "inclinationTolerance": 0.07,
-            "eccentricityTolerance": 0.005,
             "maxSteeringRate": 5.0,
-            "guidanceCycle": 0.01,
-            "steeringHoldTime": 15.0,
-            "maxConvergenceIterations": 100,
-            "timeToGoConvergenceTolerance": 1e-5
+            "algorithms": [
+                {
+                    "type": "IterativeGuidance",
+                    "guidanceCycle": 0.01,
+                    "steeringHoldTime": 15.0,
+                    "maxConvergenceIterations": 100,
+                    "timeToGoConvergenceTolerance": 1e-5,
+                    "cutoffCriteria": {
+                        "inclinationTolerance": 0.07,
+                        "eccentricityTolerance": 0.005
+                    }
+                }
+            ]
         }
     ],
     "mission": {

@@ -9,7 +9,6 @@
 namespace trajsim{
 
 int main() {
-    openJson()
     return 0;
 }
 }

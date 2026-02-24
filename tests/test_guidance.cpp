@@ -2,7 +2,7 @@
 
 #include <gtest/gtest.h>
 #include <numbers>
-#include "models/guidance.hpp"
+#include "models/guidance/guidance.hpp"
 
 namespace trajsim {
 namespace {
@@ -19,18 +19,27 @@ static const VehicleState TEST_VEHICLE_STATE = {
     .vehicleMass = 50000.0
 };
 
-static const Guidance::Config TEST_GUIDANCE_CFG = {
-    .stages = 1,
-    .mode = {GuidanceMode::IGM},
-    .tolerance = 1e-10,
-    .maxSteeringRate = 5.0,
-    .guidanceCycle = {0.01},
-    .inclinationTolerance = {0.07},
-    .eccentricityTolerance = {0.005},
-    .steeringHoldTime = {15.0},
-    .maxConvergenceIterations = {100},
-    .timeToGoConvergenceTolerance = {1e-5}
-};
+static Guidance::Config makeTestGuidanceConfig() {
+    Guidance::AlgorithmEntry entry;
+    entry.type = "IterativeGuidance";
+    entry.igmConfig = {
+        .guidanceCycle = 0.01,
+        .steeringHoldTime = 15.0,
+        .maxConvergenceIterations = 100,
+        .timeToGoConvergenceTolerance = 1e-5
+    };
+    entry.igmCutoffCriteria = {
+        .inclinationTolerance = 0.07,
+        .eccentricityTolerance = 0.005
+    };
+
+    return Guidance::Config{
+        .stage = 1,
+        .tolerance = 1e-10,
+        .maxSteeringRate = 5.0,
+        .algorithms = {entry}
+    };
+}
 
 // Engine parameters used across guidance tests
 static constexpr double TEST_MASS_FLOW_RATE = 100.0;
@@ -43,7 +52,11 @@ static constexpr double TEST_EXIT_VELOCITY  = 3500.0;
 class GuidanceTest : public ::testing::Test {
 protected:
     void SetUp() override {
-        guidance = std::make_unique<Guidance>(MISSION_1, TEST_GUIDANCE_CFG, TEST_VEHICLE_STATE);
+        guidance = std::make_unique<Guidance>(makeTestGuidanceConfig(), MISSION_1, TEST_VEHICLE_STATE);
+    }
+
+    IterativeGuidance* getIGM() const {
+        return dynamic_cast<IterativeGuidance*>(guidance->activeAlgorithm());
     }
 
     std::unique_ptr<Guidance> guidance;
@@ -54,34 +67,37 @@ protected:
 // =============================================================================
 
 TEST_F(GuidanceTest, ConstructFromMission1) {
-    Guidance g(MISSION_1, TEST_GUIDANCE_CFG, TEST_VEHICLE_STATE);
-    const auto& terminal = g.getTerminalState();
+    Guidance g(makeTestGuidanceConfig(), MISSION_1, TEST_VEHICLE_STATE);
+    const auto* terminal = g.getTerminalState();
+    ASSERT_NE(terminal, nullptr);
 
-    EXPECT_DOUBLE_EQ(terminal.semiMajorAxis, MISSION_1.semiMajorAxis);
-    EXPECT_DOUBLE_EQ(terminal.inclination, MISSION_1.inclination);
-    EXPECT_DOUBLE_EQ(terminal.eccentricity, MISSION_1.eccentricity);
+    EXPECT_DOUBLE_EQ(terminal->semiMajorAxis, MISSION_1.semiMajorAxis);
+    EXPECT_DOUBLE_EQ(terminal->inclination, MISSION_1.inclination);
+    EXPECT_DOUBLE_EQ(terminal->eccentricity, MISSION_1.eccentricity);
 }
 
 TEST_F(GuidanceTest, ConstructFromMission2) {
-    Guidance g(MISSION_2, TEST_GUIDANCE_CFG, TEST_VEHICLE_STATE);
-    const auto& terminal = g.getTerminalState();
+    Guidance g(makeTestGuidanceConfig(), MISSION_2, TEST_VEHICLE_STATE);
+    const auto* terminal = g.getTerminalState();
+    ASSERT_NE(terminal, nullptr);
 
-    EXPECT_DOUBLE_EQ(terminal.semiMajorAxis, MISSION_2.semiMajorAxis);
-    EXPECT_DOUBLE_EQ(terminal.inclination, MISSION_2.inclination);
-    EXPECT_DOUBLE_EQ(terminal.eccentricity, MISSION_2.eccentricity);
+    EXPECT_DOUBLE_EQ(terminal->semiMajorAxis, MISSION_2.semiMajorAxis);
+    EXPECT_DOUBLE_EQ(terminal->inclination, MISSION_2.inclination);
+    EXPECT_DOUBLE_EQ(terminal->eccentricity, MISSION_2.eccentricity);
 }
 
 TEST_F(GuidanceTest, TerminalStatePositionAndVelocity) {
-    Guidance g(MISSION_1, TEST_GUIDANCE_CFG, TEST_VEHICLE_STATE);
-    const auto& terminal = g.getTerminalState();
+    Guidance g(makeTestGuidanceConfig(), MISSION_1, TEST_VEHICLE_STATE);
+    const auto* terminal = g.getTerminalState();
+    ASSERT_NE(terminal, nullptr);
 
-    EXPECT_DOUBLE_EQ(terminal.position.x, MISSION_1.positionTerminal.x);
-    EXPECT_DOUBLE_EQ(terminal.position.y, MISSION_1.positionTerminal.y);
-    EXPECT_DOUBLE_EQ(terminal.position.z, MISSION_1.positionTerminal.z);
+    EXPECT_DOUBLE_EQ(terminal->position.x, MISSION_1.positionTerminal.x);
+    EXPECT_DOUBLE_EQ(terminal->position.y, MISSION_1.positionTerminal.y);
+    EXPECT_DOUBLE_EQ(terminal->position.z, MISSION_1.positionTerminal.z);
 
-    EXPECT_DOUBLE_EQ(terminal.velocity.x, MISSION_1.velocityTerminal.x);
-    EXPECT_DOUBLE_EQ(terminal.velocity.y, MISSION_1.velocityTerminal.y);
-    EXPECT_DOUBLE_EQ(terminal.velocity.z, MISSION_1.velocityTerminal.z);
+    EXPECT_DOUBLE_EQ(terminal->velocity.x, MISSION_1.velocityTerminal.x);
+    EXPECT_DOUBLE_EQ(terminal->velocity.y, MISSION_1.velocityTerminal.y);
+    EXPECT_DOUBLE_EQ(terminal->velocity.z, MISSION_1.velocityTerminal.z);
 }
 
 // =============================================================================
@@ -91,7 +107,7 @@ TEST_F(GuidanceTest, TerminalStatePositionAndVelocity) {
 class OpenLoopGuidanceTest : public ::testing::Test {
 protected:
     void SetUp() override {
-        guidance = std::make_unique<Guidance>(MISSION_1, TEST_GUIDANCE_CFG, TEST_VEHICLE_STATE);
+        guidance = std::make_unique<Guidance>(makeTestGuidanceConfig(), MISSION_1, TEST_VEHICLE_STATE);
     }
 
     std::unique_ptr<Guidance> guidance;
@@ -108,29 +124,23 @@ TEST_F(GuidanceTest, CutoffReturnsFalseForZeroPosition) {
     state.acceleration = Vec3::zero();
     state.vehicleMass = 10000.0;
 
-    // Position at origin should return false (guard for division by zero)
-    // Note: positionLaunchSite is added internally, so we need to account for that
-    // This test verifies the guard works when position magnitude is small
     EXPECT_FALSE(guidance->cutoff(state));
 }
 
 TEST_F(GuidanceTest, CutoffReturnsFalseForRadialTrajectory) {
     VehicleState state;
-    // Set up a radial trajectory (velocity parallel to position = zero angular momentum)
-    state.position = Vec3{6378000.0, 0.0, 0.0};  // On x-axis
-    state.velocity = Vec3{1000.0, 0.0, 0.0};     // Velocity along x-axis (radial)
+    state.position = Vec3{6378000.0, 0.0, 0.0};
+    state.velocity = Vec3{1000.0, 0.0, 0.0};
     state.acceleration = Vec3::zero();
     state.vehicleMass = 10000.0;
 
-    // Should return false due to zero angular momentum
     EXPECT_FALSE(guidance->cutoff(state));
 }
 
 TEST_F(GuidanceTest, CutoffReturnsFalseWhenNotAtTarget) {
     VehicleState state;
-    // Set up a state that is clearly not at the target orbit
-    state.position = Vec3{6378000.0, 0.0, 0.0};  // Low orbit radius
-    state.velocity = Vec3{0.0, 5000.0, 0.0};     // Low velocity
+    state.position = Vec3{6378000.0, 0.0, 0.0};
+    state.velocity = Vec3{0.0, 5000.0, 0.0};
     state.acceleration = Vec3::zero();
     state.vehicleMass = 10000.0;
 
@@ -160,15 +170,12 @@ TEST(ReferenceMissionTest, PositionLaunchSiteNonZero) {
 }
 
 TEST(ReferenceMissionTest, TransformMatricesNonSingular) {
-    // rmLaunchToEquatorial is a coordinate transformation, not necessarily orthogonal
     Mat3 rm1 = MISSION_1.rmLaunchToEquatorial();
     Mat3 rm2 = MISSION_2.rmLaunchToEquatorial();
 
-    // Both should be non-singular (invertible)
     EXPECT_NE(rm1.det(), 0.0);
     EXPECT_NE(rm2.det(), 0.0);
 
-    // Both should have finite elements
     EXPECT_TRUE(rm1.is_finite());
     EXPECT_TRUE(rm2.is_finite());
 }
@@ -204,24 +211,17 @@ TEST(ConversionTest, DegRadInverse) {
 // =============================================================================
 
 TEST_F(OpenLoopGuidanceTest, OpenLoopGuidanceInterpolatesCorrectly) {
-    // Create a simple steering profile: [time, pitch, yaw, roll]
     std::vector<std::vector<double>> profile = {
         {0.0, 0.0, 0.0, 0.0},
         {10.0, 1.0, 0.5, 0.0},
         {20.0, 2.0, 1.0, 0.0}
     };
-
-    // Need to create a custom guidance with access to steeringProfile
-    // For now, we test via file loading
 }
 
 TEST_F(OpenLoopGuidanceTest, OpenLoopClampsToFirstPointBeforeStart) {
-    // When time is before the first profile point, should return first point values
-    // This requires loading a steering profile first
 }
 
 TEST_F(OpenLoopGuidanceTest, OpenLoopClampsToLastPointAfterEnd) {
-    // When time is after the last profile point, should return last point values
 }
 
 // =============================================================================
@@ -231,7 +231,11 @@ TEST_F(OpenLoopGuidanceTest, OpenLoopClampsToLastPointAfterEnd) {
 class GuidanceDeltaVTest : public ::testing::Test {
 protected:
     void SetUp() override {
-        guidance = std::make_unique<Guidance>(MISSION_1, TEST_GUIDANCE_CFG, TEST_VEHICLE_STATE);
+        guidance = std::make_unique<Guidance>(makeTestGuidanceConfig(), MISSION_1, TEST_VEHICLE_STATE);
+    }
+
+    IterativeGuidance* getIGM() const {
+        return dynamic_cast<IterativeGuidance*>(guidance->activeAlgorithm());
     }
 
     std::unique_ptr<Guidance> guidance;
@@ -241,11 +245,7 @@ TEST_F(GuidanceDeltaVTest, ComputeDeltaVCalculatesCorrectComponents) {
     Vec3 g{0.0, -9.8, 0.0};
     Vec3 instantaneousVelocity{5000.0, 2000.0, 500.0};
 
-    // computeDeltaV modifies internal state
-    guidance->computeDeltaV(g, instantaneousVelocity);
-
-    // After computeDeltaV, the internal deltaV should be computed
-    // We can't directly access deltaV, but iterativeGuidance uses it
+    getIGM()->computeDeltaV(g, instantaneousVelocity);
 }
 
 // =============================================================================
@@ -256,13 +256,10 @@ TEST_F(GuidanceDeltaVTest, ComputeVelocitySteeringAnglesReturnsValidAngles) {
     Vec3 g{0.0, -9.8, 0.0};
     Vec3 instantaneousVelocity{5000.0, 2000.0, 500.0};
 
-    // First compute deltaV
-    guidance->computeDeltaV(g, instantaneousVelocity);
+    getIGM()->computeDeltaV(g, instantaneousVelocity);
 
-    // Then compute steering angles
-    SteeringAngles angles = guidance->computeVelocitySteeringAngles();
+    SteeringAngles angles = getIGM()->computeVelocitySteeringAngles();
 
-    // Angles should be finite and within valid range
     EXPECT_TRUE(std::isfinite(angles.phi));
     EXPECT_TRUE(std::isfinite(angles.psi));
     EXPECT_GE(angles.phi, -std::numbers::pi);
@@ -272,14 +269,12 @@ TEST_F(GuidanceDeltaVTest, ComputeVelocitySteeringAnglesReturnsValidAngles) {
 }
 
 TEST_F(GuidanceDeltaVTest, ComputeVelocitySteeringAnglesHandlesZeroDvXi) {
-    // When dvXi is zero, phi should be ±π/2 depending on dvEta sign
     Vec3 g{0.0, 0.0, 0.0};
     Vec3 instantaneousVelocity{0.0, 0.0, 0.0};
 
-    guidance->computeDeltaV(g, instantaneousVelocity);
-    SteeringAngles angles = guidance->computeVelocitySteeringAngles();
+    getIGM()->computeDeltaV(g, instantaneousVelocity);
+    SteeringAngles angles = getIGM()->computeVelocitySteeringAngles();
 
-    // Should not produce NaN
     EXPECT_FALSE(std::isnan(angles.phi));
     EXPECT_FALSE(std::isnan(angles.psi));
 }
@@ -289,26 +284,23 @@ TEST_F(GuidanceDeltaVTest, ComputeVelocitySteeringAnglesHandlesZeroDvXi) {
 // =============================================================================
 
 TEST_F(GuidanceTest, BuildRotationMatrixProducesFiniteMatrix) {
-    // buildRotationMatrix is called in the constructor
-    // We verify it worked by checking the transformation works correctly
-    Guidance g(MISSION_1, TEST_GUIDANCE_CFG, TEST_VEHICLE_STATE);
+    Guidance g(makeTestGuidanceConfig(), MISSION_1, TEST_VEHICLE_STATE);
 
-    // The rotation matrices should transform vectors without producing NaN/Inf
-    Vec3 testVec{1.0, 0.0, 0.0};
-    // The guidance should have valid internal rotation matrices
-    const auto& terminal = g.getTerminalState();
+    const auto* terminal = g.getTerminalState();
+    ASSERT_NE(terminal, nullptr);
 
-    EXPECT_TRUE(terminal.position.is_finite());
-    EXPECT_TRUE(terminal.velocity.is_finite());
+    EXPECT_TRUE(terminal->position.is_finite());
+    EXPECT_TRUE(terminal->velocity.is_finite());
 }
 
 TEST_F(GuidanceTest, BuildRotationMatrixFromMission2) {
-    Guidance g(MISSION_2, TEST_GUIDANCE_CFG, TEST_VEHICLE_STATE);
+    Guidance g(makeTestGuidanceConfig(), MISSION_2, TEST_VEHICLE_STATE);
 
-    const auto& terminal = g.getTerminalState();
+    const auto* terminal = g.getTerminalState();
+    ASSERT_NE(terminal, nullptr);
 
-    EXPECT_TRUE(terminal.position.is_finite());
-    EXPECT_TRUE(terminal.velocity.is_finite());
+    EXPECT_TRUE(terminal->position.is_finite());
+    EXPECT_TRUE(terminal->velocity.is_finite());
 }
 
 // =============================================================================
@@ -316,19 +308,14 @@ TEST_F(GuidanceTest, BuildRotationMatrixFromMission2) {
 // =============================================================================
 
 TEST_F(GuidanceTest, CutoffReturnsTrueWhenTargetReached) {
-    // Set up a state that matches the terminal orbit
     VehicleState state;
 
-    // Use terminal position and velocity from MISSION_1
     state.position = MISSION_1.positionTerminal;
     state.velocity = MISSION_1.velocityTerminal;
     state.acceleration = Vec3::zero();
     state.vehicleMass = 10000.0;
 
-    // This test verifies the cutoff logic when orbital elements match
-    // Note: The cutoff function transforms coordinates, so exact matching is complex
     bool result = guidance->cutoff(state);
-    // Just verify it returns a boolean (doesn't crash)
     EXPECT_TRUE(result == true || result == false);
 }
 
@@ -339,7 +326,11 @@ TEST_F(GuidanceTest, CutoffReturnsTrueWhenTargetReached) {
 class IterativeGuidanceTest : public ::testing::Test {
 protected:
     void SetUp() override {
-        guidance = std::make_unique<Guidance>(MISSION_1, TEST_GUIDANCE_CFG, TEST_VEHICLE_STATE);
+        guidance = std::make_unique<Guidance>(makeTestGuidanceConfig(), MISSION_1, TEST_VEHICLE_STATE);
+    }
+
+    IterativeGuidance* getIGM() const {
+        return dynamic_cast<IterativeGuidance*>(guidance->activeAlgorithm());
     }
 
     std::unique_ptr<Guidance> guidance;
@@ -355,15 +346,20 @@ TEST_F(IterativeGuidanceTest, IterativeGuidanceReturnsValidSteeringAngles) {
     Vec3 g{0.0, -9.8, 0.0};
     double t = MISSION_1.initialTime + 10.0;
 
-    SteeringAngles steering = guidance->iterativeGuidance(t, state,
-                                                          TEST_MASS_FLOW_RATE, TEST_EXIT_VELOCITY, g, g);
+    GuidanceInput input{};
+    input.time = t;
+    input.state = state;
+    input.massFlowRate = TEST_MASS_FLOW_RATE;
+    input.exitVelocity = TEST_EXIT_VELOCITY;
+    input.gravity = g;
+    input.gravityCutoff = g;
 
-    // Steering angles should be finite
-    EXPECT_TRUE(steering.is_finite());
+    GuidanceOutput output = getIGM()->computeSteering(input);
+
+    EXPECT_TRUE(output.steering.is_finite());
 }
 
 TEST_F(IterativeGuidanceTest, IterativeGuidanceHoldsSteeringNearCutoff) {
-    // When timeToGo <= steeringHoldTime (15s), steering should be held
     VehicleState state;
     state.position = Vec3{-2000000.0, -10000000.0, 200000.0};
     state.velocity = Vec3{-7000.0, 2500.0, 200.0};
@@ -372,20 +368,22 @@ TEST_F(IterativeGuidanceTest, IterativeGuidanceHoldsSteeringNearCutoff) {
 
     Vec3 g{0.0, -9.8, 0.0};
 
-    // First call with normal time to establish steering
-    double t1 = MISSION_1.initialTime + 50.0;
-    SteeringAngles steering1 = guidance->iterativeGuidance(t1, state,
-                                                           TEST_MASS_FLOW_RATE, TEST_EXIT_VELOCITY, g, g);
+    GuidanceInput input{};
+    input.state = state;
+    input.massFlowRate = TEST_MASS_FLOW_RATE;
+    input.exitVelocity = TEST_EXIT_VELOCITY;
+    input.gravity = g;
+    input.gravityCutoff = g;
 
-    // Steering should be finite after first call
-    EXPECT_TRUE(steering1.is_finite());
+    input.time = MISSION_1.initialTime + 50.0;
+    GuidanceOutput output1 = getIGM()->computeSteering(input);
 
-    // Subsequent call - steering mechanism should continue working
-    double t2 = MISSION_1.initialTime + 60.0;
-    SteeringAngles steering2 = guidance->iterativeGuidance(t2, state,
-                                                           TEST_MASS_FLOW_RATE, TEST_EXIT_VELOCITY, g, g);
+    EXPECT_TRUE(output1.steering.is_finite());
 
-    EXPECT_TRUE(steering2.is_finite());
+    input.time = MISSION_1.initialTime + 60.0;
+    GuidanceOutput output2 = getIGM()->computeSteering(input);
+
+    EXPECT_TRUE(output2.steering.is_finite());
 }
 
 // =============================================================================
@@ -394,14 +392,12 @@ TEST_F(IterativeGuidanceTest, IterativeGuidanceHoldsSteeringNearCutoff) {
 
 TEST_F(IterativeGuidanceTest, UpdateTimeToGoLttwComputesValidTimeToGo) {
     Vec3 g{0.0, -9.8, 0.0};
-    Vec3 vt{-7100.0, 2600.0, 240.0};  // terminal velocity
-    Vec3 vc{-7000.0, 2500.0, 200.0};  // current velocity
+    Vec3 vt{-7100.0, 2600.0, 240.0};
+    Vec3 vc{-7000.0, 2500.0, 200.0};
     double delV = 500.0;
     double tau = 50000.0 / TEST_MASS_FLOW_RATE;
 
-    // The function modifies internal state
-    // Just verify it doesn't crash
-    guidance->updateTimeToGoLttw(delV, tau, g, vt, vc);
+    getIGM()->updateTimeToGoLttw(delV, tau, g, vt, vc);
 }
 
 TEST_F(IterativeGuidanceTest, UpdateTimeToGoHttwComputesValidTimeToGo) {
@@ -411,7 +407,7 @@ TEST_F(IterativeGuidanceTest, UpdateTimeToGoHttwComputesValidTimeToGo) {
     double delV = 500.0;
     double tau = 50000.0 / TEST_MASS_FLOW_RATE;
 
-    guidance->updateTimeToGoHttw(delV, tau, TEST_EXIT_VELOCITY, g, vt, vc);
+    getIGM()->updateTimeToGoHttw(delV, tau, TEST_EXIT_VELOCITY, g, vt, vc);
 }
 
 // =============================================================================
@@ -422,19 +418,18 @@ TEST_F(IterativeGuidanceTest, ConvergeTimeToGoConvergesWithinIterations) {
     Vec3 g{0.0, -9.8, 0.0};
     Vec3 vC{-7000.0, 2500.0, 200.0};
     double tau = 50000.0 / TEST_MASS_FLOW_RATE;
-    double thrustToWeight = 0.5;  // Low thrust-to-weight
+    double thrustToWeight = 0.5;
 
-    // Should converge without throwing
-    EXPECT_NO_THROW(guidance->convergeTimeToGo(g, vC, tau, TEST_EXIT_VELOCITY, thrustToWeight));
+    EXPECT_NO_THROW(getIGM()->convergeTimeToGo(g, vC, tau, TEST_EXIT_VELOCITY, thrustToWeight));
 }
 
 TEST_F(IterativeGuidanceTest, ConvergeTimeToGoHighThrustToWeight) {
     Vec3 g{0.0, -9.8, 0.0};
     Vec3 vC{-7000.0, 2500.0, 200.0};
     double tau = 50000.0 / TEST_MASS_FLOW_RATE;
-    double thrustToWeight = 1.5;  // High thrust-to-weight
+    double thrustToWeight = 1.5;
 
-    EXPECT_NO_THROW(guidance->convergeTimeToGo(g, vC, tau, TEST_EXIT_VELOCITY, thrustToWeight));
+    EXPECT_NO_THROW(getIGM()->convergeTimeToGo(g, vC, tau, TEST_EXIT_VELOCITY, thrustToWeight));
 }
 
 // =============================================================================
@@ -451,13 +446,18 @@ TEST_F(IterativeGuidanceTest, ApplyPositionCorrectionsProducesFiniteAngles) {
     Vec3 g{0.0, -9.8, 0.0};
     double tau = 50000.0 / TEST_MASS_FLOW_RATE;
 
-    // First run iterativeGuidance to set up internal state
-    double t = MISSION_1.initialTime + 10.0;
-    guidance->iterativeGuidance(t, state, TEST_MASS_FLOW_RATE, TEST_EXIT_VELOCITY, g, g);
+    GuidanceInput input{};
+    input.time = MISSION_1.initialTime + 10.0;
+    input.state = state;
+    input.massFlowRate = TEST_MASS_FLOW_RATE;
+    input.exitVelocity = TEST_EXIT_VELOCITY;
+    input.gravity = g;
+    input.gravityCutoff = g;
+    getIGM()->computeSteering(input);
 
     SteeringAngles velocityAngles{1.0, 0.1, 0.0};
 
-    SteeringAngles corrected = guidance->applyPositionCorrections(velocityAngles, tau, TEST_EXIT_VELOCITY, g);
+    SteeringAngles corrected = getIGM()->applyPositionCorrections(velocityAngles, tau, TEST_EXIT_VELOCITY, g);
 
     EXPECT_TRUE(std::isfinite(corrected.phi));
     EXPECT_TRUE(std::isfinite(corrected.psi));
@@ -476,13 +476,18 @@ TEST_F(IterativeGuidanceTest, TransformSteeringToInertialProducesFiniteAngles) {
 
     Vec3 g{0.0, -9.8, 0.0};
 
-    // First run iterativeGuidance to set up internal rotation matrices
-    double t = MISSION_1.initialTime + 10.0;
-    guidance->iterativeGuidance(t, state, TEST_MASS_FLOW_RATE, TEST_EXIT_VELOCITY, g, g);
+    GuidanceInput input{};
+    input.time = MISSION_1.initialTime + 10.0;
+    input.state = state;
+    input.massFlowRate = TEST_MASS_FLOW_RATE;
+    input.exitVelocity = TEST_EXIT_VELOCITY;
+    input.gravity = g;
+    input.gravityCutoff = g;
+    getIGM()->computeSteering(input);
 
     SteeringAngles correctedAngles{0.5, 0.1, 0.0};
 
-    SteeringAngles inertial = guidance->transformSteeringToInertial(correctedAngles);
+    SteeringAngles inertial = getIGM()->transformSteeringToInertial(correctedAngles);
 
     EXPECT_TRUE(std::isfinite(inertial.phi));
     EXPECT_TRUE(std::isfinite(inertial.psi));
@@ -497,16 +502,18 @@ TEST_F(IterativeGuidanceTest, TransformSteeringToInertialHandlesNearGimbalLock) 
 
     Vec3 g{0.0, -9.8, 0.0};
 
-    // Set up internal state
-    double t = MISSION_1.initialTime + 10.0;
-    guidance->iterativeGuidance(t, state, TEST_MASS_FLOW_RATE, TEST_EXIT_VELOCITY, g, g);
+    GuidanceInput input{};
+    input.time = MISSION_1.initialTime + 10.0;
+    input.state = state;
+    input.massFlowRate = TEST_MASS_FLOW_RATE;
+    input.exitVelocity = TEST_EXIT_VELOCITY;
+    input.gravity = g;
+    input.gravityCutoff = g;
+    getIGM()->computeSteering(input);
 
-    // Test with angles close to but not exactly at gimbal lock
-    // (psi near ±π/2 but with sufficient margin)
     SteeringAngles nearGimbalLock{0.0, std::numbers::pi / 2.0 - 0.1, 0.0};
 
-    // Should succeed without throwing for angles not exactly at gimbal lock
-    SteeringAngles result = guidance->transformSteeringToInertial(nearGimbalLock);
+    SteeringAngles result = getIGM()->transformSteeringToInertial(nearGimbalLock);
 
     EXPECT_TRUE(std::isfinite(result.phi));
     EXPECT_TRUE(std::isfinite(result.psi));
@@ -520,7 +527,6 @@ TEST(ReferenceMissionTest, RmLanRotationIsRotationMatrix) {
     Mat3 rm1 = MISSION_1.rmLanRotation();
     Mat3 rm2 = MISSION_2.rmLanRotation();
 
-    // LAN rotation should be a rotation about z-axis
     EXPECT_TRUE(rm1.is_rotation(1e-10));
     EXPECT_TRUE(rm2.is_rotation(1e-10));
 }
@@ -529,7 +535,6 @@ TEST(ReferenceMissionTest, RmInclinationRotationIsRotationMatrix) {
     Mat3 rm1 = MISSION_1.rmInclinationRotation();
     Mat3 rm2 = MISSION_2.rmInclinationRotation();
 
-    // Inclination rotation should be a rotation about x-axis
     EXPECT_TRUE(rm1.is_rotation(1e-10));
     EXPECT_TRUE(rm2.is_rotation(1e-10));
 }
@@ -538,7 +543,6 @@ TEST(ReferenceMissionTest, RmArgumentOfLatitudeIsRotationMatrix) {
     Mat3 rm1 = MISSION_1.rmArgumentOfLatitude();
     Mat3 rm2 = MISSION_2.rmArgumentOfLatitude();
 
-    // Argument of latitude rotation should be a rotation about z-axis
     EXPECT_TRUE(rm1.is_rotation(1e-10));
     EXPECT_TRUE(rm2.is_rotation(1e-10));
 }
@@ -567,7 +571,6 @@ TEST(ReferenceMissionTest, RadiusOfCurvatureReasonableValue) {
     double r1 = MISSION_1.radiusOfCurvature();
     double r2 = MISSION_2.radiusOfCurvature();
 
-    // Radius of curvature should be close to Earth's radius (6.37e6 m)
     EXPECT_GT(r1, 6300000.0);
     EXPECT_LT(r1, 6500000.0);
     EXPECT_GT(r2, 6300000.0);
@@ -578,12 +581,9 @@ TEST(ReferenceMissionTest, PositionLaunchSiteMagnitudeReasonable) {
     Vec3 pos1 = MISSION_1.positionLaunchSite();
     Vec3 pos2 = MISSION_2.positionLaunchSite();
 
-    // Launch site position magnitude should be close to Earth's radius
     double mag1 = pos1.mag();
     double mag2 = pos2.mag();
 
-    // The launch site is relative to geocenter offset, so should be smaller
-    // than Earth's radius but non-zero
     EXPECT_GT(mag1, 0.0);
     EXPECT_GT(mag2, 0.0);
 }

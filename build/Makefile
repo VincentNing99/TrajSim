@@ -369,29 +369,77 @@ src/models/gravity.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/trajsim_lib.dir/build.make CMakeFiles/trajsim_lib.dir/src/models/gravity.cpp.s
 .PHONY : src/models/gravity.cpp.s
 
-src/models/guidance.o: src/models/guidance.cpp.o
-.PHONY : src/models/guidance.o
+src/models/guidance/guidance.o: src/models/guidance/guidance.cpp.o
+.PHONY : src/models/guidance/guidance.o
 
 # target to build an object file
-src/models/guidance.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/trajsim_lib.dir/build.make CMakeFiles/trajsim_lib.dir/src/models/guidance.cpp.o
-.PHONY : src/models/guidance.cpp.o
+src/models/guidance/guidance.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/trajsim_lib.dir/build.make CMakeFiles/trajsim_lib.dir/src/models/guidance/guidance.cpp.o
+.PHONY : src/models/guidance/guidance.cpp.o
 
-src/models/guidance.i: src/models/guidance.cpp.i
-.PHONY : src/models/guidance.i
+src/models/guidance/guidance.i: src/models/guidance/guidance.cpp.i
+.PHONY : src/models/guidance/guidance.i
 
 # target to preprocess a source file
-src/models/guidance.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/trajsim_lib.dir/build.make CMakeFiles/trajsim_lib.dir/src/models/guidance.cpp.i
-.PHONY : src/models/guidance.cpp.i
+src/models/guidance/guidance.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/trajsim_lib.dir/build.make CMakeFiles/trajsim_lib.dir/src/models/guidance/guidance.cpp.i
+.PHONY : src/models/guidance/guidance.cpp.i
 
-src/models/guidance.s: src/models/guidance.cpp.s
-.PHONY : src/models/guidance.s
+src/models/guidance/guidance.s: src/models/guidance/guidance.cpp.s
+.PHONY : src/models/guidance/guidance.s
 
 # target to generate assembly for a file
-src/models/guidance.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/trajsim_lib.dir/build.make CMakeFiles/trajsim_lib.dir/src/models/guidance.cpp.s
-.PHONY : src/models/guidance.cpp.s
+src/models/guidance/guidance.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/trajsim_lib.dir/build.make CMakeFiles/trajsim_lib.dir/src/models/guidance/guidance.cpp.s
+.PHONY : src/models/guidance/guidance.cpp.s
+
+src/models/guidance/iterative_guidance.o: src/models/guidance/iterative_guidance.cpp.o
+.PHONY : src/models/guidance/iterative_guidance.o
+
+# target to build an object file
+src/models/guidance/iterative_guidance.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/trajsim_lib.dir/build.make CMakeFiles/trajsim_lib.dir/src/models/guidance/iterative_guidance.cpp.o
+.PHONY : src/models/guidance/iterative_guidance.cpp.o
+
+src/models/guidance/iterative_guidance.i: src/models/guidance/iterative_guidance.cpp.i
+.PHONY : src/models/guidance/iterative_guidance.i
+
+# target to preprocess a source file
+src/models/guidance/iterative_guidance.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/trajsim_lib.dir/build.make CMakeFiles/trajsim_lib.dir/src/models/guidance/iterative_guidance.cpp.i
+.PHONY : src/models/guidance/iterative_guidance.cpp.i
+
+src/models/guidance/iterative_guidance.s: src/models/guidance/iterative_guidance.cpp.s
+.PHONY : src/models/guidance/iterative_guidance.s
+
+# target to generate assembly for a file
+src/models/guidance/iterative_guidance.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/trajsim_lib.dir/build.make CMakeFiles/trajsim_lib.dir/src/models/guidance/iterative_guidance.cpp.s
+.PHONY : src/models/guidance/iterative_guidance.cpp.s
+
+src/models/guidance/open_loop_guidance.o: src/models/guidance/open_loop_guidance.cpp.o
+.PHONY : src/models/guidance/open_loop_guidance.o
+
+# target to build an object file
+src/models/guidance/open_loop_guidance.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/trajsim_lib.dir/build.make CMakeFiles/trajsim_lib.dir/src/models/guidance/open_loop_guidance.cpp.o
+.PHONY : src/models/guidance/open_loop_guidance.cpp.o
+
+src/models/guidance/open_loop_guidance.i: src/models/guidance/open_loop_guidance.cpp.i
+.PHONY : src/models/guidance/open_loop_guidance.i
+
+# target to preprocess a source file
+src/models/guidance/open_loop_guidance.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/trajsim_lib.dir/build.make CMakeFiles/trajsim_lib.dir/src/models/guidance/open_loop_guidance.cpp.i
+.PHONY : src/models/guidance/open_loop_guidance.cpp.i
+
+src/models/guidance/open_loop_guidance.s: src/models/guidance/open_loop_guidance.cpp.s
+.PHONY : src/models/guidance/open_loop_guidance.s
+
+# target to generate assembly for a file
+src/models/guidance/open_loop_guidance.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/trajsim_lib.dir/build.make CMakeFiles/trajsim_lib.dir/src/models/guidance/open_loop_guidance.cpp.s
+.PHONY : src/models/guidance/open_loop_guidance.cpp.s
 
 src/models/integrator.o: src/models/integrator.cpp.o
 .PHONY : src/models/integrator.o
@@ -739,9 +787,15 @@ help:
 	@echo "... src/models/gravity.o"
 	@echo "... src/models/gravity.i"
 	@echo "... src/models/gravity.s"
-	@echo "... src/models/guidance.o"
-	@echo "... src/models/guidance.i"
-	@echo "... src/models/guidance.s"
+	@echo "... src/models/guidance/guidance.o"
+	@echo "... src/models/guidance/guidance.i"
+	@echo "... src/models/guidance/guidance.s"
+	@echo "... src/models/guidance/iterative_guidance.o"
+	@echo "... src/models/guidance/iterative_guidance.i"
+	@echo "... src/models/guidance/iterative_guidance.s"
+	@echo "... src/models/guidance/open_loop_guidance.o"
+	@echo "... src/models/guidance/open_loop_guidance.i"
+	@echo "... src/models/guidance/open_loop_guidance.s"
 	@echo "... src/models/integrator.o"
 	@echo "... src/models/integrator.i"
 	@echo "... src/models/integrator.s"

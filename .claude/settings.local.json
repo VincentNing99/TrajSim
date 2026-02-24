@@ -6,7 +6,8 @@
       "Bash(./build/trajsim_tests:*)",
       "Bash(./trajsim_tests:*)",
       "Bash(ctest:*)",
-      "Bash(make:*)"
+      "Bash(make:*)",
+      "Bash(git fsck:*)"
     ]
   }
 }
