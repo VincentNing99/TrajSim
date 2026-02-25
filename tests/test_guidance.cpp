@@ -28,9 +28,13 @@ static Guidance::Config makeTestGuidanceConfig() {
         .maxConvergenceIterations = 100,
         .timeToGoConvergenceTolerance = 1e-5
     };
+    using CN = IterativeGuidance::CutoffNode;
     entry.igmCutoffCriteria = {
-        .inclinationTolerance = 0.07,
-        .eccentricityTolerance = 0.005
+        .root = CN::andOf({
+            CN::leaf(CN::Parameter::SemiMajorAxis, CN::Comparison::ExceedsBy, 0.0),
+            CN::leaf(CN::Parameter::Eccentricity,  CN::Comparison::WithinTolerance, 0.005),
+            CN::leaf(CN::Parameter::Inclination,    CN::Comparison::WithinTolerance, 0.07)
+        })
     };
 
     return Guidance::Config{

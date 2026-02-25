@@ -40,8 +40,8 @@ add_library(trajsim_lib
     src/models/atmosphere.cpp
     src/models/gravity.cpp
     src/models/liquid_engine.cpp
-    src/models/guidance/open_loop_guidance.cpp
-    src/models/guidance/iterative_guidance.cpp
+    src/models/guidance/algorithm/open_loop_guidance.cpp
+    src/models/guidance/algorithm/iterative_guidance.cpp
     src/models/guidance/guidance.cpp
     src/models/dynamics.cpp
     src/models/integrator.cpp

@@ -1242,47 +1242,47 @@
         {
           "name": "ConstructFromMission1",
           "file": "\/Users\/vincentning\/Desktop\/TrajSim\/tests\/test_guidance.cpp",
-          "line": 69
+          "line": 73
         },
         {
           "name": "ConstructFromMission2",
           "file": "\/Users\/vincentning\/Desktop\/TrajSim\/tests\/test_guidance.cpp",
-          "line": 79
+          "line": 83
         },
         {
           "name": "TerminalStatePositionAndVelocity",
           "file": "\/Users\/vincentning\/Desktop\/TrajSim\/tests\/test_guidance.cpp",
-          "line": 89
+          "line": 93
         },
         {
           "name": "CutoffReturnsFalseForZeroPosition",
           "file": "\/Users\/vincentning\/Desktop\/TrajSim\/tests\/test_guidance.cpp",
-          "line": 120
+          "line": 124
         },
         {
           "name": "CutoffReturnsFalseForRadialTrajectory",
           "file": "\/Users\/vincentning\/Desktop\/TrajSim\/tests\/test_guidance.cpp",
-          "line": 130
+          "line": 134
         },
         {
           "name": "CutoffReturnsFalseWhenNotAtTarget",
           "file": "\/Users\/vincentning\/Desktop\/TrajSim\/tests\/test_guidance.cpp",
-          "line": 140
+          "line": 144
         },
         {
           "name": "BuildRotationMatrixProducesFiniteMatrix",
           "file": "\/Users\/vincentning\/Desktop\/TrajSim\/tests\/test_guidance.cpp",
-          "line": 286
+          "line": 290
         },
         {
           "name": "BuildRotationMatrixFromMission2",
           "file": "\/Users\/vincentning\/Desktop\/TrajSim\/tests\/test_guidance.cpp",
-          "line": 296
+          "line": 300
         },
         {
           "name": "CutoffReturnsTrueWhenTargetReached",
           "file": "\/Users\/vincentning\/Desktop\/TrajSim\/tests\/test_guidance.cpp",
-          "line": 310
+          "line": 314
         }
       ]
     },
@@ -1293,62 +1293,62 @@
         {
           "name": "ArgumentOfLatitudeInitial",
           "file": "\/Users\/vincentning\/Desktop\/TrajSim\/tests\/test_guidance.cpp",
-          "line": 154
+          "line": 158
         },
         {
           "name": "RadiusOfCurvaturePositive",
           "file": "\/Users\/vincentning\/Desktop\/TrajSim\/tests\/test_guidance.cpp",
-          "line": 159
+          "line": 163
         },
         {
           "name": "PositionLaunchSiteNonZero",
           "file": "\/Users\/vincentning\/Desktop\/TrajSim\/tests\/test_guidance.cpp",
-          "line": 164
+          "line": 168
         },
         {
           "name": "TransformMatricesNonSingular",
           "file": "\/Users\/vincentning\/Desktop\/TrajSim\/tests\/test_guidance.cpp",
-          "line": 172
+          "line": 176
         },
         {
           "name": "Mission1DifferentFromMission2",
           "file": "\/Users\/vincentning\/Desktop\/TrajSim\/tests\/test_guidance.cpp",
-          "line": 183
+          "line": 187
         },
         {
           "name": "RmLanRotationIsRotationMatrix",
           "file": "\/Users\/vincentning\/Desktop\/TrajSim\/tests\/test_guidance.cpp",
-          "line": 526
+          "line": 530
         },
         {
           "name": "RmInclinationRotationIsRotationMatrix",
           "file": "\/Users\/vincentning\/Desktop\/TrajSim\/tests\/test_guidance.cpp",
-          "line": 534
+          "line": 538
         },
         {
           "name": "RmArgumentOfLatitudeIsRotationMatrix",
           "file": "\/Users\/vincentning\/Desktop\/TrajSim\/tests\/test_guidance.cpp",
-          "line": 542
+          "line": 546
         },
         {
           "name": "RmInertialToOrbitalIsNonSingular",
           "file": "\/Users\/vincentning\/Desktop\/TrajSim\/tests\/test_guidance.cpp",
-          "line": 550
+          "line": 554
         },
         {
           "name": "RmInertialToTerminalIsNonSingular",
           "file": "\/Users\/vincentning\/Desktop\/TrajSim\/tests\/test_guidance.cpp",
-          "line": 560
+          "line": 564
         },
         {
           "name": "RadiusOfCurvatureReasonableValue",
           "file": "\/Users\/vincentning\/Desktop\/TrajSim\/tests\/test_guidance.cpp",
-          "line": 570
+          "line": 574
         },
         {
           "name": "PositionLaunchSiteMagnitudeReasonable",
           "file": "\/Users\/vincentning\/Desktop\/TrajSim\/tests\/test_guidance.cpp",
-          "line": 580
+          "line": 584
         }
       ]
     },
@@ -1359,17 +1359,17 @@
         {
           "name": "DegToRadCorrect",
           "file": "\/Users\/vincentning\/Desktop\/TrajSim\/tests\/test_guidance.cpp",
-          "line": 193
+          "line": 197
         },
         {
           "name": "RadToDegCorrect",
           "file": "\/Users\/vincentning\/Desktop\/TrajSim\/tests\/test_guidance.cpp",
-          "line": 198
+          "line": 202
         },
         {
           "name": "DegRadInverse",
           "file": "\/Users\/vincentning\/Desktop\/TrajSim\/tests\/test_guidance.cpp",
-          "line": 203
+          "line": 207
         }
       ]
     },
@@ -1380,17 +1380,17 @@
         {
           "name": "OpenLoopGuidanceInterpolatesCorrectly",
           "file": "\/Users\/vincentning\/Desktop\/TrajSim\/tests\/test_guidance.cpp",
-          "line": 213
+          "line": 217
         },
         {
           "name": "OpenLoopClampsToFirstPointBeforeStart",
           "file": "\/Users\/vincentning\/Desktop\/TrajSim\/tests\/test_guidance.cpp",
-          "line": 221
+          "line": 225
         },
         {
           "name": "OpenLoopClampsToLastPointAfterEnd",
           "file": "\/Users\/vincentning\/Desktop\/TrajSim\/tests\/test_guidance.cpp",
-          "line": 224
+          "line": 228
         }
       ]
     },
@@ -1401,17 +1401,17 @@
         {
           "name": "ComputeDeltaVCalculatesCorrectComponents",
           "file": "\/Users\/vincentning\/Desktop\/TrajSim\/tests\/test_guidance.cpp",
-          "line": 244
+          "line": 248
         },
         {
           "name": "ComputeVelocitySteeringAnglesReturnsValidAngles",
           "file": "\/Users\/vincentning\/Desktop\/TrajSim\/tests\/test_guidance.cpp",
-          "line": 255
+          "line": 259
         },
         {
           "name": "ComputeVelocitySteeringAnglesHandlesZeroDvXi",
           "file": "\/Users\/vincentning\/Desktop\/TrajSim\/tests\/test_guidance.cpp",
-          "line": 271
+          "line": 275
         }
       ]
     },
@@ -1422,47 +1422,47 @@
         {
           "name": "IterativeGuidanceReturnsValidSteeringAngles",
           "file": "\/Users\/vincentning\/Desktop\/TrajSim\/tests\/test_guidance.cpp",
-          "line": 339
+          "line": 343
         },
         {
           "name": "IterativeGuidanceHoldsSteeringNearCutoff",
           "file": "\/Users\/vincentning\/Desktop\/TrajSim\/tests\/test_guidance.cpp",
-          "line": 362
+          "line": 366
         },
         {
           "name": "UpdateTimeToGoLttwComputesValidTimeToGo",
           "file": "\/Users\/vincentning\/Desktop\/TrajSim\/tests\/test_guidance.cpp",
-          "line": 393
+          "line": 397
         },
         {
           "name": "UpdateTimeToGoHttwComputesValidTimeToGo",
           "file": "\/Users\/vincentning\/Desktop\/TrajSim\/tests\/test_guidance.cpp",
-          "line": 403
+          "line": 407
         },
         {
           "name": "ConvergeTimeToGoConvergesWithinIterations",
           "file": "\/Users\/vincentning\/Desktop\/TrajSim\/tests\/test_guidance.cpp",
-          "line": 417
+          "line": 421
         },
         {
           "name": "ConvergeTimeToGoHighThrustToWeight",
           "file": "\/Users\/vincentning\/Desktop\/TrajSim\/tests\/test_guidance.cpp",
-          "line": 426
+          "line": 430
         },
         {
           "name": "ApplyPositionCorrectionsProducesFiniteAngles",
           "file": "\/Users\/vincentning\/Desktop\/TrajSim\/tests\/test_guidance.cpp",
-          "line": 439
+          "line": 443
         },
         {
           "name": "TransformSteeringToInertialProducesFiniteAngles",
           "file": "\/Users\/vincentning\/Desktop\/TrajSim\/tests\/test_guidance.cpp",
-          "line": 470
+          "line": 474
         },
         {
           "name": "TransformSteeringToInertialHandlesNearGimbalLock",
           "file": "\/Users\/vincentning\/Desktop\/TrajSim\/tests\/test_guidance.cpp",
-          "line": 496
+          "line": 500
         }
       ]
     },
@@ -1473,7 +1473,7 @@
         {
           "name": "ToStringReturnsCorrectNames",
           "file": "\/Users\/vincentning\/Desktop\/TrajSim\/tests\/test_guidance.cpp",
-          "line": 595
+          "line": 599
         }
       ]
     },
@@ -1484,7 +1484,7 @@
         {
           "name": "DefaultInitialization",
           "file": "\/Users\/vincentning\/Desktop\/TrajSim\/tests\/test_guidance.cpp",
-          "line": 612
+          "line": 616
         }
       ]
     },
@@ -1495,7 +1495,7 @@
         {
           "name": "StructFieldsAccessible",
           "file": "\/Users\/vincentning\/Desktop\/TrajSim\/tests\/test_guidance.cpp",
-          "line": 629
+          "line": 633
         }
       ]
     },
@@ -1506,7 +1506,7 @@
         {
           "name": "StructFieldsAccessible",
           "file": "\/Users\/vincentning\/Desktop\/TrajSim\/tests\/test_guidance.cpp",
-          "line": 646
+          "line": 650
         }
       ]
     },
@@ -1517,7 +1517,7 @@
         {
           "name": "StructFieldsAccessible",
           "file": "\/Users\/vincentning\/Desktop\/TrajSim\/tests\/test_guidance.cpp",
-          "line": 661
+          "line": 665
         }
       ]
     },
@@ -1704,117 +1704,117 @@
         {
           "name": "LoadsMinimalValidConfig",
           "file": "\/Users\/vincentning\/Desktop\/TrajSim\/tests\/test_config_loader.cpp",
-          "line": 134
+          "line": 137
         },
         {
           "name": "LoadedValuesMatchInput",
           "file": "\/Users\/vincentning\/Desktop\/TrajSim\/tests\/test_config_loader.cpp",
-          "line": 139
+          "line": 142
         },
         {
           "name": "NumberOfStagesDerivedFromEngines",
           "file": "\/Users\/vincentning\/Desktop\/TrajSim\/tests\/test_config_loader.cpp",
-          "line": 155
+          "line": 158
         },
         {
           "name": "AngularFieldsConvertedToRadians",
           "file": "\/Users\/vincentning\/Desktop\/TrajSim\/tests\/test_config_loader.cpp",
-          "line": 163
+          "line": 166
         },
         {
           "name": "NoWarningsForCleanConfig",
           "file": "\/Users\/vincentning\/Desktop\/TrajSim\/tests\/test_config_loader.cpp",
-          "line": 176
+          "line": 179
         },
         {
           "name": "LoadsMission1Config",
           "file": "\/Users\/vincentning\/Desktop\/TrajSim\/tests\/test_config_loader.cpp",
-          "line": 187
+          "line": 190
         },
         {
           "name": "LoadsMission2Config",
           "file": "\/Users\/vincentning\/Desktop\/TrajSim\/tests\/test_config_loader.cpp",
-          "line": 199
+          "line": 202
         },
         {
           "name": "ThrowsOnMissingFile",
           "file": "\/Users\/vincentning\/Desktop\/TrajSim\/tests\/test_config_loader.cpp",
-          "line": 211
+          "line": 214
         },
         {
           "name": "ThrowsOnMalformedJson",
           "file": "\/Users\/vincentning\/Desktop\/TrajSim\/tests\/test_config_loader.cpp",
-          "line": 215
+          "line": 218
         },
         {
           "name": "ThrowsOnEmptyFile",
           "file": "\/Users\/vincentning\/Desktop\/TrajSim\/tests\/test_config_loader.cpp",
-          "line": 220
+          "line": 223
         },
         {
           "name": "ThrowsOnMissingVehicleSection",
           "file": "\/Users\/vincentning\/Desktop\/TrajSim\/tests\/test_config_loader.cpp",
-          "line": 229
+          "line": 232
         },
         {
           "name": "ThrowsOnMissingEnginesSection",
           "file": "\/Users\/vincentning\/Desktop\/TrajSim\/tests\/test_config_loader.cpp",
-          "line": 249
+          "line": 252
         },
         {
           "name": "ThrowsOnMissingMissionSection",
           "file": "\/Users\/vincentning\/Desktop\/TrajSim\/tests\/test_config_loader.cpp",
-          "line": 267
+          "line": 270
         },
         {
           "name": "ThrowsOnMissingVehicleMass",
           "file": "\/Users\/vincentning\/Desktop\/TrajSim\/tests\/test_config_loader.cpp",
-          "line": 285
+          "line": 288
         },
         {
           "name": "ThrowsOnMissingEngineISP",
           "file": "\/Users\/vincentning\/Desktop\/TrajSim\/tests\/test_config_loader.cpp",
-          "line": 306
+          "line": 309
         },
         {
           "name": "ThrowsOnNegativeTimeStep",
           "file": "\/Users\/vincentning\/Desktop\/TrajSim\/tests\/test_config_loader.cpp",
-          "line": 331
+          "line": 334
         },
         {
           "name": "ThrowsOnInvalidAlgorithmType",
           "file": "\/Users\/vincentning\/Desktop\/TrajSim\/tests\/test_config_loader.cpp",
-          "line": 352
+          "line": 355
         },
         {
           "name": "ThrowsOnEmptyEnginesArray",
           "file": "\/Users\/vincentning\/Desktop\/TrajSim\/tests\/test_config_loader.cpp",
-          "line": 373
+          "line": 376
         },
         {
           "name": "ThrowsOnNegativeRefArea",
           "file": "\/Users\/vincentning\/Desktop\/TrajSim\/tests\/test_config_loader.cpp",
-          "line": 392
+          "line": 395
         },
         {
           "name": "UnknownTopLevelKeyProducesWarning",
           "file": "\/Users\/vincentning\/Desktop\/TrajSim\/tests\/test_config_loader.cpp",
-          "line": 417
+          "line": 420
         },
         {
           "name": "UnknownVehicleFieldProducesWarning",
           "file": "\/Users\/vincentning\/Desktop\/TrajSim\/tests\/test_config_loader.cpp",
-          "line": 448
+          "line": 451
         },
         {
           "name": "ThrowsOnVelocityTerminalWrongSize",
           "file": "\/Users\/vincentning\/Desktop\/TrajSim\/tests\/test_config_loader.cpp",
-          "line": 474
+          "line": 477
         },
         {
           "name": "ThrowsOnWrongFieldType",
           "file": "\/Users\/vincentning\/Desktop\/TrajSim\/tests\/test_config_loader.cpp",
-          "line": 499
+          "line": 502
         }
       ]
     },
@@ -1825,12 +1825,12 @@
         {
           "name": "HasWarningsReturnsFalseWhenEmpty",
           "file": "\/Users\/vincentning\/Desktop\/TrajSim\/tests\/test_config_loader.cpp",
-          "line": 524
+          "line": 527
         },
         {
           "name": "HasWarningsReturnsTrueWhenNonEmpty",
           "file": "\/Users\/vincentning\/Desktop\/TrajSim\/tests\/test_config_loader.cpp",
-          "line": 530
+          "line": 533
         }
       ]
     },

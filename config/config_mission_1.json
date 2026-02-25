@@ -38,8 +38,11 @@
                     "maxConvergenceIterations": 100,
                     "timeToGoConvergenceTolerance": 1e-5,
                     "cutoffCriteria": {
-                        "inclinationTolerance": 0.07,
-                        "eccentricityTolerance": 0.005
+                        "and": [
+                            { "semiMajorAxis": { "exceedsBy": 0 } },
+                            { "eccentricity": { "withinTolerance": 0.005 } },
+                            { "inclination": { "withinTolerance": 0.07 } }
+                        ]
                     }
                 }
             ]

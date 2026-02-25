@@ -8,9 +8,9 @@
 #include <memory>
 #include <string>
 #include <vector>
-#include "models/guidance/guidance_algorithm.hpp"
-#include "models/guidance/open_loop_guidance.hpp"
-#include "models/guidance/iterative_guidance.hpp"
+#include "models/guidance/algorithm/guidance_algorithm.hpp"
+#include "models/guidance/algorithm/open_loop_guidance.hpp"
+#include "models/guidance/algorithm/iterative_guidance.hpp"
 #include "models/reference_mission.hpp"
 #include "core/utils.hpp"
 

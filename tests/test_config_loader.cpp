@@ -78,8 +78,11 @@ static const char* MINIMAL_VALID_JSON = R"({
                     "maxConvergenceIterations": 100,
                     "timeToGoConvergenceTolerance": 1e-5,
                     "cutoffCriteria": {
-                        "inclinationTolerance": 0.07,
-                        "eccentricityTolerance": 0.005
+                        "and": [
+                            { "semiMajorAxis": { "exceedsBy": 0 } },
+                            { "eccentricity": { "withinTolerance": 0.005 } },
+                            { "inclination": { "withinTolerance": 0.07 } }
+                        ]
                     }
                 }
             ]
@@ -233,7 +236,7 @@ TEST_F(ConfigLoaderTest, ThrowsOnMissingVehicleSection) {
                       "massFlowRate":1.7,"exitArea":0.1}],
         "aerodynamics": {"refArea":1,"refLength":1,"machMin":0.1,"machMax":5,"machTransition":0.8},
         "simulation": {"timeStepRK4":0.001,"tolerance":1e-10},
-        "guidance": [{"stage":1,"tolerance":1e-10,"maxSteeringRate":5,"algorithms":[{"type":"IterativeGuidance","guidanceCycle":0.01,"steeringHoldTime":15,"maxConvergenceIterations":100,"timeToGoConvergenceTolerance":1e-5,"cutoffCriteria":{"inclinationTolerance":0.07,"eccentricityTolerance":0.005}}]}],
+        "guidance": [{"stage":1,"tolerance":1e-10,"maxSteeringRate":5,"algorithms":[{"type":"IterativeGuidance","guidanceCycle":0.01,"steeringHoldTime":15,"maxConvergenceIterations":100,"timeToGoConvergenceTolerance":1e-5,"cutoffCriteria":{"and":[{"semiMajorAxis":{"exceedsBy":0}},{"eccentricity":{"withinTolerance":0.005}},{"inclination":{"withinTolerance":0.07}}]}}]}],
         "mission": {"semiMajorAxis":6903085,"longitudeAscendingNode":260,"inclination":97.5,
                      "eccentricity":1e-5,"trueAnomaly":154,"argumentOfPeriapsis":185,
                      "ldnLaunchsite":264,"lanLaunchsite":84,"aimingAzimuth":191,
@@ -251,7 +254,7 @@ TEST_F(ConfigLoaderTest, ThrowsOnMissingEnginesSection) {
         "vehicle": { "mass": 1000.0 },
         "aerodynamics": {"refArea":1,"refLength":1,"machMin":0.1,"machMax":5,"machTransition":0.8},
         "simulation": {"timeStepRK4":0.001,"tolerance":1e-10},
-        "guidance": [{"stage":1,"tolerance":1e-10,"maxSteeringRate":5,"algorithms":[{"type":"IterativeGuidance","guidanceCycle":0.01,"steeringHoldTime":15,"maxConvergenceIterations":100,"timeToGoConvergenceTolerance":1e-5,"cutoffCriteria":{"inclinationTolerance":0.07,"eccentricityTolerance":0.005}}]}],
+        "guidance": [{"stage":1,"tolerance":1e-10,"maxSteeringRate":5,"algorithms":[{"type":"IterativeGuidance","guidanceCycle":0.01,"steeringHoldTime":15,"maxConvergenceIterations":100,"timeToGoConvergenceTolerance":1e-5,"cutoffCriteria":{"and":[{"semiMajorAxis":{"exceedsBy":0}},{"eccentricity":{"withinTolerance":0.005}},{"inclination":{"withinTolerance":0.07}}]}}]}],
         "mission": {"semiMajorAxis":6903085,"longitudeAscendingNode":260,"inclination":97.5,
                      "eccentricity":1e-5,"trueAnomaly":154,"argumentOfPeriapsis":185,
                      "ldnLaunchsite":264,"lanLaunchsite":84,"aimingAzimuth":191,
@@ -272,7 +275,7 @@ TEST_F(ConfigLoaderTest, ThrowsOnMissingMissionSection) {
                       "massFlowRate":1.7,"exitArea":0.1}],
         "aerodynamics": {"refArea":1,"refLength":1,"machMin":0.1,"machMax":5,"machTransition":0.8},
         "simulation": {"timeStepRK4":0.001,"tolerance":1e-10},
-        "guidance": [{"stage":1,"tolerance":1e-10,"maxSteeringRate":5,"algorithms":[{"type":"IterativeGuidance","guidanceCycle":0.01,"steeringHoldTime":15,"maxConvergenceIterations":100,"timeToGoConvergenceTolerance":1e-5,"cutoffCriteria":{"inclinationTolerance":0.07,"eccentricityTolerance":0.005}}]}]
+        "guidance": [{"stage":1,"tolerance":1e-10,"maxSteeringRate":5,"algorithms":[{"type":"IterativeGuidance","guidanceCycle":0.01,"steeringHoldTime":15,"maxConvergenceIterations":100,"timeToGoConvergenceTolerance":1e-5,"cutoffCriteria":{"and":[{"semiMajorAxis":{"exceedsBy":0}},{"eccentricity":{"withinTolerance":0.005}},{"inclination":{"withinTolerance":0.07}}]}}]}]
     })", "no_mission");
 
     EXPECT_THROW(loadConfig(path), std::invalid_argument);
@@ -290,7 +293,7 @@ TEST_F(ConfigLoaderTest, ThrowsOnMissingVehicleMass) {
                       "massFlowRate":1.7,"exitArea":0.1}],
         "aerodynamics": {"refArea":1,"refLength":1,"machMin":0.1,"machMax":5,"machTransition":0.8},
         "simulation": {"timeStepRK4":0.001,"tolerance":1e-10},
-        "guidance": [{"stage":1,"tolerance":1e-10,"maxSteeringRate":5,"algorithms":[{"type":"IterativeGuidance","guidanceCycle":0.01,"steeringHoldTime":15,"maxConvergenceIterations":100,"timeToGoConvergenceTolerance":1e-5,"cutoffCriteria":{"inclinationTolerance":0.07,"eccentricityTolerance":0.005}}]}],
+        "guidance": [{"stage":1,"tolerance":1e-10,"maxSteeringRate":5,"algorithms":[{"type":"IterativeGuidance","guidanceCycle":0.01,"steeringHoldTime":15,"maxConvergenceIterations":100,"timeToGoConvergenceTolerance":1e-5,"cutoffCriteria":{"and":[{"semiMajorAxis":{"exceedsBy":0}},{"eccentricity":{"withinTolerance":0.005}},{"inclination":{"withinTolerance":0.07}}]}}]}],
         "mission": {"semiMajorAxis":6903085,"longitudeAscendingNode":260,"inclination":97.5,
                      "eccentricity":1e-5,"trueAnomaly":154,"argumentOfPeriapsis":185,
                      "ldnLaunchsite":264,"lanLaunchsite":84,"aimingAzimuth":191,
@@ -311,7 +314,7 @@ TEST_F(ConfigLoaderTest, ThrowsOnMissingEngineISP) {
                       "massFlowRate":1.7,"exitArea":0.1}],
         "aerodynamics": {"refArea":1,"refLength":1,"machMin":0.1,"machMax":5,"machTransition":0.8},
         "simulation": {"timeStepRK4":0.001,"tolerance":1e-10},
-        "guidance": [{"stage":1,"tolerance":1e-10,"maxSteeringRate":5,"algorithms":[{"type":"IterativeGuidance","guidanceCycle":0.01,"steeringHoldTime":15,"maxConvergenceIterations":100,"timeToGoConvergenceTolerance":1e-5,"cutoffCriteria":{"inclinationTolerance":0.07,"eccentricityTolerance":0.005}}]}],
+        "guidance": [{"stage":1,"tolerance":1e-10,"maxSteeringRate":5,"algorithms":[{"type":"IterativeGuidance","guidanceCycle":0.01,"steeringHoldTime":15,"maxConvergenceIterations":100,"timeToGoConvergenceTolerance":1e-5,"cutoffCriteria":{"and":[{"semiMajorAxis":{"exceedsBy":0}},{"eccentricity":{"withinTolerance":0.005}},{"inclination":{"withinTolerance":0.07}}]}}]}],
         "mission": {"semiMajorAxis":6903085,"longitudeAscendingNode":260,"inclination":97.5,
                      "eccentricity":1e-5,"trueAnomaly":154,"argumentOfPeriapsis":185,
                      "ldnLaunchsite":264,"lanLaunchsite":84,"aimingAzimuth":191,
@@ -336,7 +339,7 @@ TEST_F(ConfigLoaderTest, ThrowsOnNegativeTimeStep) {
                       "massFlowRate":1.7,"exitArea":0.1}],
         "aerodynamics": {"refArea":1,"refLength":1,"machMin":0.1,"machMax":5,"machTransition":0.8},
         "simulation": {"timeStepRK4":-0.001,"tolerance":1e-10},
-        "guidance": [{"stage":1,"tolerance":1e-10,"maxSteeringRate":5,"algorithms":[{"type":"IterativeGuidance","guidanceCycle":0.01,"steeringHoldTime":15,"maxConvergenceIterations":100,"timeToGoConvergenceTolerance":1e-5,"cutoffCriteria":{"inclinationTolerance":0.07,"eccentricityTolerance":0.005}}]}],
+        "guidance": [{"stage":1,"tolerance":1e-10,"maxSteeringRate":5,"algorithms":[{"type":"IterativeGuidance","guidanceCycle":0.01,"steeringHoldTime":15,"maxConvergenceIterations":100,"timeToGoConvergenceTolerance":1e-5,"cutoffCriteria":{"and":[{"semiMajorAxis":{"exceedsBy":0}},{"eccentricity":{"withinTolerance":0.005}},{"inclination":{"withinTolerance":0.07}}]}}]}],
         "mission": {"semiMajorAxis":6903085,"longitudeAscendingNode":260,"inclination":97.5,
                      "eccentricity":1e-5,"trueAnomaly":154,"argumentOfPeriapsis":185,
                      "ldnLaunchsite":264,"lanLaunchsite":84,"aimingAzimuth":191,
@@ -376,7 +379,7 @@ TEST_F(ConfigLoaderTest, ThrowsOnEmptyEnginesArray) {
         "engines": [],
         "aerodynamics": {"refArea":1,"refLength":1,"machMin":0.1,"machMax":5,"machTransition":0.8},
         "simulation": {"timeStepRK4":0.001,"tolerance":1e-10},
-        "guidance": [{"stage":1,"tolerance":1e-10,"maxSteeringRate":5,"algorithms":[{"type":"IterativeGuidance","guidanceCycle":0.01,"steeringHoldTime":15,"maxConvergenceIterations":100,"timeToGoConvergenceTolerance":1e-5,"cutoffCriteria":{"inclinationTolerance":0.07,"eccentricityTolerance":0.005}}]}],
+        "guidance": [{"stage":1,"tolerance":1e-10,"maxSteeringRate":5,"algorithms":[{"type":"IterativeGuidance","guidanceCycle":0.01,"steeringHoldTime":15,"maxConvergenceIterations":100,"timeToGoConvergenceTolerance":1e-5,"cutoffCriteria":{"and":[{"semiMajorAxis":{"exceedsBy":0}},{"eccentricity":{"withinTolerance":0.005}},{"inclination":{"withinTolerance":0.07}}]}}]}],
         "mission": {"semiMajorAxis":6903085,"longitudeAscendingNode":260,"inclination":97.5,
                      "eccentricity":1e-5,"trueAnomaly":154,"argumentOfPeriapsis":185,
                      "ldnLaunchsite":264,"lanLaunchsite":84,"aimingAzimuth":191,
@@ -397,7 +400,7 @@ TEST_F(ConfigLoaderTest, ThrowsOnNegativeRefArea) {
                       "massFlowRate":1.7,"exitArea":0.1}],
         "aerodynamics": {"refArea":-1.0,"refLength":1,"machMin":0.1,"machMax":5,"machTransition":0.8},
         "simulation": {"timeStepRK4":0.001,"tolerance":1e-10},
-        "guidance": [{"stage":1,"tolerance":1e-10,"maxSteeringRate":5,"algorithms":[{"type":"IterativeGuidance","guidanceCycle":0.01,"steeringHoldTime":15,"maxConvergenceIterations":100,"timeToGoConvergenceTolerance":1e-5,"cutoffCriteria":{"inclinationTolerance":0.07,"eccentricityTolerance":0.005}}]}],
+        "guidance": [{"stage":1,"tolerance":1e-10,"maxSteeringRate":5,"algorithms":[{"type":"IterativeGuidance","guidanceCycle":0.01,"steeringHoldTime":15,"maxConvergenceIterations":100,"timeToGoConvergenceTolerance":1e-5,"cutoffCriteria":{"and":[{"semiMajorAxis":{"exceedsBy":0}},{"eccentricity":{"withinTolerance":0.005}},{"inclination":{"withinTolerance":0.07}}]}}]}],
         "mission": {"semiMajorAxis":6903085,"longitudeAscendingNode":260,"inclination":97.5,
                      "eccentricity":1e-5,"trueAnomaly":154,"argumentOfPeriapsis":185,
                      "ldnLaunchsite":264,"lanLaunchsite":84,"aimingAzimuth":191,
@@ -422,7 +425,7 @@ TEST_F(ConfigLoaderTest, UnknownTopLevelKeyProducesWarning) {
                       "massFlowRate":1.7,"exitArea":0.1}],
         "aerodynamics": {"refArea":1,"refLength":1,"machMin":0.1,"machMax":5,"machTransition":0.8},
         "simulation": {"timeStepRK4":0.001,"tolerance":1e-10},
-        "guidance": [{"stage":1,"tolerance":1e-10,"maxSteeringRate":5,"algorithms":[{"type":"IterativeGuidance","guidanceCycle":0.01,"steeringHoldTime":15,"maxConvergenceIterations":100,"timeToGoConvergenceTolerance":1e-5,"cutoffCriteria":{"inclinationTolerance":0.07,"eccentricityTolerance":0.005}}]}],
+        "guidance": [{"stage":1,"tolerance":1e-10,"maxSteeringRate":5,"algorithms":[{"type":"IterativeGuidance","guidanceCycle":0.01,"steeringHoldTime":15,"maxConvergenceIterations":100,"timeToGoConvergenceTolerance":1e-5,"cutoffCriteria":{"and":[{"semiMajorAxis":{"exceedsBy":0}},{"eccentricity":{"withinTolerance":0.005}},{"inclination":{"withinTolerance":0.07}}]}}]}],
         "mission": {"semiMajorAxis":6903085,"longitudeAscendingNode":260,"inclination":97.5,
                      "eccentricity":1e-5,"trueAnomaly":154,"argumentOfPeriapsis":185,
                      "ldnLaunchsite":264,"lanLaunchsite":84,"aimingAzimuth":191,
@@ -453,7 +456,7 @@ TEST_F(ConfigLoaderTest, UnknownVehicleFieldProducesWarning) {
                       "massFlowRate":1.7,"exitArea":0.1}],
         "aerodynamics": {"refArea":1,"refLength":1,"machMin":0.1,"machMax":5,"machTransition":0.8},
         "simulation": {"timeStepRK4":0.001,"tolerance":1e-10},
-        "guidance": [{"stage":1,"tolerance":1e-10,"maxSteeringRate":5,"algorithms":[{"type":"IterativeGuidance","guidanceCycle":0.01,"steeringHoldTime":15,"maxConvergenceIterations":100,"timeToGoConvergenceTolerance":1e-5,"cutoffCriteria":{"inclinationTolerance":0.07,"eccentricityTolerance":0.005}}]}],
+        "guidance": [{"stage":1,"tolerance":1e-10,"maxSteeringRate":5,"algorithms":[{"type":"IterativeGuidance","guidanceCycle":0.01,"steeringHoldTime":15,"maxConvergenceIterations":100,"timeToGoConvergenceTolerance":1e-5,"cutoffCriteria":{"and":[{"semiMajorAxis":{"exceedsBy":0}},{"eccentricity":{"withinTolerance":0.005}},{"inclination":{"withinTolerance":0.07}}]}}]}],
         "mission": {"semiMajorAxis":6903085,"longitudeAscendingNode":260,"inclination":97.5,
                      "eccentricity":1e-5,"trueAnomaly":154,"argumentOfPeriapsis":185,
                      "ldnLaunchsite":264,"lanLaunchsite":84,"aimingAzimuth":191,
@@ -479,7 +482,7 @@ TEST_F(ConfigLoaderTest, ThrowsOnVelocityTerminalWrongSize) {
                       "massFlowRate":1.7,"exitArea":0.1}],
         "aerodynamics": {"refArea":1,"refLength":1,"machMin":0.1,"machMax":5,"machTransition":0.8},
         "simulation": {"timeStepRK4":0.001,"tolerance":1e-10},
-        "guidance": [{"stage":1,"tolerance":1e-10,"maxSteeringRate":5,"algorithms":[{"type":"IterativeGuidance","guidanceCycle":0.01,"steeringHoldTime":15,"maxConvergenceIterations":100,"timeToGoConvergenceTolerance":1e-5,"cutoffCriteria":{"inclinationTolerance":0.07,"eccentricityTolerance":0.005}}]}],
+        "guidance": [{"stage":1,"tolerance":1e-10,"maxSteeringRate":5,"algorithms":[{"type":"IterativeGuidance","guidanceCycle":0.01,"steeringHoldTime":15,"maxConvergenceIterations":100,"timeToGoConvergenceTolerance":1e-5,"cutoffCriteria":{"and":[{"semiMajorAxis":{"exceedsBy":0}},{"eccentricity":{"withinTolerance":0.005}},{"inclination":{"withinTolerance":0.07}}]}}]}],
         "mission": {"semiMajorAxis":6903085,"longitudeAscendingNode":260,"inclination":97.5,
                      "eccentricity":1e-5,"trueAnomaly":154,"argumentOfPeriapsis":185,
                      "ldnLaunchsite":264,"lanLaunchsite":84,"aimingAzimuth":191,
@@ -504,7 +507,7 @@ TEST_F(ConfigLoaderTest, ThrowsOnWrongFieldType) {
                       "massFlowRate":1.7,"exitArea":0.1}],
         "aerodynamics": {"refArea":1,"refLength":1,"machMin":0.1,"machMax":5,"machTransition":0.8},
         "simulation": {"timeStepRK4":0.001,"tolerance":1e-10},
-        "guidance": [{"stage":1,"tolerance":1e-10,"maxSteeringRate":5,"algorithms":[{"type":"IterativeGuidance","guidanceCycle":0.01,"steeringHoldTime":15,"maxConvergenceIterations":100,"timeToGoConvergenceTolerance":1e-5,"cutoffCriteria":{"inclinationTolerance":0.07,"eccentricityTolerance":0.005}}]}],
+        "guidance": [{"stage":1,"tolerance":1e-10,"maxSteeringRate":5,"algorithms":[{"type":"IterativeGuidance","guidanceCycle":0.01,"steeringHoldTime":15,"maxConvergenceIterations":100,"timeToGoConvergenceTolerance":1e-5,"cutoffCriteria":{"and":[{"semiMajorAxis":{"exceedsBy":0}},{"eccentricity":{"withinTolerance":0.005}},{"inclination":{"withinTolerance":0.07}}]}}]}],
         "mission": {"semiMajorAxis":6903085,"longitudeAscendingNode":260,"inclination":97.5,
                      "eccentricity":1e-5,"trueAnomaly":154,"argumentOfPeriapsis":185,
                      "ldnLaunchsite":264,"lanLaunchsite":84,"aimingAzimuth":191,

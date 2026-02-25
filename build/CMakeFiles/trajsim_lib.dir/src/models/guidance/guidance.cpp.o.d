@@ -877,15 +877,15 @@ CMakeFiles/trajsim_lib.dir/src/models/guidance/guidance.cpp.o: \
   /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include/sys/_types/_fsfilcnt_t.h \
   /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include/_types/_nl_item.h \
   /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include/c++/v1/cstdarg \
-  /Users/vincentning/Desktop/TrajSim/include/models/guidance/guidance_algorithm.hpp \
+  /Users/vincentning/Desktop/TrajSim/include/models/guidance/algorithm/guidance_algorithm.hpp \
   /Users/vincentning/Desktop/TrajSim/include/core/vec3.hpp \
   /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include/c++/v1/cassert \
   /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include/assert.h \
   /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include/_assert.h \
   /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include/_static_assert.h \
   /Users/vincentning/Desktop/TrajSim/include/core/types.hpp \
-  /Users/vincentning/Desktop/TrajSim/include/models/guidance/open_loop_guidance.hpp \
-  /Users/vincentning/Desktop/TrajSim/include/models/guidance/iterative_guidance.hpp \
+  /Users/vincentning/Desktop/TrajSim/include/models/guidance/algorithm/open_loop_guidance.hpp \
+  /Users/vincentning/Desktop/TrajSim/include/models/guidance/algorithm/iterative_guidance.hpp \
   /Users/vincentning/Desktop/TrajSim/include/models/reference_mission.hpp \
   /Users/vincentning/Desktop/TrajSim/include/core/mat3.hpp \
   /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include/c++/v1/iostream \

@@ -3094,7 +3094,10 @@ CMakeFiles/trajsim_tests.dir/tests/test_config_loader.cpp.o: /Users/vincentning/
   /Users/vincentning/Desktop/TrajSim/include/core/types.hpp \
   /Users/vincentning/Desktop/TrajSim/include/core/utils.hpp \
   /Users/vincentning/Desktop/TrajSim/include/core/vec3.hpp \
-  /Users/vincentning/Desktop/TrajSim/include/models/guidance.hpp \
+  /Users/vincentning/Desktop/TrajSim/include/models/guidance/guidance.hpp \
+  /Users/vincentning/Desktop/TrajSim/include/models/guidance/guidance_algorithm.hpp \
+  /Users/vincentning/Desktop/TrajSim/include/models/guidance/iterative_guidance.hpp \
+  /Users/vincentning/Desktop/TrajSim/include/models/guidance/open_loop_guidance.hpp \
   /Users/vincentning/Desktop/TrajSim/include/models/reference_mission.hpp \
   /Users/vincentning/Desktop/TrajSim/include/models/vehicle/aerodynamics.hpp \
   /Users/vincentning/Desktop/TrajSim/include/models/vehicle/engine_models/engine.hpp \
@@ -4148,7 +4151,10 @@ CMakeFiles/trajsim_tests.dir/tests/test_dynamics.cpp.o: /Users/vincentning/Deskt
   /Users/vincentning/Desktop/TrajSim/include/models/atmosphere.hpp \
   /Users/vincentning/Desktop/TrajSim/include/models/dynamics.hpp \
   /Users/vincentning/Desktop/TrajSim/include/models/gravity.hpp \
-  /Users/vincentning/Desktop/TrajSim/include/models/guidance.hpp \
+  /Users/vincentning/Desktop/TrajSim/include/models/guidance/guidance.hpp \
+  /Users/vincentning/Desktop/TrajSim/include/models/guidance/guidance_algorithm.hpp \
+  /Users/vincentning/Desktop/TrajSim/include/models/guidance/iterative_guidance.hpp \
+  /Users/vincentning/Desktop/TrajSim/include/models/guidance/open_loop_guidance.hpp \
   /Users/vincentning/Desktop/TrajSim/include/models/integrator.hpp \
   /Users/vincentning/Desktop/TrajSim/include/models/reference_mission.hpp \
   /Users/vincentning/Desktop/TrajSim/include/models/vehicle/aerodynamics.hpp \
@@ -6226,7 +6232,10 @@ CMakeFiles/trajsim_tests.dir/tests/test_guidance.cpp.o: /Users/vincentning/Deskt
   /Users/vincentning/Desktop/TrajSim/include/core/types.hpp \
   /Users/vincentning/Desktop/TrajSim/include/core/utils.hpp \
   /Users/vincentning/Desktop/TrajSim/include/core/vec3.hpp \
-  /Users/vincentning/Desktop/TrajSim/include/models/guidance.hpp \
+  /Users/vincentning/Desktop/TrajSim/include/models/guidance/guidance.hpp \
+  /Users/vincentning/Desktop/TrajSim/include/models/guidance/guidance_algorithm.hpp \
+  /Users/vincentning/Desktop/TrajSim/include/models/guidance/iterative_guidance.hpp \
+  /Users/vincentning/Desktop/TrajSim/include/models/guidance/open_loop_guidance.hpp \
   /Users/vincentning/Desktop/TrajSim/include/models/reference_mission.hpp
 
 CMakeFiles/trajsim_tests.dir/tests/test_integrator.cpp.o: /Users/vincentning/Desktop/TrajSim/tests/test_integrator.cpp \
@@ -7277,7 +7286,10 @@ CMakeFiles/trajsim_tests.dir/tests/test_integrator.cpp.o: /Users/vincentning/Des
   /Users/vincentning/Desktop/TrajSim/include/models/atmosphere.hpp \
   /Users/vincentning/Desktop/TrajSim/include/models/dynamics.hpp \
   /Users/vincentning/Desktop/TrajSim/include/models/gravity.hpp \
-  /Users/vincentning/Desktop/TrajSim/include/models/guidance.hpp \
+  /Users/vincentning/Desktop/TrajSim/include/models/guidance/guidance.hpp \
+  /Users/vincentning/Desktop/TrajSim/include/models/guidance/guidance_algorithm.hpp \
+  /Users/vincentning/Desktop/TrajSim/include/models/guidance/iterative_guidance.hpp \
+  /Users/vincentning/Desktop/TrajSim/include/models/guidance/open_loop_guidance.hpp \
   /Users/vincentning/Desktop/TrajSim/include/models/integrator.hpp \
   /Users/vincentning/Desktop/TrajSim/include/models/reference_mission.hpp \
   /Users/vincentning/Desktop/TrajSim/include/models/vehicle/aerodynamics.hpp \
@@ -11396,6 +11408,12 @@ CMakeFiles/trajsim_tests.dir/tests/test_vehicle.cpp.o: /Users/vincentning/Deskto
 
 /Users/vincentning/Desktop/TrajSim/tests/test_dynamics.cpp:
 
+/Users/vincentning/Desktop/TrajSim/include/models/guidance/iterative_guidance.hpp:
+
+/Users/vincentning/Desktop/TrajSim/include/models/guidance/guidance_algorithm.hpp:
+
+/Users/vincentning/Desktop/TrajSim/include/models/guidance/guidance.hpp:
+
 /Users/vincentning/Desktop/TrajSim/include/core/types.hpp:
 
 /Users/vincentning/Desktop/TrajSim/include/core/sim.hpp:
@@ -12546,6 +12564,8 @@ _deps/googletest-src/googletest/include/gtest/gtest-matchers.h:
 
 /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include/c++/v1/__format/format_context.h:
 
+/Users/vincentning/Desktop/TrajSim/include/models/guidance/open_loop_guidance.hpp:
+
 /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include/c++/v1/stddef.h:
 
 /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include/c++/v1/__cstddef/size_t.h:
@@ -12981,8 +13001,6 @@ _deps/googletest-src/googletest/include/gtest/gtest-message.h:
 /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include/c++/v1/__type_traits/is_always_bitcastable.h:
 
 /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include/c++/v1/__algorithm/ranges_next_permutation.h:
-
-/Users/vincentning/Desktop/TrajSim/include/models/guidance.hpp:
 
 /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include/c++/v1/__algorithm/ranges_for_each_n.h:
 

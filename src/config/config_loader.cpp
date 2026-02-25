@@ -62,6 +62,71 @@ static void validateAlgorithmType(const std::string& type, const std::string& co
     }
 }
 
+using CutoffNode = IterativeGuidance::CutoffNode;
+
+/// @brief Recursively parse a cutoff expression tree node from JSON.
+///
+/// JSON shapes:
+///   Leaf: { "semiMajorAxis": { "exceedsBy": 0 } }
+///   And:  { "and": [ <node>, <node>, ... ] }
+///   Or:   { "or":  [ <node>, <node>, ... ] }
+static CutoffNode parseCutoffNode(const json& j, const std::string& ctx) {
+    if (!j.is_object())
+        throw std::invalid_argument(ctx + ": cutoff node must be a JSON object");
+
+    // Combinator nodes
+    if (j.contains("and")) {
+        const auto& arr = j.at("and");
+        if (!arr.is_array() || arr.empty())
+            throw std::invalid_argument(ctx + ".and: must be a non-empty JSON array");
+        std::vector<CutoffNode> children;
+        children.reserve(arr.size());
+        for (size_t k = 0; k < arr.size(); ++k)
+            children.push_back(parseCutoffNode(arr[k], ctx + ".and[" + std::to_string(k) + "]"));
+        return CutoffNode::andOf(std::move(children));
+    }
+    if (j.contains("or")) {
+        const auto& arr = j.at("or");
+        if (!arr.is_array() || arr.empty())
+            throw std::invalid_argument(ctx + ".or: must be a non-empty JSON array");
+        std::vector<CutoffNode> children;
+        children.reserve(arr.size());
+        for (size_t k = 0; k < arr.size(); ++k)
+            children.push_back(parseCutoffNode(arr[k], ctx + ".or[" + std::to_string(k) + "]"));
+        return CutoffNode::orOf(std::move(children));
+    }
+
+    // Leaf node — find the parameter key
+    static const std::vector<std::pair<std::string, CutoffNode::Parameter>> paramKeys = {
+        {"semiMajorAxis", CutoffNode::Parameter::SemiMajorAxis},
+        {"eccentricity",  CutoffNode::Parameter::Eccentricity},
+        {"inclination",   CutoffNode::Parameter::Inclination}
+    };
+
+    for (const auto& [key, param] : paramKeys) {
+        if (!j.contains(key)) continue;
+
+        const auto& comp = j.at(key);
+        if (!comp.is_object())
+            throw std::invalid_argument(ctx + "." + key + ": must be a JSON object with 'withinTolerance' or 'exceedsBy'");
+
+        bool hasWithin  = comp.contains("withinTolerance");
+        bool hasExceeds = comp.contains("exceedsBy");
+        if (hasWithin == hasExceeds)
+            throw std::invalid_argument(ctx + "." + key + ": must specify exactly one of 'withinTolerance' or 'exceedsBy'");
+
+        if (hasWithin)
+            return CutoffNode::leaf(param, CutoffNode::Comparison::WithinTolerance,
+                                    comp.at("withinTolerance").get<double>());
+        else
+            return CutoffNode::leaf(param, CutoffNode::Comparison::ExceedsBy,
+                                    comp.at("exceedsBy").get<double>());
+    }
+
+    throw std::invalid_argument(ctx + ": cutoff node must contain 'and', 'or', or a parameter name "
+                                "(semiMajorAxis, eccentricity, inclination)");
+}
+
 static Vec3 requireVec3(const json& j, const std::string& key, const std::string& context) {
     if (!j.contains(key))
         throw std::invalid_argument(context + ": required field '" + key + "' is missing");
@@ -191,9 +256,6 @@ static std::vector<Guidance::Config> parseGuidance(const json& arr, std::vector<
     static const std::vector<std::string> knownOpenLoopKeys = {
         "type", "cutoffCriteria"
     };
-    static const std::vector<std::string> knownIgmCutoffKeys = {
-        "inclinationTolerance", "eccentricityTolerance"
-    };
     static const std::vector<std::string> knownOpenLoopCutoffKeys = {
         "range", "altitude"
     };
@@ -240,11 +302,8 @@ static std::vector<Guidance::Config> parseGuidance(const json& arr, std::vector<
                 entry.igmConfig.timeToGoConvergenceTolerance = requireField<double>(a, "timeToGoConvergenceTolerance", actx);
 
                 if (a.contains("cutoffCriteria")) {
-                    const auto& cc = a.at("cutoffCriteria");
                     const std::string cctx = actx + ".cutoffCriteria";
-                    warnUnknownKeys(cc, knownIgmCutoffKeys, cctx, warnings);
-                    entry.igmCutoffCriteria.inclinationTolerance = requireField<double>(cc, "inclinationTolerance", cctx);
-                    entry.igmCutoffCriteria.eccentricityTolerance = requireField<double>(cc, "eccentricityTolerance", cctx);
+                    entry.igmCutoffCriteria.root = parseCutoffNode(a.at("cutoffCriteria"), cctx);
                 }
             } else if (type == "OpenLoopGuidance") {
                 warnUnknownKeys(a, knownOpenLoopKeys, actx, warnings);
