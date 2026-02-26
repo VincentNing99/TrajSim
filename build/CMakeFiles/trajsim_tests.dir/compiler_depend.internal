@@ -3097,10 +3097,11 @@ CMakeFiles/trajsim_tests.dir/tests/test_config_loader.cpp.o
  /Users/vincentning/Desktop/TrajSim/include/core/types.hpp
  /Users/vincentning/Desktop/TrajSim/include/core/utils.hpp
  /Users/vincentning/Desktop/TrajSim/include/core/vec3.hpp
+ /Users/vincentning/Desktop/TrajSim/include/models/guidance/algorithm/guidance_algorithm.hpp
+ /Users/vincentning/Desktop/TrajSim/include/models/guidance/algorithm/iterative_guidance.hpp
+ /Users/vincentning/Desktop/TrajSim/include/models/guidance/algorithm/open_loop_guidance.hpp
+ /Users/vincentning/Desktop/TrajSim/include/models/guidance/exit_criteria.hpp
  /Users/vincentning/Desktop/TrajSim/include/models/guidance/guidance.hpp
- /Users/vincentning/Desktop/TrajSim/include/models/guidance/guidance_algorithm.hpp
- /Users/vincentning/Desktop/TrajSim/include/models/guidance/iterative_guidance.hpp
- /Users/vincentning/Desktop/TrajSim/include/models/guidance/open_loop_guidance.hpp
  /Users/vincentning/Desktop/TrajSim/include/models/reference_mission.hpp
  /Users/vincentning/Desktop/TrajSim/include/models/vehicle/aerodynamics.hpp
  /Users/vincentning/Desktop/TrajSim/include/models/vehicle/engine_models/engine.hpp
@@ -4155,10 +4156,11 @@ CMakeFiles/trajsim_tests.dir/tests/test_dynamics.cpp.o
  /Users/vincentning/Desktop/TrajSim/include/models/atmosphere.hpp
  /Users/vincentning/Desktop/TrajSim/include/models/dynamics.hpp
  /Users/vincentning/Desktop/TrajSim/include/models/gravity.hpp
+ /Users/vincentning/Desktop/TrajSim/include/models/guidance/algorithm/guidance_algorithm.hpp
+ /Users/vincentning/Desktop/TrajSim/include/models/guidance/algorithm/iterative_guidance.hpp
+ /Users/vincentning/Desktop/TrajSim/include/models/guidance/algorithm/open_loop_guidance.hpp
+ /Users/vincentning/Desktop/TrajSim/include/models/guidance/exit_criteria.hpp
  /Users/vincentning/Desktop/TrajSim/include/models/guidance/guidance.hpp
- /Users/vincentning/Desktop/TrajSim/include/models/guidance/guidance_algorithm.hpp
- /Users/vincentning/Desktop/TrajSim/include/models/guidance/iterative_guidance.hpp
- /Users/vincentning/Desktop/TrajSim/include/models/guidance/open_loop_guidance.hpp
  /Users/vincentning/Desktop/TrajSim/include/models/integrator.hpp
  /Users/vincentning/Desktop/TrajSim/include/models/reference_mission.hpp
  /Users/vincentning/Desktop/TrajSim/include/models/vehicle/aerodynamics.hpp
@@ -6238,10 +6240,11 @@ CMakeFiles/trajsim_tests.dir/tests/test_guidance.cpp.o
  /Users/vincentning/Desktop/TrajSim/include/core/types.hpp
  /Users/vincentning/Desktop/TrajSim/include/core/utils.hpp
  /Users/vincentning/Desktop/TrajSim/include/core/vec3.hpp
+ /Users/vincentning/Desktop/TrajSim/include/models/guidance/algorithm/guidance_algorithm.hpp
+ /Users/vincentning/Desktop/TrajSim/include/models/guidance/algorithm/iterative_guidance.hpp
+ /Users/vincentning/Desktop/TrajSim/include/models/guidance/algorithm/open_loop_guidance.hpp
+ /Users/vincentning/Desktop/TrajSim/include/models/guidance/exit_criteria.hpp
  /Users/vincentning/Desktop/TrajSim/include/models/guidance/guidance.hpp
- /Users/vincentning/Desktop/TrajSim/include/models/guidance/guidance_algorithm.hpp
- /Users/vincentning/Desktop/TrajSim/include/models/guidance/iterative_guidance.hpp
- /Users/vincentning/Desktop/TrajSim/include/models/guidance/open_loop_guidance.hpp
  /Users/vincentning/Desktop/TrajSim/include/models/reference_mission.hpp
 
 CMakeFiles/trajsim_tests.dir/tests/test_integrator.cpp.o
@@ -7293,10 +7296,11 @@ CMakeFiles/trajsim_tests.dir/tests/test_integrator.cpp.o
  /Users/vincentning/Desktop/TrajSim/include/models/atmosphere.hpp
  /Users/vincentning/Desktop/TrajSim/include/models/dynamics.hpp
  /Users/vincentning/Desktop/TrajSim/include/models/gravity.hpp
+ /Users/vincentning/Desktop/TrajSim/include/models/guidance/algorithm/guidance_algorithm.hpp
+ /Users/vincentning/Desktop/TrajSim/include/models/guidance/algorithm/iterative_guidance.hpp
+ /Users/vincentning/Desktop/TrajSim/include/models/guidance/algorithm/open_loop_guidance.hpp
+ /Users/vincentning/Desktop/TrajSim/include/models/guidance/exit_criteria.hpp
  /Users/vincentning/Desktop/TrajSim/include/models/guidance/guidance.hpp
- /Users/vincentning/Desktop/TrajSim/include/models/guidance/guidance_algorithm.hpp
- /Users/vincentning/Desktop/TrajSim/include/models/guidance/iterative_guidance.hpp
- /Users/vincentning/Desktop/TrajSim/include/models/guidance/open_loop_guidance.hpp
  /Users/vincentning/Desktop/TrajSim/include/models/integrator.hpp
  /Users/vincentning/Desktop/TrajSim/include/models/reference_mission.hpp
  /Users/vincentning/Desktop/TrajSim/include/models/vehicle/aerodynamics.hpp

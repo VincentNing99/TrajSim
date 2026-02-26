@@ -19,15 +19,7 @@ namespace trajsim {
 struct GuidanceInput {
     double time;                ///< Current simulation time [s]
     VehicleState state;         ///< Current vehicle state
-    double massFlowRate;        ///< Propellant mass flow rate [kg/s]
-    double exitVelocity;        ///< Engine exhaust velocity [m/s]
     Vec3 gravity;               ///< Gravity at current position [m/s^2]
-    Vec3 gravityCutoff;         ///< Gravity at cutoff position [m/s^2]
-};
-
-/// @brief Output from a guidance algorithm computation.
-struct GuidanceOutput {
-    SteeringAngles steering;    ///< Computed steering angles [rad]
 };
 
 // =============================================================================
@@ -37,7 +29,7 @@ struct GuidanceOutput {
 /// @brief Abstract interface for guidance algorithms.
 ///
 /// Concrete implementations (OpenLoopGuidance, IterativeGuidance) provide
-/// specific steering computation and cutoff logic. Follows the EngineModel
+/// specific steering computation and exit logic. Follows the EngineModel
 /// pattern: virtual interface, deleted copy, default move, protected ctor.
 class GuidanceAlgorithm {
 public:
@@ -48,10 +40,10 @@ public:
     GuidanceAlgorithm& operator=(GuidanceAlgorithm&&) = default;
 
     /// @brief Compute steering angles for current state.
-    [[nodiscard]] virtual GuidanceOutput computeSteering(const GuidanceInput& input) = 0;
+    [[nodiscard]] virtual SteeringAngles computeSteering(const GuidanceInput& input) = 0;
 
-    /// @brief Check if cutoff conditions are met.
-    [[nodiscard]] virtual bool cutoff(const VehicleState& state) const = 0;
+    /// @brief Check if exit conditions are met.
+    [[nodiscard]] virtual bool exit(const VehicleState& state) const = 0;
 
     /// @brief Get algorithm name for identification.
     [[nodiscard]] virtual std::string_view name() const noexcept = 0;

@@ -50,6 +50,12 @@ add_library(trajsim_lib
 target_link_libraries(trajsim_lib PUBLIC nlohmann_json::nlohmann_json)
 
 # =============================================================================
+# Executable
+# =============================================================================
+add_executable(trajsim src/main.cpp)
+target_link_libraries(trajsim trajsim_lib)
+
+# =============================================================================
 # Tests
 # =============================================================================
 enable_testing()

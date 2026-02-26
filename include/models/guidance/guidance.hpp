@@ -24,20 +24,19 @@ namespace trajsim {
 ///
 /// Owns an ordered sequence of GuidanceAlgorithm objects. Delegates steering
 /// computation to the active algorithm, applies rate limiting, and auto-advances
-/// to the next algorithm when cutoff is reached.
+/// to the next algorithm when exit conditions are met.
 class Guidance {
 public:
     /// @brief Algorithm entry in the config — type string plus algorithm-specific JSON.
     struct AlgorithmEntry {
         std::string type;
+        ExitCriteria exitCriteria;  ///< Shared expression-tree exit criteria
 
         // IterativeGuidance params (only used when type == "IterativeGuidance")
         IterativeGuidance::Config igmConfig;
-        IterativeGuidance::CutoffCriteria igmCutoffCriteria;
 
         // OpenLoopGuidance params (only used when type == "OpenLoopGuidance")
         OpenLoopGuidance::Config openLoopConfig;
-        OpenLoopGuidance::CutoffCriteria openLoopCutoffCriteria;
     };
 
     struct Config {
@@ -63,7 +62,10 @@ public:
     /// @brief Construct guidance coordinator from config and mission.
     explicit Guidance(Config config,
                       const ReferenceMission& mission,
-                      const VehicleState& vehicleState);
+                      const VehicleState& vehicleState,
+                      Vec3 gravityCutoff = Vec3::zero(),
+                      double exitVelocity = 0.0,
+                      double massFlowRate = 0.0);
 
     // =========================================================================
     // Steering Commands
@@ -71,13 +73,10 @@ public:
 
     /// @brief Compute steering, delegating to active algorithm with rate limiting.
     [[nodiscard]] SteeringAngles computeSteering(double t,
-                                                  double massFlowRate = 0.0,
-                                                  double engineExitVelocity = 0.0,
-                                                  Vec3 g0 = Vec3::zero(),
-                                                  Vec3 gCutoff = Vec3::zero());
+                                                  Vec3 g0 = Vec3::zero());
 
-    /// @brief Check cutoff of active algorithm.
-    [[nodiscard]] bool cutoff(const VehicleState& state) const;
+    /// @brief Check exit conditions of active algorithm.
+    [[nodiscard]] bool exit(const VehicleState& state) const;
 
     // =========================================================================
     // Algorithm Sequencing

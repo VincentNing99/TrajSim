@@ -65,30 +65,33 @@ StateDerivative Dynamics::evaluate(const VehicleState& state,
                                     double thrustMagnitude,
                                     double massFlowRate,
                                     double t) const {
-    // 1. Compute aero angles (α, β) from airspeed in body frame
-    AeroAngles aeroAngles = computeAeroAngles(steering, state.velocity, state.position);
-
-    // 2. Atmospheric state at current altitude (T, P, ρ, Mach, q)
+    // 1. Altitude check — skip aerodynamics above the atmosphere (~86 km)
     double altitude = gravity.computeAltitude(state.position);
-    AtmosphereState atmoState = atmosphere.computeStates(velocityBody, altitude);
+    static constexpr double kAtmosphereCeiling = 86000.0;
 
-    // 3. Aerodynamic forces in body frame via coefficient lookup
-    double alphaDeg = aeroAngles.alpha * (180.0 / std::numbers::pi);
-    double betaDeg  = aeroAngles.beta  * (180.0 / std::numbers::pi);
-    AeroResult aeroResult = vehicle.getAero().compute(atmoState.machNumber, alphaDeg, betaDeg,
-                                                       atmoState.dynamicPressure);
+    Vec3 aeroForceBody = Vec3::zero();
+    if (altitude < kAtmosphereCeiling) {
+        AeroAngles aeroAngles = computeAeroAngles(steering, state.velocity, state.position);
+        AtmosphereState atmoState = atmosphere.computeStates(velocityBody, altitude);
 
-    // 4. Thrust acts along body X-axis
+        double alphaDeg = aeroAngles.alpha * (180.0 / std::numbers::pi);
+        double betaDeg  = aeroAngles.beta  * (180.0 / std::numbers::pi);
+        AeroResult aeroResult = vehicle.getAero().compute(atmoState.machNumber, alphaDeg, betaDeg,
+                                                           atmoState.dynamicPressure);
+        aeroForceBody = aeroResult.force;
+    }
+
+    // 2. Thrust acts along body X-axis
     Vec3 thrustBody{thrustMagnitude, 0.0, 0.0};
 
-    // 5. Rotate total body-frame force (thrust + aero) into local frame
-    Vec3 totalForceBody = thrustBody + aeroResult.force;
+    // 3. Rotate total body-frame force (thrust + aero) into local frame
+    Vec3 totalForceBody = thrustBody + aeroForceBody;
     Vec3 totalForceLocal = rmBodyToLocal(steering) * totalForceBody;
 
-    // 6. Gravity acceleration computed directly in local frame (J2 model)
+    // 4. Gravity acceleration computed directly in local frame (J2 model)
     Vec3 gravityAcc = gravity.computeAcceleration(state.position);
 
-    // 7. Newton's second law: a = F/m + g
+    // 5. Newton's second law: a = F/m + g
     double invMass = 1.0 / state.vehicleMass;
     Vec3 acceleration = totalForceLocal * invMass + gravityAcc;
 

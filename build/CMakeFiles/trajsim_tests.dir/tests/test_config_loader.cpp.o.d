@@ -1048,6 +1048,7 @@ CMakeFiles/trajsim_tests.dir/tests/test_config_loader.cpp.o: \
   /Users/vincentning/Desktop/TrajSim/include/core/types.hpp \
   /Users/vincentning/Desktop/TrajSim/include/models/guidance/algorithm/open_loop_guidance.hpp \
   /Users/vincentning/Desktop/TrajSim/include/models/guidance/algorithm/iterative_guidance.hpp \
+  /Users/vincentning/Desktop/TrajSim/include/models/guidance/exit_criteria.hpp \
   /Users/vincentning/Desktop/TrajSim/include/models/reference_mission.hpp \
   /Users/vincentning/Desktop/TrajSim/include/core/mat3.hpp \
   /Users/vincentning/Desktop/TrajSim/include/core/utils.hpp \

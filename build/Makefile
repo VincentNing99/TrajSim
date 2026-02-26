@@ -185,6 +185,19 @@ trajsim_lib/fast:
 .PHONY : trajsim_lib/fast
 
 #=============================================================================
+# Target rules for targets named trajsim
+
+# Build rule for target.
+trajsim: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 trajsim
+.PHONY : trajsim
+
+# fast build rule for target.
+trajsim/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/trajsim.dir/build.make CMakeFiles/trajsim.dir/build
+.PHONY : trajsim/fast
+
+#=============================================================================
 # Target rules for targets named trajsim_tests
 
 # Build rule for target.
@@ -272,6 +285,30 @@ src/config/config_loader.s: src/config/config_loader.cpp.s
 src/config/config_loader.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/trajsim_lib.dir/build.make CMakeFiles/trajsim_lib.dir/src/config/config_loader.cpp.s
 .PHONY : src/config/config_loader.cpp.s
+
+src/main.o: src/main.cpp.o
+.PHONY : src/main.o
+
+# target to build an object file
+src/main.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/trajsim.dir/build.make CMakeFiles/trajsim.dir/src/main.cpp.o
+.PHONY : src/main.cpp.o
+
+src/main.i: src/main.cpp.i
+.PHONY : src/main.i
+
+# target to preprocess a source file
+src/main.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/trajsim.dir/build.make CMakeFiles/trajsim.dir/src/main.cpp.i
+.PHONY : src/main.cpp.i
+
+src/main.s: src/main.cpp.s
+.PHONY : src/main.s
+
+# target to generate assembly for a file
+src/main.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/trajsim.dir/build.make CMakeFiles/trajsim.dir/src/main.cpp.s
+.PHONY : src/main.cpp.s
 
 src/models/aerodynamics.o: src/models/aerodynamics.cpp.o
 .PHONY : src/models/aerodynamics.o
@@ -770,11 +807,15 @@ help:
 	@echo "... gmock_main"
 	@echo "... gtest"
 	@echo "... gtest_main"
+	@echo "... trajsim"
 	@echo "... trajsim_lib"
 	@echo "... trajsim_tests"
 	@echo "... src/config/config_loader.o"
 	@echo "... src/config/config_loader.i"
 	@echo "... src/config/config_loader.s"
+	@echo "... src/main.o"
+	@echo "... src/main.i"
+	@echo "... src/main.s"
 	@echo "... src/models/aerodynamics.o"
 	@echo "... src/models/aerodynamics.i"
 	@echo "... src/models/aerodynamics.s"

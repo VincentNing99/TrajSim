@@ -11,9 +11,8 @@
 
 namespace trajsim {
 
-OpenLoopGuidance::OpenLoopGuidance(Config config, CutoffCriteria cutoffCriteria, double initialTime)
+OpenLoopGuidance::OpenLoopGuidance(Config config, double initialTime)
     : config(config)
-    , cutoffCriteria(cutoffCriteria)
     , timeInitial(initialTime)
 {
 }
@@ -24,22 +23,23 @@ void OpenLoopGuidance::loadSteeringProfile(const std::string& filepath) {
     assert(steeringProfile[0].size() >= 4 && "Steering profile must have [time, pitch, yaw, roll]");
 }
 
-GuidanceOutput OpenLoopGuidance::computeSteering(const GuidanceInput& input) {
+SteeringAngles OpenLoopGuidance::computeSteering(const GuidanceInput& input) {
     const double elapsed = input.time - timeInitial;
+    lastElapsed = elapsed;
 
     // Clamp to first point if before profile start
     if (elapsed <= steeringProfile[0][0]) {
-        return GuidanceOutput{SteeringAngles{
+        return SteeringAngles{
             steeringProfile[0][1],  // phi (pitch)
             steeringProfile[0][2],  // psi (yaw)
             steeringProfile[0][3]   // gamma (roll)
-        }};
+        };
     }
 
     // Clamp to last point if after profile end
     const auto& last = steeringProfile.back();
     if (elapsed >= last[0]) {
-        return GuidanceOutput{SteeringAngles{last[1], last[2], last[3]}};
+        return SteeringAngles{last[1], last[2], last[3]};
     }
 
     // Find bracketing indices for interpolation
@@ -56,21 +56,20 @@ GuidanceOutput OpenLoopGuidance::computeSteering(const GuidanceInput& input) {
 
     // Guard against division by zero (duplicate timestamps in profile)
     if (std::fabs(dt) < config.tolerance) {
-        return GuidanceOutput{SteeringAngles{p0[1], p0[2], p0[3]}};
+        return SteeringAngles{p0[1], p0[2], p0[3]};
     }
 
     const double alpha = (elapsed - p0[0]) / dt;
 
-    return GuidanceOutput{SteeringAngles{
+    return SteeringAngles{
         p0[1] + alpha * (p1[1] - p0[1]),  // phi (pitch)
         p0[2] + alpha * (p1[2] - p0[2]),  // psi (yaw)
         p0[3] + alpha * (p1[3] - p0[3])   // gamma (roll)
-    }};
+    };
 }
 
-bool OpenLoopGuidance::cutoff(const VehicleState& /*state*/) const {
-    // Cutoff logic TBD — criteria stored but evaluation not yet defined
-    return false;
+bool OpenLoopGuidance::exit(const VehicleState& /*state*/) const {
+    return !steeringProfile.empty() && lastElapsed >= steeringProfile.back()[0];
 }
 
 }  // namespace trajsim

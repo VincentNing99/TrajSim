@@ -28,12 +28,12 @@ static Guidance::Config makeTestGuidanceConfig() {
         .maxConvergenceIterations = 100,
         .timeToGoConvergenceTolerance = 1e-5
     };
-    using CN = IterativeGuidance::CutoffNode;
-    entry.igmCutoffCriteria = {
-        .root = CN::andOf({
-            CN::leaf(CN::Parameter::SemiMajorAxis, CN::Comparison::ExceedsBy, 0.0),
-            CN::leaf(CN::Parameter::Eccentricity,  CN::Comparison::WithinTolerance, 0.005),
-            CN::leaf(CN::Parameter::Inclination,    CN::Comparison::WithinTolerance, 0.07)
+    using EN = ExitNode;
+    entry.exitCriteria = {
+        .root = EN::andOf({
+            EN::leaf(EN::Parameter::SemiMajorAxis, EN::Comparison::ExceedsBy, 0.0),
+            EN::leaf(EN::Parameter::Eccentricity,  EN::Comparison::WithinTolerance, 0.005),
+            EN::leaf(EN::Parameter::Inclination,    EN::Comparison::WithinTolerance, 0.07)
         })
     };
 
@@ -56,7 +56,8 @@ static constexpr double TEST_EXIT_VELOCITY  = 3500.0;
 class GuidanceTest : public ::testing::Test {
 protected:
     void SetUp() override {
-        guidance = std::make_unique<Guidance>(makeTestGuidanceConfig(), MISSION_1, TEST_VEHICLE_STATE);
+        guidance = std::make_unique<Guidance>(makeTestGuidanceConfig(), MISSION_1, TEST_VEHICLE_STATE,
+                                              Vec3{0.0, -9.8, 0.0}, TEST_EXIT_VELOCITY, TEST_MASS_FLOW_RATE);
     }
 
     IterativeGuidance* getIGM() const {
@@ -71,7 +72,8 @@ protected:
 // =============================================================================
 
 TEST_F(GuidanceTest, ConstructFromMission1) {
-    Guidance g(makeTestGuidanceConfig(), MISSION_1, TEST_VEHICLE_STATE);
+    Guidance g(makeTestGuidanceConfig(), MISSION_1, TEST_VEHICLE_STATE,
+               Vec3{0.0, -9.8, 0.0}, TEST_EXIT_VELOCITY, TEST_MASS_FLOW_RATE);
     const auto* terminal = g.getTerminalState();
     ASSERT_NE(terminal, nullptr);
 
@@ -81,7 +83,8 @@ TEST_F(GuidanceTest, ConstructFromMission1) {
 }
 
 TEST_F(GuidanceTest, ConstructFromMission2) {
-    Guidance g(makeTestGuidanceConfig(), MISSION_2, TEST_VEHICLE_STATE);
+    Guidance g(makeTestGuidanceConfig(), MISSION_2, TEST_VEHICLE_STATE,
+               Vec3{0.0, -9.8, 0.0}, TEST_EXIT_VELOCITY, TEST_MASS_FLOW_RATE);
     const auto* terminal = g.getTerminalState();
     ASSERT_NE(terminal, nullptr);
 
@@ -91,7 +94,8 @@ TEST_F(GuidanceTest, ConstructFromMission2) {
 }
 
 TEST_F(GuidanceTest, TerminalStatePositionAndVelocity) {
-    Guidance g(makeTestGuidanceConfig(), MISSION_1, TEST_VEHICLE_STATE);
+    Guidance g(makeTestGuidanceConfig(), MISSION_1, TEST_VEHICLE_STATE,
+               Vec3{0.0, -9.8, 0.0}, TEST_EXIT_VELOCITY, TEST_MASS_FLOW_RATE);
     const auto* terminal = g.getTerminalState();
     ASSERT_NE(terminal, nullptr);
 
@@ -111,44 +115,45 @@ TEST_F(GuidanceTest, TerminalStatePositionAndVelocity) {
 class OpenLoopGuidanceTest : public ::testing::Test {
 protected:
     void SetUp() override {
-        guidance = std::make_unique<Guidance>(makeTestGuidanceConfig(), MISSION_1, TEST_VEHICLE_STATE);
+        guidance = std::make_unique<Guidance>(makeTestGuidanceConfig(), MISSION_1, TEST_VEHICLE_STATE,
+                                              Vec3{0.0, -9.8, 0.0}, TEST_EXIT_VELOCITY, TEST_MASS_FLOW_RATE);
     }
 
     std::unique_ptr<Guidance> guidance;
 };
 
 // =============================================================================
-// Cutoff Tests
+// Exit Tests
 // =============================================================================
 
-TEST_F(GuidanceTest, CutoffReturnsFalseForZeroPosition) {
+TEST_F(GuidanceTest, ExitReturnsFalseForZeroPosition) {
     VehicleState state;
     state.position = Vec3{0.0, 0.0, 0.0};
     state.velocity = Vec3{1000.0, 0.0, 0.0};
     state.acceleration = Vec3::zero();
     state.vehicleMass = 10000.0;
 
-    EXPECT_FALSE(guidance->cutoff(state));
+    EXPECT_FALSE(guidance->exit(state));
 }
 
-TEST_F(GuidanceTest, CutoffReturnsFalseForRadialTrajectory) {
+TEST_F(GuidanceTest, ExitReturnsFalseForRadialTrajectory) {
     VehicleState state;
     state.position = Vec3{6378000.0, 0.0, 0.0};
     state.velocity = Vec3{1000.0, 0.0, 0.0};
     state.acceleration = Vec3::zero();
     state.vehicleMass = 10000.0;
 
-    EXPECT_FALSE(guidance->cutoff(state));
+    EXPECT_FALSE(guidance->exit(state));
 }
 
-TEST_F(GuidanceTest, CutoffReturnsFalseWhenNotAtTarget) {
+TEST_F(GuidanceTest, ExitReturnsFalseWhenNotAtTarget) {
     VehicleState state;
     state.position = Vec3{6378000.0, 0.0, 0.0};
     state.velocity = Vec3{0.0, 5000.0, 0.0};
     state.acceleration = Vec3::zero();
     state.vehicleMass = 10000.0;
 
-    EXPECT_FALSE(guidance->cutoff(state));
+    EXPECT_FALSE(guidance->exit(state));
 }
 
 // =============================================================================
@@ -235,7 +240,8 @@ TEST_F(OpenLoopGuidanceTest, OpenLoopClampsToLastPointAfterEnd) {
 class GuidanceDeltaVTest : public ::testing::Test {
 protected:
     void SetUp() override {
-        guidance = std::make_unique<Guidance>(makeTestGuidanceConfig(), MISSION_1, TEST_VEHICLE_STATE);
+        guidance = std::make_unique<Guidance>(makeTestGuidanceConfig(), MISSION_1, TEST_VEHICLE_STATE,
+                                              Vec3{0.0, -9.8, 0.0}, TEST_EXIT_VELOCITY, TEST_MASS_FLOW_RATE);
     }
 
     IterativeGuidance* getIGM() const {
@@ -288,7 +294,8 @@ TEST_F(GuidanceDeltaVTest, ComputeVelocitySteeringAnglesHandlesZeroDvXi) {
 // =============================================================================
 
 TEST_F(GuidanceTest, BuildRotationMatrixProducesFiniteMatrix) {
-    Guidance g(makeTestGuidanceConfig(), MISSION_1, TEST_VEHICLE_STATE);
+    Guidance g(makeTestGuidanceConfig(), MISSION_1, TEST_VEHICLE_STATE,
+               Vec3{0.0, -9.8, 0.0}, TEST_EXIT_VELOCITY, TEST_MASS_FLOW_RATE);
 
     const auto* terminal = g.getTerminalState();
     ASSERT_NE(terminal, nullptr);
@@ -298,7 +305,8 @@ TEST_F(GuidanceTest, BuildRotationMatrixProducesFiniteMatrix) {
 }
 
 TEST_F(GuidanceTest, BuildRotationMatrixFromMission2) {
-    Guidance g(makeTestGuidanceConfig(), MISSION_2, TEST_VEHICLE_STATE);
+    Guidance g(makeTestGuidanceConfig(), MISSION_2, TEST_VEHICLE_STATE,
+               Vec3{0.0, -9.8, 0.0}, TEST_EXIT_VELOCITY, TEST_MASS_FLOW_RATE);
 
     const auto* terminal = g.getTerminalState();
     ASSERT_NE(terminal, nullptr);
@@ -308,10 +316,10 @@ TEST_F(GuidanceTest, BuildRotationMatrixFromMission2) {
 }
 
 // =============================================================================
-// Cutoff Success Case Tests
+// Exit Success Case Tests
 // =============================================================================
 
-TEST_F(GuidanceTest, CutoffReturnsTrueWhenTargetReached) {
+TEST_F(GuidanceTest, ExitReturnsTrueWhenTargetReached) {
     VehicleState state;
 
     state.position = MISSION_1.positionTerminal;
@@ -319,7 +327,7 @@ TEST_F(GuidanceTest, CutoffReturnsTrueWhenTargetReached) {
     state.acceleration = Vec3::zero();
     state.vehicleMass = 10000.0;
 
-    bool result = guidance->cutoff(state);
+    bool result = guidance->exit(state);
     EXPECT_TRUE(result == true || result == false);
 }
 
@@ -330,7 +338,8 @@ TEST_F(GuidanceTest, CutoffReturnsTrueWhenTargetReached) {
 class IterativeGuidanceTest : public ::testing::Test {
 protected:
     void SetUp() override {
-        guidance = std::make_unique<Guidance>(makeTestGuidanceConfig(), MISSION_1, TEST_VEHICLE_STATE);
+        guidance = std::make_unique<Guidance>(makeTestGuidanceConfig(), MISSION_1, TEST_VEHICLE_STATE,
+                                              Vec3{0.0, -9.8, 0.0}, TEST_EXIT_VELOCITY, TEST_MASS_FLOW_RATE);
     }
 
     IterativeGuidance* getIGM() const {
@@ -353,14 +362,11 @@ TEST_F(IterativeGuidanceTest, IterativeGuidanceReturnsValidSteeringAngles) {
     GuidanceInput input{};
     input.time = t;
     input.state = state;
-    input.massFlowRate = TEST_MASS_FLOW_RATE;
-    input.exitVelocity = TEST_EXIT_VELOCITY;
     input.gravity = g;
-    input.gravityCutoff = g;
 
-    GuidanceOutput output = getIGM()->computeSteering(input);
+    SteeringAngles output = getIGM()->computeSteering(input);
 
-    EXPECT_TRUE(output.steering.is_finite());
+    EXPECT_TRUE(output.is_finite());
 }
 
 TEST_F(IterativeGuidanceTest, IterativeGuidanceHoldsSteeringNearCutoff) {
@@ -374,20 +380,17 @@ TEST_F(IterativeGuidanceTest, IterativeGuidanceHoldsSteeringNearCutoff) {
 
     GuidanceInput input{};
     input.state = state;
-    input.massFlowRate = TEST_MASS_FLOW_RATE;
-    input.exitVelocity = TEST_EXIT_VELOCITY;
     input.gravity = g;
-    input.gravityCutoff = g;
 
     input.time = MISSION_1.initialTime + 50.0;
-    GuidanceOutput output1 = getIGM()->computeSteering(input);
+    SteeringAngles output1 = getIGM()->computeSteering(input);
 
-    EXPECT_TRUE(output1.steering.is_finite());
+    EXPECT_TRUE(output1.is_finite());
 
     input.time = MISSION_1.initialTime + 60.0;
-    GuidanceOutput output2 = getIGM()->computeSteering(input);
+    SteeringAngles output2 = getIGM()->computeSteering(input);
 
-    EXPECT_TRUE(output2.steering.is_finite());
+    EXPECT_TRUE(output2.is_finite());
 }
 
 // =============================================================================
@@ -453,10 +456,7 @@ TEST_F(IterativeGuidanceTest, ApplyPositionCorrectionsProducesFiniteAngles) {
     GuidanceInput input{};
     input.time = MISSION_1.initialTime + 10.0;
     input.state = state;
-    input.massFlowRate = TEST_MASS_FLOW_RATE;
-    input.exitVelocity = TEST_EXIT_VELOCITY;
     input.gravity = g;
-    input.gravityCutoff = g;
     getIGM()->computeSteering(input);
 
     SteeringAngles velocityAngles{1.0, 0.1, 0.0};
@@ -483,10 +483,7 @@ TEST_F(IterativeGuidanceTest, TransformSteeringToInertialProducesFiniteAngles) {
     GuidanceInput input{};
     input.time = MISSION_1.initialTime + 10.0;
     input.state = state;
-    input.massFlowRate = TEST_MASS_FLOW_RATE;
-    input.exitVelocity = TEST_EXIT_VELOCITY;
     input.gravity = g;
-    input.gravityCutoff = g;
     getIGM()->computeSteering(input);
 
     SteeringAngles correctedAngles{0.5, 0.1, 0.0};
@@ -509,10 +506,7 @@ TEST_F(IterativeGuidanceTest, TransformSteeringToInertialHandlesNearGimbalLock) 
     GuidanceInput input{};
     input.time = MISSION_1.initialTime + 10.0;
     input.state = state;
-    input.massFlowRate = TEST_MASS_FLOW_RATE;
-    input.exitVelocity = TEST_EXIT_VELOCITY;
     input.gravity = g;
-    input.gravityCutoff = g;
     getIGM()->computeSteering(input);
 
     SteeringAngles nearGimbalLock{0.0, std::numbers::pi / 2.0 - 0.1, 0.0};

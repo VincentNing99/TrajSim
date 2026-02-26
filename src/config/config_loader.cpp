@@ -62,45 +62,45 @@ static void validateAlgorithmType(const std::string& type, const std::string& co
     }
 }
 
-using CutoffNode = IterativeGuidance::CutoffNode;
-
-/// @brief Recursively parse a cutoff expression tree node from JSON.
+/// @brief Recursively parse an exit expression tree node from JSON.
 ///
 /// JSON shapes:
 ///   Leaf: { "semiMajorAxis": { "exceedsBy": 0 } }
 ///   And:  { "and": [ <node>, <node>, ... ] }
 ///   Or:   { "or":  [ <node>, <node>, ... ] }
-static CutoffNode parseCutoffNode(const json& j, const std::string& ctx) {
+static ExitNode parseExitNode(const json& j, const std::string& ctx) {
     if (!j.is_object())
-        throw std::invalid_argument(ctx + ": cutoff node must be a JSON object");
+        throw std::invalid_argument(ctx + ": exit node must be a JSON object");
 
     // Combinator nodes
     if (j.contains("and")) {
         const auto& arr = j.at("and");
         if (!arr.is_array() || arr.empty())
             throw std::invalid_argument(ctx + ".and: must be a non-empty JSON array");
-        std::vector<CutoffNode> children;
+        std::vector<ExitNode> children;
         children.reserve(arr.size());
         for (size_t k = 0; k < arr.size(); ++k)
-            children.push_back(parseCutoffNode(arr[k], ctx + ".and[" + std::to_string(k) + "]"));
-        return CutoffNode::andOf(std::move(children));
+            children.push_back(parseExitNode(arr[k], ctx + ".and[" + std::to_string(k) + "]"));
+        return ExitNode::andOf(std::move(children));
     }
     if (j.contains("or")) {
         const auto& arr = j.at("or");
         if (!arr.is_array() || arr.empty())
             throw std::invalid_argument(ctx + ".or: must be a non-empty JSON array");
-        std::vector<CutoffNode> children;
+        std::vector<ExitNode> children;
         children.reserve(arr.size());
         for (size_t k = 0; k < arr.size(); ++k)
-            children.push_back(parseCutoffNode(arr[k], ctx + ".or[" + std::to_string(k) + "]"));
-        return CutoffNode::orOf(std::move(children));
+            children.push_back(parseExitNode(arr[k], ctx + ".or[" + std::to_string(k) + "]"));
+        return ExitNode::orOf(std::move(children));
     }
 
     // Leaf node — find the parameter key
-    static const std::vector<std::pair<std::string, CutoffNode::Parameter>> paramKeys = {
-        {"semiMajorAxis", CutoffNode::Parameter::SemiMajorAxis},
-        {"eccentricity",  CutoffNode::Parameter::Eccentricity},
-        {"inclination",   CutoffNode::Parameter::Inclination}
+    static const std::vector<std::pair<std::string, ExitNode::Parameter>> paramKeys = {
+        {"semiMajorAxis", ExitNode::Parameter::SemiMajorAxis},
+        {"eccentricity",  ExitNode::Parameter::Eccentricity},
+        {"inclination",   ExitNode::Parameter::Inclination},
+        {"range",         ExitNode::Parameter::Range},
+        {"altitude",      ExitNode::Parameter::Altitude}
     };
 
     for (const auto& [key, param] : paramKeys) {
@@ -116,15 +116,15 @@ static CutoffNode parseCutoffNode(const json& j, const std::string& ctx) {
             throw std::invalid_argument(ctx + "." + key + ": must specify exactly one of 'withinTolerance' or 'exceedsBy'");
 
         if (hasWithin)
-            return CutoffNode::leaf(param, CutoffNode::Comparison::WithinTolerance,
+            return ExitNode::leaf(param, ExitNode::Comparison::WithinTolerance,
                                     comp.at("withinTolerance").get<double>());
         else
-            return CutoffNode::leaf(param, CutoffNode::Comparison::ExceedsBy,
+            return ExitNode::leaf(param, ExitNode::Comparison::ExceedsBy,
                                     comp.at("exceedsBy").get<double>());
     }
 
-    throw std::invalid_argument(ctx + ": cutoff node must contain 'and', 'or', or a parameter name "
-                                "(semiMajorAxis, eccentricity, inclination)");
+    throw std::invalid_argument(ctx + ": exit node must contain 'and', 'or', or a parameter name "
+                                "(semiMajorAxis, eccentricity, inclination, range, altitude)");
 }
 
 static Vec3 requireVec3(const json& j, const std::string& key, const std::string& context) {
@@ -251,15 +251,11 @@ static std::vector<Guidance::Config> parseGuidance(const json& arr, std::vector<
     };
     static const std::vector<std::string> knownIgmKeys = {
         "type", "guidanceCycle", "steeringHoldTime",
-        "maxConvergenceIterations", "timeToGoConvergenceTolerance", "cutoffCriteria"
+        "maxConvergenceIterations", "timeToGoConvergenceTolerance", "exitCriteria"
     };
     static const std::vector<std::string> knownOpenLoopKeys = {
-        "type", "cutoffCriteria"
+        "type"
     };
-    static const std::vector<std::string> knownOpenLoopCutoffKeys = {
-        "range", "altitude"
-    };
-
     std::vector<Guidance::Config> configs;
     configs.reserve(arr.size());
 
@@ -301,21 +297,13 @@ static std::vector<Guidance::Config> parseGuidance(const json& arr, std::vector<
                 entry.igmConfig.maxConvergenceIterations = requireField<int>(a, "maxConvergenceIterations", actx);
                 entry.igmConfig.timeToGoConvergenceTolerance = requireField<double>(a, "timeToGoConvergenceTolerance", actx);
 
-                if (a.contains("cutoffCriteria")) {
-                    const std::string cctx = actx + ".cutoffCriteria";
-                    entry.igmCutoffCriteria.root = parseCutoffNode(a.at("cutoffCriteria"), cctx);
+                if (a.contains("exitCriteria")) {
+                    const std::string cctx = actx + ".exitCriteria";
+                    entry.exitCriteria.root = parseExitNode(a.at("exitCriteria"), cctx);
                 }
             } else if (type == "OpenLoopGuidance") {
                 warnUnknownKeys(a, knownOpenLoopKeys, actx, warnings);
                 entry.openLoopConfig.tolerance = cfg.tolerance;
-
-                if (a.contains("cutoffCriteria")) {
-                    const auto& cc = a.at("cutoffCriteria");
-                    const std::string cctx = actx + ".cutoffCriteria";
-                    warnUnknownKeys(cc, knownOpenLoopCutoffKeys, cctx, warnings);
-                    entry.openLoopCutoffCriteria.range = cc.contains("range") ? cc.at("range").get<double>() : 0.0;
-                    entry.openLoopCutoffCriteria.altitude = cc.contains("altitude") ? cc.at("altitude").get<double>() : 0.0;
-                }
             }
 
             cfg.algorithms.push_back(std::move(entry));
@@ -336,6 +324,7 @@ static ReferenceMission parseMission(const json& j, std::vector<std::string>& wa
         "trueAnomaly", "argumentOfPeriapsis", "ldnLaunchsite", "lanLaunchsite",
         "aimingAzimuth", "latitude", "geocentricLatitude", "launchSiteLongitude",
         "heightLaunchSite", "velocityTerminal", "positionTerminal",
+        "initialPosition", "initialVelocity", "initialMass",
         "initialSteeringAngles", "initialTime", "cutoffTime"
     };
     warnUnknownKeys(j, knownKeys, ctx, warnings);
@@ -358,6 +347,9 @@ static ReferenceMission parseMission(const json& j, std::vector<std::string>& wa
 
     m.velocityTerminal      = requireVec3(j, "velocityTerminal",  ctx);
     m.positionTerminal      = requireVec3(j, "positionTerminal",  ctx);
+    m.initialPosition       = requireVec3(j, "initialPosition",   ctx);
+    m.initialVelocity       = requireVec3(j, "initialVelocity",   ctx);
+    m.initialMass           = requireField<double>(j, "initialMass", ctx);
     m.initialSteeringAngles = requireSteeringAnglesDeg(j, "initialSteeringAngles", ctx);
 
     m.initialTime  = requireField<double>(j, "initialTime",  ctx);

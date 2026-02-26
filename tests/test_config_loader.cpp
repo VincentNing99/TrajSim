@@ -77,7 +77,7 @@ static const char* MINIMAL_VALID_JSON = R"({
                     "steeringHoldTime": 15.0,
                     "maxConvergenceIterations": 100,
                     "timeToGoConvergenceTolerance": 1e-5,
-                    "cutoffCriteria": {
+                    "exitCriteria": {
                         "and": [
                             { "semiMajorAxis": { "exceedsBy": 0 } },
                             { "eccentricity": { "withinTolerance": 0.005 } },
@@ -104,6 +104,9 @@ static const char* MINIMAL_VALID_JSON = R"({
         "heightLaunchSite": 1000.0,
         "velocityTerminal": [-7124.0, 2631.0, 249.0],
         "positionTerminal": [-2405466.0, -12845047.0, 205013.0],
+        "initialPosition": [-912205.4, -13212262.5, 149163.6],
+        "initialVelocity": [-7440.6404, 953.8138, 294.5883],
+        "initialMass": 6731.1,
         "initialSteeringAngles": [172.0, 0.0, 0.0],
         "initialTime": 3140.0,
         "cutoffTime": 3344.0
@@ -236,14 +239,14 @@ TEST_F(ConfigLoaderTest, ThrowsOnMissingVehicleSection) {
                       "massFlowRate":1.7,"exitArea":0.1}],
         "aerodynamics": {"refArea":1,"refLength":1,"machMin":0.1,"machMax":5,"machTransition":0.8},
         "simulation": {"timeStepRK4":0.001,"tolerance":1e-10},
-        "guidance": [{"stage":1,"tolerance":1e-10,"maxSteeringRate":5,"algorithms":[{"type":"IterativeGuidance","guidanceCycle":0.01,"steeringHoldTime":15,"maxConvergenceIterations":100,"timeToGoConvergenceTolerance":1e-5,"cutoffCriteria":{"and":[{"semiMajorAxis":{"exceedsBy":0}},{"eccentricity":{"withinTolerance":0.005}},{"inclination":{"withinTolerance":0.07}}]}}]}],
+        "guidance": [{"stage":1,"tolerance":1e-10,"maxSteeringRate":5,"algorithms":[{"type":"IterativeGuidance","guidanceCycle":0.01,"steeringHoldTime":15,"maxConvergenceIterations":100,"timeToGoConvergenceTolerance":1e-5,"exitCriteria":{"and":[{"semiMajorAxis":{"exceedsBy":0}},{"eccentricity":{"withinTolerance":0.005}},{"inclination":{"withinTolerance":0.07}}]}}]}],
         "mission": {"semiMajorAxis":6903085,"longitudeAscendingNode":260,"inclination":97.5,
                      "eccentricity":1e-5,"trueAnomaly":154,"argumentOfPeriapsis":185,
                      "ldnLaunchsite":264,"lanLaunchsite":84,"aimingAzimuth":191,
                      "latitude":40.8,"geocentricLatitude":40.6,"launchSiteLongitude":100,
                      "heightLaunchSite":1000,"velocityTerminal":[-7124,2631,249],
                      "positionTerminal":[-2405466,-12845047,205013],
-                     "initialSteeringAngles":[172,0,0],"initialTime":3140,"cutoffTime":3344}
+                     "initialPosition":[0,0,0],"initialVelocity":[0,0,0],"initialMass":1000,"initialSteeringAngles":[172,0,0],"initialTime":3140,"cutoffTime":3344}
     })", "no_vehicle");
 
     EXPECT_THROW(loadConfig(path), std::invalid_argument);
@@ -254,14 +257,14 @@ TEST_F(ConfigLoaderTest, ThrowsOnMissingEnginesSection) {
         "vehicle": { "mass": 1000.0 },
         "aerodynamics": {"refArea":1,"refLength":1,"machMin":0.1,"machMax":5,"machTransition":0.8},
         "simulation": {"timeStepRK4":0.001,"tolerance":1e-10},
-        "guidance": [{"stage":1,"tolerance":1e-10,"maxSteeringRate":5,"algorithms":[{"type":"IterativeGuidance","guidanceCycle":0.01,"steeringHoldTime":15,"maxConvergenceIterations":100,"timeToGoConvergenceTolerance":1e-5,"cutoffCriteria":{"and":[{"semiMajorAxis":{"exceedsBy":0}},{"eccentricity":{"withinTolerance":0.005}},{"inclination":{"withinTolerance":0.07}}]}}]}],
+        "guidance": [{"stage":1,"tolerance":1e-10,"maxSteeringRate":5,"algorithms":[{"type":"IterativeGuidance","guidanceCycle":0.01,"steeringHoldTime":15,"maxConvergenceIterations":100,"timeToGoConvergenceTolerance":1e-5,"exitCriteria":{"and":[{"semiMajorAxis":{"exceedsBy":0}},{"eccentricity":{"withinTolerance":0.005}},{"inclination":{"withinTolerance":0.07}}]}}]}],
         "mission": {"semiMajorAxis":6903085,"longitudeAscendingNode":260,"inclination":97.5,
                      "eccentricity":1e-5,"trueAnomaly":154,"argumentOfPeriapsis":185,
                      "ldnLaunchsite":264,"lanLaunchsite":84,"aimingAzimuth":191,
                      "latitude":40.8,"geocentricLatitude":40.6,"launchSiteLongitude":100,
                      "heightLaunchSite":1000,"velocityTerminal":[-7124,2631,249],
                      "positionTerminal":[-2405466,-12845047,205013],
-                     "initialSteeringAngles":[172,0,0],"initialTime":3140,"cutoffTime":3344}
+                     "initialPosition":[0,0,0],"initialVelocity":[0,0,0],"initialMass":1000,"initialSteeringAngles":[172,0,0],"initialTime":3140,"cutoffTime":3344}
     })", "no_engines");
 
     EXPECT_THROW(loadConfig(path), std::invalid_argument);
@@ -275,7 +278,7 @@ TEST_F(ConfigLoaderTest, ThrowsOnMissingMissionSection) {
                       "massFlowRate":1.7,"exitArea":0.1}],
         "aerodynamics": {"refArea":1,"refLength":1,"machMin":0.1,"machMax":5,"machTransition":0.8},
         "simulation": {"timeStepRK4":0.001,"tolerance":1e-10},
-        "guidance": [{"stage":1,"tolerance":1e-10,"maxSteeringRate":5,"algorithms":[{"type":"IterativeGuidance","guidanceCycle":0.01,"steeringHoldTime":15,"maxConvergenceIterations":100,"timeToGoConvergenceTolerance":1e-5,"cutoffCriteria":{"and":[{"semiMajorAxis":{"exceedsBy":0}},{"eccentricity":{"withinTolerance":0.005}},{"inclination":{"withinTolerance":0.07}}]}}]}]
+        "guidance": [{"stage":1,"tolerance":1e-10,"maxSteeringRate":5,"algorithms":[{"type":"IterativeGuidance","guidanceCycle":0.01,"steeringHoldTime":15,"maxConvergenceIterations":100,"timeToGoConvergenceTolerance":1e-5,"exitCriteria":{"and":[{"semiMajorAxis":{"exceedsBy":0}},{"eccentricity":{"withinTolerance":0.005}},{"inclination":{"withinTolerance":0.07}}]}}]}]
     })", "no_mission");
 
     EXPECT_THROW(loadConfig(path), std::invalid_argument);
@@ -293,14 +296,14 @@ TEST_F(ConfigLoaderTest, ThrowsOnMissingVehicleMass) {
                       "massFlowRate":1.7,"exitArea":0.1}],
         "aerodynamics": {"refArea":1,"refLength":1,"machMin":0.1,"machMax":5,"machTransition":0.8},
         "simulation": {"timeStepRK4":0.001,"tolerance":1e-10},
-        "guidance": [{"stage":1,"tolerance":1e-10,"maxSteeringRate":5,"algorithms":[{"type":"IterativeGuidance","guidanceCycle":0.01,"steeringHoldTime":15,"maxConvergenceIterations":100,"timeToGoConvergenceTolerance":1e-5,"cutoffCriteria":{"and":[{"semiMajorAxis":{"exceedsBy":0}},{"eccentricity":{"withinTolerance":0.005}},{"inclination":{"withinTolerance":0.07}}]}}]}],
+        "guidance": [{"stage":1,"tolerance":1e-10,"maxSteeringRate":5,"algorithms":[{"type":"IterativeGuidance","guidanceCycle":0.01,"steeringHoldTime":15,"maxConvergenceIterations":100,"timeToGoConvergenceTolerance":1e-5,"exitCriteria":{"and":[{"semiMajorAxis":{"exceedsBy":0}},{"eccentricity":{"withinTolerance":0.005}},{"inclination":{"withinTolerance":0.07}}]}}]}],
         "mission": {"semiMajorAxis":6903085,"longitudeAscendingNode":260,"inclination":97.5,
                      "eccentricity":1e-5,"trueAnomaly":154,"argumentOfPeriapsis":185,
                      "ldnLaunchsite":264,"lanLaunchsite":84,"aimingAzimuth":191,
                      "latitude":40.8,"geocentricLatitude":40.6,"launchSiteLongitude":100,
                      "heightLaunchSite":1000,"velocityTerminal":[-7124,2631,249],
                      "positionTerminal":[-2405466,-12845047,205013],
-                     "initialSteeringAngles":[172,0,0],"initialTime":3140,"cutoffTime":3344}
+                     "initialPosition":[0,0,0],"initialVelocity":[0,0,0],"initialMass":1000,"initialSteeringAngles":[172,0,0],"initialTime":3140,"cutoffTime":3344}
     })", "no_mass");
 
     EXPECT_THROW(loadConfig(path), std::invalid_argument);
@@ -314,14 +317,14 @@ TEST_F(ConfigLoaderTest, ThrowsOnMissingEngineISP) {
                       "massFlowRate":1.7,"exitArea":0.1}],
         "aerodynamics": {"refArea":1,"refLength":1,"machMin":0.1,"machMax":5,"machTransition":0.8},
         "simulation": {"timeStepRK4":0.001,"tolerance":1e-10},
-        "guidance": [{"stage":1,"tolerance":1e-10,"maxSteeringRate":5,"algorithms":[{"type":"IterativeGuidance","guidanceCycle":0.01,"steeringHoldTime":15,"maxConvergenceIterations":100,"timeToGoConvergenceTolerance":1e-5,"cutoffCriteria":{"and":[{"semiMajorAxis":{"exceedsBy":0}},{"eccentricity":{"withinTolerance":0.005}},{"inclination":{"withinTolerance":0.07}}]}}]}],
+        "guidance": [{"stage":1,"tolerance":1e-10,"maxSteeringRate":5,"algorithms":[{"type":"IterativeGuidance","guidanceCycle":0.01,"steeringHoldTime":15,"maxConvergenceIterations":100,"timeToGoConvergenceTolerance":1e-5,"exitCriteria":{"and":[{"semiMajorAxis":{"exceedsBy":0}},{"eccentricity":{"withinTolerance":0.005}},{"inclination":{"withinTolerance":0.07}}]}}]}],
         "mission": {"semiMajorAxis":6903085,"longitudeAscendingNode":260,"inclination":97.5,
                      "eccentricity":1e-5,"trueAnomaly":154,"argumentOfPeriapsis":185,
                      "ldnLaunchsite":264,"lanLaunchsite":84,"aimingAzimuth":191,
                      "latitude":40.8,"geocentricLatitude":40.6,"launchSiteLongitude":100,
                      "heightLaunchSite":1000,"velocityTerminal":[-7124,2631,249],
                      "positionTerminal":[-2405466,-12845047,205013],
-                     "initialSteeringAngles":[172,0,0],"initialTime":3140,"cutoffTime":3344}
+                     "initialPosition":[0,0,0],"initialVelocity":[0,0,0],"initialMass":1000,"initialSteeringAngles":[172,0,0],"initialTime":3140,"cutoffTime":3344}
     })", "no_isp");
 
     EXPECT_THROW(loadConfig(path), std::invalid_argument);
@@ -339,14 +342,14 @@ TEST_F(ConfigLoaderTest, ThrowsOnNegativeTimeStep) {
                       "massFlowRate":1.7,"exitArea":0.1}],
         "aerodynamics": {"refArea":1,"refLength":1,"machMin":0.1,"machMax":5,"machTransition":0.8},
         "simulation": {"timeStepRK4":-0.001,"tolerance":1e-10},
-        "guidance": [{"stage":1,"tolerance":1e-10,"maxSteeringRate":5,"algorithms":[{"type":"IterativeGuidance","guidanceCycle":0.01,"steeringHoldTime":15,"maxConvergenceIterations":100,"timeToGoConvergenceTolerance":1e-5,"cutoffCriteria":{"and":[{"semiMajorAxis":{"exceedsBy":0}},{"eccentricity":{"withinTolerance":0.005}},{"inclination":{"withinTolerance":0.07}}]}}]}],
+        "guidance": [{"stage":1,"tolerance":1e-10,"maxSteeringRate":5,"algorithms":[{"type":"IterativeGuidance","guidanceCycle":0.01,"steeringHoldTime":15,"maxConvergenceIterations":100,"timeToGoConvergenceTolerance":1e-5,"exitCriteria":{"and":[{"semiMajorAxis":{"exceedsBy":0}},{"eccentricity":{"withinTolerance":0.005}},{"inclination":{"withinTolerance":0.07}}]}}]}],
         "mission": {"semiMajorAxis":6903085,"longitudeAscendingNode":260,"inclination":97.5,
                      "eccentricity":1e-5,"trueAnomaly":154,"argumentOfPeriapsis":185,
                      "ldnLaunchsite":264,"lanLaunchsite":84,"aimingAzimuth":191,
                      "latitude":40.8,"geocentricLatitude":40.6,"launchSiteLongitude":100,
                      "heightLaunchSite":1000,"velocityTerminal":[-7124,2631,249],
                      "positionTerminal":[-2405466,-12845047,205013],
-                     "initialSteeringAngles":[172,0,0],"initialTime":3140,"cutoffTime":3344}
+                     "initialPosition":[0,0,0],"initialVelocity":[0,0,0],"initialMass":1000,"initialSteeringAngles":[172,0,0],"initialTime":3140,"cutoffTime":3344}
     })", "neg_timestep");
 
     EXPECT_THROW(loadConfig(path), std::invalid_argument);
@@ -367,7 +370,7 @@ TEST_F(ConfigLoaderTest, ThrowsOnInvalidAlgorithmType) {
                      "latitude":40.8,"geocentricLatitude":40.6,"launchSiteLongitude":100,
                      "heightLaunchSite":1000,"velocityTerminal":[-7124,2631,249],
                      "positionTerminal":[-2405466,-12845047,205013],
-                     "initialSteeringAngles":[172,0,0],"initialTime":3140,"cutoffTime":3344}
+                     "initialPosition":[0,0,0],"initialVelocity":[0,0,0],"initialMass":1000,"initialSteeringAngles":[172,0,0],"initialTime":3140,"cutoffTime":3344}
     })", "bad_mode");
 
     EXPECT_THROW(loadConfig(path), std::invalid_argument);
@@ -379,14 +382,14 @@ TEST_F(ConfigLoaderTest, ThrowsOnEmptyEnginesArray) {
         "engines": [],
         "aerodynamics": {"refArea":1,"refLength":1,"machMin":0.1,"machMax":5,"machTransition":0.8},
         "simulation": {"timeStepRK4":0.001,"tolerance":1e-10},
-        "guidance": [{"stage":1,"tolerance":1e-10,"maxSteeringRate":5,"algorithms":[{"type":"IterativeGuidance","guidanceCycle":0.01,"steeringHoldTime":15,"maxConvergenceIterations":100,"timeToGoConvergenceTolerance":1e-5,"cutoffCriteria":{"and":[{"semiMajorAxis":{"exceedsBy":0}},{"eccentricity":{"withinTolerance":0.005}},{"inclination":{"withinTolerance":0.07}}]}}]}],
+        "guidance": [{"stage":1,"tolerance":1e-10,"maxSteeringRate":5,"algorithms":[{"type":"IterativeGuidance","guidanceCycle":0.01,"steeringHoldTime":15,"maxConvergenceIterations":100,"timeToGoConvergenceTolerance":1e-5,"exitCriteria":{"and":[{"semiMajorAxis":{"exceedsBy":0}},{"eccentricity":{"withinTolerance":0.005}},{"inclination":{"withinTolerance":0.07}}]}}]}],
         "mission": {"semiMajorAxis":6903085,"longitudeAscendingNode":260,"inclination":97.5,
                      "eccentricity":1e-5,"trueAnomaly":154,"argumentOfPeriapsis":185,
                      "ldnLaunchsite":264,"lanLaunchsite":84,"aimingAzimuth":191,
                      "latitude":40.8,"geocentricLatitude":40.6,"launchSiteLongitude":100,
                      "heightLaunchSite":1000,"velocityTerminal":[-7124,2631,249],
                      "positionTerminal":[-2405466,-12845047,205013],
-                     "initialSteeringAngles":[172,0,0],"initialTime":3140,"cutoffTime":3344}
+                     "initialPosition":[0,0,0],"initialVelocity":[0,0,0],"initialMass":1000,"initialSteeringAngles":[172,0,0],"initialTime":3140,"cutoffTime":3344}
     })", "empty_engines");
 
     EXPECT_THROW(loadConfig(path), std::invalid_argument);
@@ -400,14 +403,14 @@ TEST_F(ConfigLoaderTest, ThrowsOnNegativeRefArea) {
                       "massFlowRate":1.7,"exitArea":0.1}],
         "aerodynamics": {"refArea":-1.0,"refLength":1,"machMin":0.1,"machMax":5,"machTransition":0.8},
         "simulation": {"timeStepRK4":0.001,"tolerance":1e-10},
-        "guidance": [{"stage":1,"tolerance":1e-10,"maxSteeringRate":5,"algorithms":[{"type":"IterativeGuidance","guidanceCycle":0.01,"steeringHoldTime":15,"maxConvergenceIterations":100,"timeToGoConvergenceTolerance":1e-5,"cutoffCriteria":{"and":[{"semiMajorAxis":{"exceedsBy":0}},{"eccentricity":{"withinTolerance":0.005}},{"inclination":{"withinTolerance":0.07}}]}}]}],
+        "guidance": [{"stage":1,"tolerance":1e-10,"maxSteeringRate":5,"algorithms":[{"type":"IterativeGuidance","guidanceCycle":0.01,"steeringHoldTime":15,"maxConvergenceIterations":100,"timeToGoConvergenceTolerance":1e-5,"exitCriteria":{"and":[{"semiMajorAxis":{"exceedsBy":0}},{"eccentricity":{"withinTolerance":0.005}},{"inclination":{"withinTolerance":0.07}}]}}]}],
         "mission": {"semiMajorAxis":6903085,"longitudeAscendingNode":260,"inclination":97.5,
                      "eccentricity":1e-5,"trueAnomaly":154,"argumentOfPeriapsis":185,
                      "ldnLaunchsite":264,"lanLaunchsite":84,"aimingAzimuth":191,
                      "latitude":40.8,"geocentricLatitude":40.6,"launchSiteLongitude":100,
                      "heightLaunchSite":1000,"velocityTerminal":[-7124,2631,249],
                      "positionTerminal":[-2405466,-12845047,205013],
-                     "initialSteeringAngles":[172,0,0],"initialTime":3140,"cutoffTime":3344}
+                     "initialPosition":[0,0,0],"initialVelocity":[0,0,0],"initialMass":1000,"initialSteeringAngles":[172,0,0],"initialTime":3140,"cutoffTime":3344}
     })", "neg_refarea");
 
     EXPECT_THROW(loadConfig(path), std::invalid_argument);
@@ -425,14 +428,14 @@ TEST_F(ConfigLoaderTest, UnknownTopLevelKeyProducesWarning) {
                       "massFlowRate":1.7,"exitArea":0.1}],
         "aerodynamics": {"refArea":1,"refLength":1,"machMin":0.1,"machMax":5,"machTransition":0.8},
         "simulation": {"timeStepRK4":0.001,"tolerance":1e-10},
-        "guidance": [{"stage":1,"tolerance":1e-10,"maxSteeringRate":5,"algorithms":[{"type":"IterativeGuidance","guidanceCycle":0.01,"steeringHoldTime":15,"maxConvergenceIterations":100,"timeToGoConvergenceTolerance":1e-5,"cutoffCriteria":{"and":[{"semiMajorAxis":{"exceedsBy":0}},{"eccentricity":{"withinTolerance":0.005}},{"inclination":{"withinTolerance":0.07}}]}}]}],
+        "guidance": [{"stage":1,"tolerance":1e-10,"maxSteeringRate":5,"algorithms":[{"type":"IterativeGuidance","guidanceCycle":0.01,"steeringHoldTime":15,"maxConvergenceIterations":100,"timeToGoConvergenceTolerance":1e-5,"exitCriteria":{"and":[{"semiMajorAxis":{"exceedsBy":0}},{"eccentricity":{"withinTolerance":0.005}},{"inclination":{"withinTolerance":0.07}}]}}]}],
         "mission": {"semiMajorAxis":6903085,"longitudeAscendingNode":260,"inclination":97.5,
                      "eccentricity":1e-5,"trueAnomaly":154,"argumentOfPeriapsis":185,
                      "ldnLaunchsite":264,"lanLaunchsite":84,"aimingAzimuth":191,
                      "latitude":40.8,"geocentricLatitude":40.6,"launchSiteLongitude":100,
                      "heightLaunchSite":1000,"velocityTerminal":[-7124,2631,249],
                      "positionTerminal":[-2405466,-12845047,205013],
-                     "initialSteeringAngles":[172,0,0],"initialTime":3140,"cutoffTime":3344},
+                     "initialPosition":[0,0,0],"initialVelocity":[0,0,0],"initialMass":1000,"initialSteeringAngles":[172,0,0],"initialTime":3140,"cutoffTime":3344},
         "unknownSection": { "foo": "bar" }
     })", "unknown_key");
 
@@ -456,14 +459,14 @@ TEST_F(ConfigLoaderTest, UnknownVehicleFieldProducesWarning) {
                       "massFlowRate":1.7,"exitArea":0.1}],
         "aerodynamics": {"refArea":1,"refLength":1,"machMin":0.1,"machMax":5,"machTransition":0.8},
         "simulation": {"timeStepRK4":0.001,"tolerance":1e-10},
-        "guidance": [{"stage":1,"tolerance":1e-10,"maxSteeringRate":5,"algorithms":[{"type":"IterativeGuidance","guidanceCycle":0.01,"steeringHoldTime":15,"maxConvergenceIterations":100,"timeToGoConvergenceTolerance":1e-5,"cutoffCriteria":{"and":[{"semiMajorAxis":{"exceedsBy":0}},{"eccentricity":{"withinTolerance":0.005}},{"inclination":{"withinTolerance":0.07}}]}}]}],
+        "guidance": [{"stage":1,"tolerance":1e-10,"maxSteeringRate":5,"algorithms":[{"type":"IterativeGuidance","guidanceCycle":0.01,"steeringHoldTime":15,"maxConvergenceIterations":100,"timeToGoConvergenceTolerance":1e-5,"exitCriteria":{"and":[{"semiMajorAxis":{"exceedsBy":0}},{"eccentricity":{"withinTolerance":0.005}},{"inclination":{"withinTolerance":0.07}}]}}]}],
         "mission": {"semiMajorAxis":6903085,"longitudeAscendingNode":260,"inclination":97.5,
                      "eccentricity":1e-5,"trueAnomaly":154,"argumentOfPeriapsis":185,
                      "ldnLaunchsite":264,"lanLaunchsite":84,"aimingAzimuth":191,
                      "latitude":40.8,"geocentricLatitude":40.6,"launchSiteLongitude":100,
                      "heightLaunchSite":1000,"velocityTerminal":[-7124,2631,249],
                      "positionTerminal":[-2405466,-12845047,205013],
-                     "initialSteeringAngles":[172,0,0],"initialTime":3140,"cutoffTime":3344}
+                     "initialPosition":[0,0,0],"initialVelocity":[0,0,0],"initialMass":1000,"initialSteeringAngles":[172,0,0],"initialTime":3140,"cutoffTime":3344}
     })", "unknown_vehicle_field");
 
     auto result = loadConfig(path);
@@ -482,14 +485,14 @@ TEST_F(ConfigLoaderTest, ThrowsOnVelocityTerminalWrongSize) {
                       "massFlowRate":1.7,"exitArea":0.1}],
         "aerodynamics": {"refArea":1,"refLength":1,"machMin":0.1,"machMax":5,"machTransition":0.8},
         "simulation": {"timeStepRK4":0.001,"tolerance":1e-10},
-        "guidance": [{"stage":1,"tolerance":1e-10,"maxSteeringRate":5,"algorithms":[{"type":"IterativeGuidance","guidanceCycle":0.01,"steeringHoldTime":15,"maxConvergenceIterations":100,"timeToGoConvergenceTolerance":1e-5,"cutoffCriteria":{"and":[{"semiMajorAxis":{"exceedsBy":0}},{"eccentricity":{"withinTolerance":0.005}},{"inclination":{"withinTolerance":0.07}}]}}]}],
+        "guidance": [{"stage":1,"tolerance":1e-10,"maxSteeringRate":5,"algorithms":[{"type":"IterativeGuidance","guidanceCycle":0.01,"steeringHoldTime":15,"maxConvergenceIterations":100,"timeToGoConvergenceTolerance":1e-5,"exitCriteria":{"and":[{"semiMajorAxis":{"exceedsBy":0}},{"eccentricity":{"withinTolerance":0.005}},{"inclination":{"withinTolerance":0.07}}]}}]}],
         "mission": {"semiMajorAxis":6903085,"longitudeAscendingNode":260,"inclination":97.5,
                      "eccentricity":1e-5,"trueAnomaly":154,"argumentOfPeriapsis":185,
                      "ldnLaunchsite":264,"lanLaunchsite":84,"aimingAzimuth":191,
                      "latitude":40.8,"geocentricLatitude":40.6,"launchSiteLongitude":100,
                      "heightLaunchSite":1000,"velocityTerminal":[-7124,2631],
                      "positionTerminal":[-2405466,-12845047,205013],
-                     "initialSteeringAngles":[172,0,0],"initialTime":3140,"cutoffTime":3344}
+                     "initialPosition":[0,0,0],"initialVelocity":[0,0,0],"initialMass":1000,"initialSteeringAngles":[172,0,0],"initialTime":3140,"cutoffTime":3344}
     })", "bad_vec3_size");
 
     EXPECT_THROW(loadConfig(path), std::invalid_argument);
@@ -507,14 +510,14 @@ TEST_F(ConfigLoaderTest, ThrowsOnWrongFieldType) {
                       "massFlowRate":1.7,"exitArea":0.1}],
         "aerodynamics": {"refArea":1,"refLength":1,"machMin":0.1,"machMax":5,"machTransition":0.8},
         "simulation": {"timeStepRK4":0.001,"tolerance":1e-10},
-        "guidance": [{"stage":1,"tolerance":1e-10,"maxSteeringRate":5,"algorithms":[{"type":"IterativeGuidance","guidanceCycle":0.01,"steeringHoldTime":15,"maxConvergenceIterations":100,"timeToGoConvergenceTolerance":1e-5,"cutoffCriteria":{"and":[{"semiMajorAxis":{"exceedsBy":0}},{"eccentricity":{"withinTolerance":0.005}},{"inclination":{"withinTolerance":0.07}}]}}]}],
+        "guidance": [{"stage":1,"tolerance":1e-10,"maxSteeringRate":5,"algorithms":[{"type":"IterativeGuidance","guidanceCycle":0.01,"steeringHoldTime":15,"maxConvergenceIterations":100,"timeToGoConvergenceTolerance":1e-5,"exitCriteria":{"and":[{"semiMajorAxis":{"exceedsBy":0}},{"eccentricity":{"withinTolerance":0.005}},{"inclination":{"withinTolerance":0.07}}]}}]}],
         "mission": {"semiMajorAxis":6903085,"longitudeAscendingNode":260,"inclination":97.5,
                      "eccentricity":1e-5,"trueAnomaly":154,"argumentOfPeriapsis":185,
                      "ldnLaunchsite":264,"lanLaunchsite":84,"aimingAzimuth":191,
                      "latitude":40.8,"geocentricLatitude":40.6,"launchSiteLongitude":100,
                      "heightLaunchSite":1000,"velocityTerminal":[-7124,2631,249],
                      "positionTerminal":[-2405466,-12845047,205013],
-                     "initialSteeringAngles":[172,0,0],"initialTime":3140,"cutoffTime":3344}
+                     "initialPosition":[0,0,0],"initialVelocity":[0,0,0],"initialMass":1000,"initialSteeringAngles":[172,0,0],"initialTime":3140,"cutoffTime":3344}
     })", "wrong_type");
 
     EXPECT_THROW(loadConfig(path), std::invalid_argument);

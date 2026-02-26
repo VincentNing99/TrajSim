@@ -6,15 +6,13 @@
 /// @brief Iterative Guidance Mode (IGM) closed-loop terminal targeting.
 
 #include "models/guidance/algorithm/guidance_algorithm.hpp"
+#include "models/guidance/exit_criteria.hpp"
 #include "models/reference_mission.hpp"
 #include "core/mat3.hpp"
 #include "core/constants.hpp"
 #include "core/utils.hpp"
-#include <algorithm>
 #include <cmath>
-#include <cstdint>
 #include <numbers>
-#include <optional>
 
 namespace trajsim {
 
@@ -25,72 +23,6 @@ namespace trajsim {
 /// corrections, and frame transformations.
 class IterativeGuidance : public GuidanceAlgorithm {
 public:
-
-    /// @brief Expression tree node for composable cutoff conditions.
-    ///
-    /// Leaf nodes compare a computed orbital parameter against the terminal
-    /// reference value. And/Or nodes combine children with boolean logic.
-    struct CutoffNode {
-        enum class Type : uint8_t { Leaf, And, Or };
-        enum class Parameter : uint8_t { SemiMajorAxis, Eccentricity, Inclination };
-        enum class Comparison : uint8_t { WithinTolerance, ExceedsBy };
-
-        Type type;
-        Parameter parameter{};    ///< Leaf only
-        Comparison comparison{};  ///< Leaf only
-        double value{};           ///< Tolerance or threshold (leaf only)
-        std::vector<CutoffNode> children;  ///< And/Or only
-
-        static CutoffNode leaf(Parameter p, Comparison c, double v) {
-            CutoffNode n;
-            n.type = Type::Leaf;
-            n.parameter = p;
-            n.comparison = c;
-            n.value = v;
-            return n;
-        }
-        static CutoffNode andOf(std::vector<CutoffNode> ch) {
-            CutoffNode n;
-            n.type = Type::And;
-            n.children = std::move(ch);
-            return n;
-        }
-        static CutoffNode orOf(std::vector<CutoffNode> ch) {
-            CutoffNode n;
-            n.type = Type::Or;
-            n.children = std::move(ch);
-            return n;
-        }
-
-        [[nodiscard]] bool evaluate(double a, double e, double i,
-                                    const TerminalState& ts) const {
-            switch (type) {
-            case Type::Leaf: {
-                double computed = 0.0, reference = 0.0;
-                switch (parameter) {
-                    case Parameter::SemiMajorAxis: computed = a; reference = ts.semiMajorAxis; break;
-                    case Parameter::Eccentricity:  computed = e; reference = ts.eccentricity;  break;
-                    case Parameter::Inclination:   computed = i; reference = ts.inclination;    break;
-                }
-                if (comparison == Comparison::WithinTolerance)
-                    return std::fabs(computed - reference) <= value;
-                else
-                    return (computed - reference) > value;
-            }
-            case Type::And:
-                return std::all_of(children.begin(), children.end(),
-                    [&](const CutoffNode& c) { return c.evaluate(a, e, i, ts); });
-            case Type::Or:
-                return std::any_of(children.begin(), children.end(),
-                    [&](const CutoffNode& c) { return c.evaluate(a, e, i, ts); });
-            }
-            return false;
-        }
-    };
-
-    struct CutoffCriteria {
-        std::optional<CutoffNode> root;  ///< nullopt = never cutoff
-    };
 
     struct Config {
         double guidanceCycle;                   ///< Guidance update cycle [s]
@@ -112,19 +44,22 @@ public:
 
     /// @brief Construct iterative guidance from mission parameters.
     /// @param config Algorithm configuration.
-    /// @param cutoffCriteria Cutoff conditions.
+    /// @param exitCriteria Exit conditions.
     /// @param tolerance Numerical tolerance for guard checks.
     /// @param mission Reference mission containing terminal state.
     /// @param vehicleState Initial vehicle state.
     explicit IterativeGuidance(Config config,
-                               CutoffCriteria cutoffCriteria,
+                               ExitCriteria exitCriteria,
                                double tolerance,
                                const ReferenceMission& mission,
-                               const VehicleState& vehicleState);
+                               const VehicleState& vehicleState,
+                               Vec3 gravityCutoff,
+                               double exitVelocity,
+                               double massFlowRate);
 
     // GuidanceAlgorithm interface
-    [[nodiscard]] GuidanceOutput computeSteering(const GuidanceInput& input) override;
-    [[nodiscard]] bool cutoff(const VehicleState& state) const override;
+    [[nodiscard]] SteeringAngles computeSteering(const GuidanceInput& input) override;
+    [[nodiscard]] bool exit(const VehicleState& state) const override;
     [[nodiscard]] std::string_view name() const noexcept override { return "IterativeGuidance"; }
     [[nodiscard]] const TerminalState* getTerminalState() const noexcept override { return &terminalState; }
 
@@ -154,9 +89,14 @@ private:
     }
 
     Config config;
-    CutoffCriteria cutoffCriteria;
+    ExitCriteria exitCriteria;
     double tolerance;
     const VehicleState& vehicleState;
+
+    // Engine & environment constants (computed once at construction)
+    Vec3 gravityCutoff;
+    double exitVelocity;
+    double massFlowRate;
 
     // Launch site
     double aimingAzimuth;

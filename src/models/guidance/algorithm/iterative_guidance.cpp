@@ -21,14 +21,20 @@
 namespace trajsim {
 
 IterativeGuidance::IterativeGuidance(Config config,
-                                     CutoffCriteria cutoffCriteria,
+                                     ExitCriteria exitCriteria,
                                      double tolerance,
                                      const ReferenceMission& mission,
-                                     const VehicleState& vehicleState)
+                                     const VehicleState& vehicleState,
+                                     Vec3 gravityCutoff,
+                                     double exitVelocity,
+                                     double massFlowRate)
     : config(config)
-    , cutoffCriteria(cutoffCriteria)
+    , exitCriteria(exitCriteria)
     , tolerance(tolerance)
     , vehicleState(vehicleState)
+    , gravityCutoff(gravityCutoff)
+    , exitVelocity(exitVelocity)
+    , massFlowRate(massFlowRate)
     , aimingAzimuth(mission.aimingAzimuth)
     , launchLatitude(mission.latitude)
     , longitudeOfAnLaunchsite(mission.lanLaunchsite)
@@ -42,11 +48,11 @@ IterativeGuidance::IterativeGuidance(Config config,
     buildRotationMatrix();
 }
 
-GuidanceOutput IterativeGuidance::computeSteering(const GuidanceInput& input) {
+SteeringAngles IterativeGuidance::computeSteering(const GuidanceInput& input) {
     const auto& state = input.state;
 
     // tau = m / mdot  -- characteristic time for propellant depletion
-    double tau = -state.vehicleMass / input.massFlowRate;
+    double tau = -state.vehicleMass / massFlowRate;
 
     // Transform all vectors into the terminal guidance frame for targeting
     instantaneousVelocity = rmInertialToTerminal * state.velocity;
@@ -55,25 +61,33 @@ GuidanceOutput IterativeGuidance::computeSteering(const GuidanceInput& input) {
     terminalPosition = rmInertialToTerminal * terminalState.position;
 
     // Thrust-to-weight ratio selects the time-to-go update method
-    double thrust = input.massFlowRate * input.exitVelocity;
+    double thrust = std::abs(massFlowRate) * exitVelocity;
     double thrustToWeight = thrust / (state.vehicleMass * EarthConstants::GRAVITATIONAL_ACCELERATION);
 
     // Average gravity over the remaining burn (linear approximation)
-    Vec3 g = 0.5 * (rmInertialToTerminal * input.gravity + rmInertialToTerminal * input.gravityCutoff);
+    Vec3 g = 0.5 * (rmInertialToTerminal * input.gravity + rmInertialToTerminal * gravityCutoff);
 
     // Iteratively solve for time-to-go until convergence
-    convergeTimeToGo(g, instantaneousVelocity, tau, input.exitVelocity, thrustToWeight);
+    convergeTimeToGo(g, instantaneousVelocity, tau, exitVelocity, thrustToWeight);
 
     computeDeltaV(g, instantaneousVelocity);
+
+    // DEBUG: track timeToGo evolution
+    static int dbgCount = 0;
+    if (dbgCount++ % 1000 == 0) {
+        std::cerr << "[DBG] t=" << input.time << " tgo=" << timeToGo
+                  << " tau=" << tau << " T/W=" << thrustToWeight
+                  << " dV=" << deltaV.dV << "\n";
+    }
 
     SteeringAngles velocityAngles = computeVelocitySteeringAngles();
 
     if (timeToGo <= config.steeringHoldTime) {
         // Hold steering commands for final seconds before cutoff
-        return GuidanceOutput{steering};
+        return steering;
     }
 
-    SteeringAngles correctedAngles = applyPositionCorrections(velocityAngles, tau, input.exitVelocity, g);
+    SteeringAngles correctedAngles = applyPositionCorrections(velocityAngles, tau, exitVelocity, g);
 
     SteeringAngles inertialAngles = transformSteeringToInertial(correctedAngles);
 
@@ -81,7 +95,7 @@ GuidanceOutput IterativeGuidance::computeSteering(const GuidanceInput& input) {
     steering = inertialAngles;
     steeringLastStep = steering;
 
-    return GuidanceOutput{steering};
+    return steering;
 }
 
 void IterativeGuidance::updateTimeToGoLttw(double /*delV*/, double /*tau*/, const Vec3& g, const Vec3& vt, const Vec3& vc) {
@@ -256,8 +270,8 @@ SteeringAngles IterativeGuidance::transformSteeringToInertial(SteeringAngles cor
     return inertial;
 }
 
-bool IterativeGuidance::cutoff(const VehicleState& state) const {
-    if (!cutoffCriteria.root) {
+bool IterativeGuidance::exit(const VehicleState& state) const {
+    if (!exitCriteria.root) {
         return false;
     }
 
@@ -285,7 +299,11 @@ bool IterativeGuidance::cutoff(const VehicleState& state) const {
 
     double eccentricity = eccentricityVector.mag();
 
-    return cutoffCriteria.root->evaluate(semiMajorAxis, eccentricity, inclination, terminalState);
+    ExitContext ctx;
+    ctx.set(static_cast<size_t>(ExitNode::Parameter::SemiMajorAxis), semiMajorAxis, terminalState.semiMajorAxis);
+    ctx.set(static_cast<size_t>(ExitNode::Parameter::Eccentricity), eccentricity, terminalState.eccentricity);
+    ctx.set(static_cast<size_t>(ExitNode::Parameter::Inclination), inclination, terminalState.inclination);
+    return exitCriteria.root->evaluate(ctx);
 }
 
 void IterativeGuidance::buildRotationMatrix() {

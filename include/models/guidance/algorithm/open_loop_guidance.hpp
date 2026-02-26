@@ -26,30 +26,24 @@ public:
         }
     };
 
-    struct CutoffCriteria {
-        double range;       ///< Range cutoff [m]
-        double altitude;    ///< Altitude cutoff [m]
-    };
-
     /// @brief Construct open-loop guidance.
     /// @param config Algorithm configuration.
-    /// @param cutoffCriteria Cutoff conditions.
     /// @param initialTime Time offset for profile interpolation [s].
-    explicit OpenLoopGuidance(Config config, CutoffCriteria cutoffCriteria, double initialTime);
+    explicit OpenLoopGuidance(Config config, double initialTime);
 
     /// @brief Load steering profile from CSV file.
     /// @param filepath Path to CSV with columns [time, pitch, yaw, roll].
     void loadSteeringProfile(const std::string& filepath);
 
     // GuidanceAlgorithm interface
-    [[nodiscard]] GuidanceOutput computeSteering(const GuidanceInput& input) override;
-    [[nodiscard]] bool cutoff(const VehicleState& state) const override;
+    [[nodiscard]] SteeringAngles computeSteering(const GuidanceInput& input) override;
+    [[nodiscard]] bool exit(const VehicleState& state) const override;
     [[nodiscard]] std::string_view name() const noexcept override { return "OpenLoopGuidance"; }
 
 private:
     Config config;
-    CutoffCriteria cutoffCriteria;
     double timeInitial;
+    mutable double lastElapsed = 0.0;
     std::vector<std::vector<double>> steeringProfile;
 };
 

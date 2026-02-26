@@ -7,7 +7,12 @@
       "Bash(./trajsim_tests:*)",
       "Bash(ctest:*)",
       "Bash(make:*)",
-      "Bash(git fsck:*)"
+      "Bash(git fsck:*)",
+      "Bash(git mv:*)",
+      "WebFetch(domain:www.ibiblio.org)",
+      "Bash(./build/trajsim:*)",
+      "Bash(awk:*)",
+      "Bash(./trajsim:*)"
     ]
   }
 }

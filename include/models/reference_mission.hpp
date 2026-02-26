@@ -45,6 +45,13 @@ struct ReferenceMission {
     Vec3 positionTerminal;          ///< Target position at injection point [m]
 
     // ============================================================================
+    // Initial Vehicle State
+    // ============================================================================
+    Vec3 initialPosition;           ///< Initial position in local frame [m]
+    Vec3 initialVelocity;           ///< Initial velocity in local frame [m/s]
+    double initialMass;             ///< Initial vehicle mass [kg]
+
+    // ============================================================================
     // Steering and Timing
     // ============================================================================
     SteeringAngles initialSteeringAngles;  ///< Initial steering angles [rad]
@@ -157,8 +164,8 @@ inline const ReferenceMission MISSION_1 = {
     .eccentricity = 8.851433e-06,
     .trueAnomaly = 154.051241 * degToRad,
     .argumentOfPeriapsis = 185.130932 * degToRad,
-    .ldnLaunchsite = (174.697 + 90.0) * degToRad,
-    .lanLaunchsite = (174.697 - 90.0) * degToRad,
+    .ldnLaunchsite = (174.7704 + 90.0) * degToRad,
+    .lanLaunchsite = (174.7704 - 90.0) * degToRad,
     .aimingAzimuth = 191.47506 * degToRad,
     .latitude = 40.80768 * degToRad,
     .geocentricLatitude = 40.61741 * degToRad,
@@ -166,6 +173,9 @@ inline const ReferenceMission MISSION_1 = {
     .heightLaunchSite = 1000.0,
     .velocityTerminal = {-7124.1826, 2631.5395, 249.9496},
     .positionTerminal = {-2405466.9, -12845047.6, 205013.6},
+    .initialPosition = {-912205.4, -13212262.5, 149163.6},
+    .initialVelocity = {-7440.6404, 953.8138, 294.5883},
+    .initialMass = 6731.1,
     .initialSteeringAngles = {172.7593 * degToRad, 0.0, 0.0},
     .initialTime = 3140.3405,
     .cutoffTime = 3344.5194
@@ -179,8 +189,8 @@ inline const ReferenceMission MISSION_2 = {
     .eccentricity = 2.402729e-02,
     .trueAnomaly = 0.451858 * degToRad,
     .argumentOfPeriapsis = 151.230742 * degToRad,
-    .ldnLaunchsite = (174.681 + 90.0) * degToRad,
-    .lanLaunchsite = (174.681 - 90.0) * degToRad,
+    .ldnLaunchsite = (174.6916 + 90.0) * degToRad,
+    .lanLaunchsite = (174.6916 - 90.0) * degToRad,
     .aimingAzimuth = 191.47506 * degToRad,
     .latitude = 40.80768 * degToRad,
     .geocentricLatitude = 40.61741 * degToRad,
@@ -188,9 +198,12 @@ inline const ReferenceMission MISSION_2 = {
     .heightLaunchSite = 1000.0,
     .velocityTerminal = {7677.0525, -1739.1305, -290.0255},
     .positionTerminal = {1427834.9, 45222.2, -153813.3},
-    .initialSteeringAngles = {23.4344 * degToRad, 0.0, 0.0},
-    .initialTime = 183.0,
-    .cutoffTime = 471.9166
+    .initialPosition = {91748.3, 74465.8, -51380.7},
+    .initialVelocity = {2211.1545, 1037.2763, -338.5107},
+    .initialMass = 121175.5,
+    .initialSteeringAngles = {27.0329 * degToRad, 0.0, 0.0},
+    .initialTime = 149.8000,
+    .cutoffTime = 470.4166
 };
 
 } // namespace trajsim

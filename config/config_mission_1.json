@@ -37,7 +37,7 @@
                     "steeringHoldTime": 15.0,
                     "maxConvergenceIterations": 100,
                     "timeToGoConvergenceTolerance": 1e-5,
-                    "cutoffCriteria": {
+                    "exitCriteria": {
                         "and": [
                             { "semiMajorAxis": { "exceedsBy": 0 } },
                             { "eccentricity": { "withinTolerance": 0.005 } },
@@ -55,8 +55,8 @@
         "eccentricity": 8.851433e-06,
         "trueAnomaly": 154.051241,
         "argumentOfPeriapsis": 185.130932,
-        "ldnLaunchsite": 264.697,
-        "lanLaunchsite": 84.697,
+        "ldnLaunchsite": 264.7704,
+        "lanLaunchsite": 84.7704,
         "aimingAzimuth": 191.47506,
         "latitude": 40.80768,
         "geocentricLatitude": 40.61741,
@@ -64,6 +64,9 @@
         "heightLaunchSite": 1000.0,
         "velocityTerminal": [-7124.1826, 2631.5395, 249.9496],
         "positionTerminal": [-2405466.9, -12845047.6, 205013.6],
+        "initialPosition": [-912205.4, -13212262.5, 149163.6],
+        "initialVelocity": [-7440.6404, 953.8138, 294.5883],
+        "initialMass": 6731.1,
         "initialSteeringAngles": [172.7593, 0.0, 0.0],
         "initialTime": 3140.3405,
         "cutoffTime": 3344.5194

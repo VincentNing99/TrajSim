@@ -13,7 +13,10 @@ namespace trajsim {
 
 Guidance::Guidance(Config config,
                    const ReferenceMission& mission,
-                   const VehicleState& vehicleState)
+                   const VehicleState& vehicleState,
+                   Vec3 gravityCutoff,
+                   double exitVelocity,
+                   double massFlowRate)
     : guidanceConfig(std::move(config))
     , vehicleState(vehicleState)
 {
@@ -24,15 +27,17 @@ Guidance::Guidance(Config config,
             entry.igmConfig.validate();
             algorithms.push_back(std::make_unique<IterativeGuidance>(
                 entry.igmConfig,
-                entry.igmCutoffCriteria,
+                entry.exitCriteria,
                 guidanceConfig.tolerance,
                 mission,
-                vehicleState));
+                vehicleState,
+                gravityCutoff,
+                exitVelocity,
+                massFlowRate));
         } else if (entry.type == "OpenLoopGuidance") {
             entry.openLoopConfig.validate();
             algorithms.push_back(std::make_unique<OpenLoopGuidance>(
                 entry.openLoopConfig,
-                entry.openLoopCutoffCriteria,
                 mission.initialTime));
         } else {
             throw std::invalid_argument("Guidance: unknown algorithm type '" + entry.type + "'");
@@ -41,29 +46,22 @@ Guidance::Guidance(Config config,
 }
 
 SteeringAngles Guidance::computeSteering(double t,
-                                          double massFlowRate,
-                                          double engineExitVelocity,
-                                          Vec3 g0,
-                                          Vec3 gCutoff) {
+                                          Vec3 g0) {
     if (algorithms.empty() || activeIndex >= algorithms.size()) {
         throw std::logic_error("Guidance: no active algorithm");
     }
 
-    // Auto-advance if active algorithm's cutoff is met and it's not the last
-    if (activeIndex < algorithms.size() - 1 && algorithms[activeIndex]->cutoff(vehicleState)) {
+    // Auto-advance if active algorithm's exit conditions are met and it's not the last
+    if (activeIndex < algorithms.size() - 1 && algorithms[activeIndex]->exit(vehicleState)) {
         advanceAlgorithm();
     }
 
     GuidanceInput input{};
     input.time = t;
     input.state = vehicleState;
-    input.massFlowRate = massFlowRate;
-    input.exitVelocity = engineExitVelocity;
     input.gravity = g0;
-    input.gravityCutoff = gCutoff;
 
-    GuidanceOutput output = algorithms[activeIndex]->computeSteering(input);
-    SteeringAngles result = output.steering;
+    SteeringAngles result = algorithms[activeIndex]->computeSteering(input);
 
     // Apply rate limiting
     if (hasPrevSteering) {
@@ -92,11 +90,11 @@ SteeringAngles Guidance::computeSteering(double t,
     return result;
 }
 
-bool Guidance::cutoff(const VehicleState& state) const {
+bool Guidance::exit(const VehicleState& state) const {
     if (algorithms.empty() || activeIndex >= algorithms.size()) {
         return false;
     }
-    return algorithms[activeIndex]->cutoff(state);
+    return algorithms[activeIndex]->exit(state);
 }
 
 void Guidance::advanceAlgorithm() {
@@ -111,6 +109,7 @@ GuidanceAlgorithm* Guidance::activeAlgorithm() const noexcept {
     }
     return nullptr;
 }
+
 
 const TerminalState* Guidance::getTerminalState() const noexcept {
     if (activeIndex < algorithms.size()) {

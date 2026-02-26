@@ -1035,6 +1035,7 @@ CMakeFiles/trajsim_tests.dir/tests/test_integrator.cpp.o: \
   /Users/vincentning/Desktop/TrajSim/include/models/guidance/algorithm/guidance_algorithm.hpp \
   /Users/vincentning/Desktop/TrajSim/include/models/guidance/algorithm/open_loop_guidance.hpp \
   /Users/vincentning/Desktop/TrajSim/include/models/guidance/algorithm/iterative_guidance.hpp \
+  /Users/vincentning/Desktop/TrajSim/include/models/guidance/exit_criteria.hpp \
   /Users/vincentning/Desktop/TrajSim/include/models/reference_mission.hpp \
   /Users/vincentning/Desktop/TrajSim/include/core/utils.hpp \
   /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include/c++/v1/fstream \

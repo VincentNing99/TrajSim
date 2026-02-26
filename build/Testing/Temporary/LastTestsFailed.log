@@ -1,1 +1,7 @@
-305:IntegratorTest.GammaRotatedThrustChangesZVelocity
+316:ConfigLoaderTest.LoadsMinimalValidConfig
+317:ConfigLoaderTest.LoadedValuesMatchInput
+318:ConfigLoaderTest.NumberOfStagesDerivedFromEngines
+319:ConfigLoaderTest.AngularFieldsConvertedToRadians
+320:ConfigLoaderTest.NoWarningsForCleanConfig
+335:ConfigLoaderTest.UnknownTopLevelKeyProducesWarning
+336:ConfigLoaderTest.UnknownVehicleFieldProducesWarning
