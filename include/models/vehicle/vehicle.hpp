@@ -22,6 +22,11 @@ public:
         EngineModel::Config engine;     ///< Per-engine configuration
     };
 
+    struct Stage {
+        int stage;
+        std::vector<EngineModel> engines;
+    };
+
     struct Config {
         double numberOfStage = 1;
         double mass = 0.0;                      ///< Total initial mass [kg]
