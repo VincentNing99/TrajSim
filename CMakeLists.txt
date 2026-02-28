@@ -55,9 +55,6 @@ target_link_libraries(trajsim_lib PUBLIC nlohmann_json::nlohmann_json)
 add_executable(trajsim src/main.cpp)
 target_link_libraries(trajsim trajsim_lib)
 
-add_executable(scratch src/models/scratch.cpp)
-target_link_libraries(scratch trajsim_lib)
-
 # =============================================================================
 # Tests
 # =============================================================================
