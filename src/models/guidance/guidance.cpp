@@ -28,7 +28,6 @@ Guidance::Guidance(Config config,
             algorithms.push_back(std::make_unique<IterativeGuidance>(
                 entry.igmConfig,
                 entry.exitCriteria,
-                guidanceConfig.tolerance,
                 mission,
                 vehicleState,
                 gravityCutoff,

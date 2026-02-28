@@ -3,14 +3,6 @@
 
 /// @file iterative_guidance.cpp
 /// @brief Iterative Guidance Mode (IGM) implementation.
-///
-/// Algorithm overview:
-///   1. Transform state to terminal guidance frame.
-///   2. Converge time-to-go via iterative updates (LTTW or HTTW path).
-///   3. Compute delta-V: velocity deficit between current and terminal state.
-///   4. Derive velocity-based steering angles from delta-V components.
-///   5. Apply position corrections (range angle, altitude targeting).
-///   6. Transform corrected steering back to inertial frame.
 
 #include "models/guidance/algorithm/iterative_guidance.hpp"
 #include <cassert>
@@ -22,7 +14,6 @@ namespace trajsim {
 
 IterativeGuidance::IterativeGuidance(Config config,
                                      ExitCriteria exitCriteria,
-                                     double tolerance,
                                      const ReferenceMission& mission,
                                      const VehicleState& vehicleState,
                                      Vec3 gravityCutoff,
@@ -30,7 +21,6 @@ IterativeGuidance::IterativeGuidance(Config config,
                                      double massFlowRate)
     : config(config)
     , exitCriteria(exitCriteria)
-    , tolerance(tolerance)
     , vehicleState(vehicleState)
     , gravityCutoff(gravityCutoff)
     , exitVelocity(exitVelocity)
@@ -81,6 +71,17 @@ SteeringAngles IterativeGuidance::computeSteering(const GuidanceInput& input) {
 
     SteeringAngles inertialAngles = transformSteeringToInertial(correctedAngles);
 
+    // On the first call, hold the initial steering so the rate limiter in the
+    // coordinator can ramp smoothly toward the IGM-computed command.
+    if (firstCall) {
+        firstCall = false;
+        steeringLastStep = inertialAngles;
+
+
+        timeToGo -= config.guidanceCycle;
+        return steering;
+    }
+
     // Return raw steering — rate limiting is handled by the coordinator
     steering = inertialAngles;
     steeringLastStep = steering;
@@ -97,7 +98,7 @@ void IterativeGuidance::updateTimeToGoLttw(double /*delV*/, double /*tau*/, cons
     double b1 = 2 * (dot(vc, g) - dot(vt, g));
 
     double h;
-    if (std::fabs(a1) < tolerance) {
+    if (std::fabs(a1) < config.tolerance) {
         h = timeToGo;
     } else {
         h = -b1 / (2 * a1);
@@ -109,13 +110,13 @@ void IterativeGuidance::updateTimeToGoLttw(double /*delV*/, double /*tau*/, cons
 
 void IterativeGuidance::updateTimeToGoHttw(double /*delV*/, double tau, double engineExitVelocity, const Vec3& /*g*/, const Vec3& /*vt*/, const Vec3& /*vc*/) {
     // High Thrust-to-Weight (HTTW) time-to-go update using the rocket equation.
-    if (tau - timeToGo < tolerance) {
+    if (tau - timeToGo < config.tolerance) {
         throw std::runtime_error("IGM failure: timeToGo exceeds propellant budget (tau - timeToGo <= 0)");
     }
 
     double A = engineExitVelocity * log(tau / (tau - timeToGo));
 
-    if (std::fabs(A) < tolerance) {
+    if (std::fabs(A) < config.tolerance) {
         timeToGoLastStep = timeToGo;
         return;
     }
@@ -194,7 +195,7 @@ SteeringAngles IterativeGuidance::applyPositionCorrections(const SteeringAngles&
     Vec3 terminalPosOrbital = rmInertialToOrbital * terminalPosition;
     double betaE = std::atan2(-posOrbital.x, posOrbital.y);
     double betaT;
-    if (std::fabs(terminalPosition.y) < tolerance) {
+    if (std::fabs(terminalPosition.y) < config.tolerance) {
         betaT = 0.0;
     } else {
         betaT = (velOrbital.x * timeToGo - S + 0.5 * g.x * std::pow(timeToGo, 2)) / terminalPosition.y;
@@ -216,24 +217,24 @@ SteeringAngles IterativeGuidance::applyPositionCorrections(const SteeringAngles&
     double By = J;
     double Cy = S * std::cos(velocityAngles.psi);
     double Dy = Q * std::cos(velocityAngles.psi);
-    double Ey = instantaneousPosition.z + instantaneousVelocity.z * timeToGo + 0.5 * g.z * std::pow(timeToGo, 2) + S * std::sin(velocityAngles.psi);
+    double Ey = -terminalPosition.z + instantaneousPosition.z + instantaneousVelocity.z * timeToGo + 0.5 * g.z * std::pow(timeToGo, 2) + S * std::sin(velocityAngles.psi);
 
-    if (std::fabs(By) < tolerance) {
+    if (std::fabs(By) < config.tolerance) {
         return corrected;
     }
 
     double detY = By * Cy - Ay * Dy;
-    if (std::fabs(detY) < tolerance) {
+    if (std::fabs(detY) < config.tolerance) {
         return corrected;
     }
     double K3 = 0.0, K4 = 0.0;
-    if (timeToGo > config.K3K4Hold) {
+    if (timeToGo > config.yawCorrectionStopTime) {
         K3 = By * Ey / detY;
         K4 = Ay * K3 / By;
     }
 
     double K1 = 0.0, K2 = 0.0;
-    if (timeToGo > config.K1K2Hold) {
+    if (timeToGo > config.pitchCorrectionStopTime) {
         double Ap = Ay;
         double Bp = By;
         double Cp = Cy * std::cos(velocityAngles.phi);
@@ -241,7 +242,7 @@ SteeringAngles IterativeGuidance::applyPositionCorrections(const SteeringAngles&
         double Ep = -terminalPosition.y + instantaneousPosition.y + instantaneousVelocity.y * timeToGo + 0.5 * g.y * std::pow(timeToGo, 2) - S * std::sin(velocityAngles.phi);
 
         double detP = Ap * Dp - Bp * Cp;
-        if (std::fabs(detP) < tolerance) {
+        if (std::fabs(detP) < config.tolerance) {
             return corrected;
         }
 
@@ -264,7 +265,7 @@ SteeringAngles IterativeGuidance::transformSteeringToInertial(SteeringAngles cor
     SteeringAngles inertial{};
     inertial.psi = std::asin(steeringCosInertial[2]);
 
-    if (std::fabs(std::cos(inertial.psi)) < tolerance) {
+    if (std::fabs(std::cos(inertial.psi)) < config.tolerance) {
         throw std::runtime_error("IGM gimbal lock: Cannot transform steering angles when psi = +/-90 deg (cos(psi) = 0). "
                                  "Division by zero in phi calculation. Current psi = " + std::to_string(inertial.psi * radToDeg) + " degrees.");
     }
@@ -284,7 +285,7 @@ bool IterativeGuidance::exit(const VehicleState& state) const {
     Vec3 velocityEquatorial = rmLaunchToEquatorial * state.velocity;
 
     double positionMag = positionEquatorial.mag();
-    if (positionMag < tolerance) {
+    if (positionMag < config.tolerance) {
         return false;
     }
 
@@ -293,7 +294,7 @@ bool IterativeGuidance::exit(const VehicleState& state) const {
 
     Vec3 angularMomentum = cross(positionEquatorial, velocityEquatorial);
     double angularMomentumMag = angularMomentum.mag();
-    if (angularMomentumMag < tolerance) {
+    if (angularMomentumMag < config.tolerance) {
         return false;
     }
 
@@ -316,7 +317,7 @@ OrbitalElements IterativeGuidance::computeOrbitalElements(const VehicleState& st
     Vec3 velocityEquatorial = rmLaunchToEquatorial * state.velocity;
 
     double positionMag = positionEquatorial.mag();
-    if (positionMag < tolerance) {
+    if (positionMag < config.tolerance) {
         return {0.0, 0.0, 0.0};
     }
 
@@ -325,7 +326,7 @@ OrbitalElements IterativeGuidance::computeOrbitalElements(const VehicleState& st
 
     Vec3 angularMomentum = cross(positionEquatorial, velocityEquatorial);
     double angularMomentumMag = angularMomentum.mag();
-    if (angularMomentumMag < tolerance) {
+    if (angularMomentumMag < config.tolerance) {
         return {semiMajorAxis, 0.0, 0.0};
     }
 

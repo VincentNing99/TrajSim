@@ -29,8 +29,9 @@ public:
         double steeringHoldTime;                ///< Time before cutoff to hold steering [s]
         int maxConvergenceIterations;           ///< Max iterations for time-to-go convergence
         double timeToGoConvergenceTolerance;    ///< Convergence tolerance for time-to-go [s]
-        int K1K2Hold;
-        int K3K4Hold;
+        double tolerance;                       ///< Numerical tolerance for guard checks
+        int pitchCorrectionStopTime;  ///< tgo threshold below which pitch position corrections deactivate [s]
+        int yawCorrectionStopTime;    ///< tgo threshold below which yaw position corrections deactivate [s]
 
         void validate() const {
             if (guidanceCycle <= 0)
@@ -41,22 +42,22 @@ public:
                 throw std::invalid_argument("IterativeGuidance::Config: maxConvergenceIterations must be >= 1");
             if (timeToGoConvergenceTolerance <= 0)
                 throw std::invalid_argument("IterativeGuidance::Config: timeToGoConvergenceTolerance must be > 0");
-            if (K1K2Hold < 0)
-                throw std::invalid_argument("IterativeGuidance::Config: pitch positional corrections coefficients hold time must be > 0");
-            if (K3K4Hold < 0)
-                throw std::invalid_argument("IterativeGuidance::Config: yaw positional corrections coefficients hold time must be > 0");
+            if (tolerance <= 0)
+                throw std::invalid_argument("IterativeGuidance::Config: tolerance must be > 0");
+            if (pitchCorrectionStopTime < 0)
+                throw std::invalid_argument("IterativeGuidance::Config: pitchCorrectionStopTime must be >= 0");
+            if (yawCorrectionStopTime < 0)
+                throw std::invalid_argument("IterativeGuidance::Config: yawCorrectionStopTime must be >= 0");
         }
     };
 
     /// @brief Construct iterative guidance from mission parameters.
     /// @param config Algorithm configuration.
     /// @param exitCriteria Exit conditions.
-    /// @param tolerance Numerical tolerance for guard checks.
     /// @param mission Reference mission containing terminal state.
     /// @param vehicleState Initial vehicle state.
     explicit IterativeGuidance(Config config,
                                ExitCriteria exitCriteria,
-                               double tolerance,
                                const ReferenceMission& mission,
                                const VehicleState& vehicleState,
                                Vec3 gravityCutoff,
@@ -98,7 +99,6 @@ private:
 
     Config config;
     ExitCriteria exitCriteria;
-    double tolerance;
     const VehicleState& vehicleState;
 
     // Engine & environment constants (computed once at construction)
@@ -128,6 +128,7 @@ private:
     // Steering
     SteeringAngles steering;
     SteeringAngles steeringLastStep;
+    bool firstCall = true;
 
     // Frame transforms & guidance state
     Mat3 rmLaunchToEquatorial;

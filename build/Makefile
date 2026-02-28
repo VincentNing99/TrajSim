@@ -198,6 +198,19 @@ trajsim/fast:
 .PHONY : trajsim/fast
 
 #=============================================================================
+# Target rules for targets named scratch
+
+# Build rule for target.
+scratch: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 scratch
+.PHONY : scratch
+
+# fast build rule for target.
+scratch/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/scratch.dir/build.make CMakeFiles/scratch.dir/build
+.PHONY : scratch/fast
+
+#=============================================================================
 # Target rules for targets named trajsim_tests
 
 # Build rule for target.
@@ -526,6 +539,30 @@ src/models/liquid_engine.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/trajsim_lib.dir/build.make CMakeFiles/trajsim_lib.dir/src/models/liquid_engine.cpp.s
 .PHONY : src/models/liquid_engine.cpp.s
 
+src/models/scratch.o: src/models/scratch.cpp.o
+.PHONY : src/models/scratch.o
+
+# target to build an object file
+src/models/scratch.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/scratch.dir/build.make CMakeFiles/scratch.dir/src/models/scratch.cpp.o
+.PHONY : src/models/scratch.cpp.o
+
+src/models/scratch.i: src/models/scratch.cpp.i
+.PHONY : src/models/scratch.i
+
+# target to preprocess a source file
+src/models/scratch.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/scratch.dir/build.make CMakeFiles/scratch.dir/src/models/scratch.cpp.i
+.PHONY : src/models/scratch.cpp.i
+
+src/models/scratch.s: src/models/scratch.cpp.s
+.PHONY : src/models/scratch.s
+
+# target to generate assembly for a file
+src/models/scratch.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/scratch.dir/build.make CMakeFiles/scratch.dir/src/models/scratch.cpp.s
+.PHONY : src/models/scratch.cpp.s
+
 tests/test_aerodynamics.o: tests/test_aerodynamics.cpp.o
 .PHONY : tests/test_aerodynamics.o
 
@@ -807,6 +844,7 @@ help:
 	@echo "... gmock_main"
 	@echo "... gtest"
 	@echo "... gtest_main"
+	@echo "... scratch"
 	@echo "... trajsim"
 	@echo "... trajsim_lib"
 	@echo "... trajsim_tests"
@@ -843,6 +881,9 @@ help:
 	@echo "... src/models/liquid_engine.o"
 	@echo "... src/models/liquid_engine.i"
 	@echo "... src/models/liquid_engine.s"
+	@echo "... src/models/scratch.o"
+	@echo "... src/models/scratch.i"
+	@echo "... src/models/scratch.s"
 	@echo "... tests/test_aerodynamics.o"
 	@echo "... tests/test_aerodynamics.i"
 	@echo "... tests/test_aerodynamics.s"

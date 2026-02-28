@@ -90,11 +90,11 @@ StateDerivative Dynamics::evaluate(const VehicleState& state,
     Vec3 totalForceLocal = rmBodyToLocal(steering) * totalForceBody;
 
     // 4. Gravity acceleration computed directly in local frame (J2 model)
-    Vec3 gravityAcc = gravity.computeAcceleration(state.position);
+    Vec3 g = gravity.computeAcceleration(state.position);
 
     // 5. Newton's second law: a = F/m + g
     double invMass = 1.0 / state.vehicleMass;
-    Vec3 acceleration = totalForceLocal * invMass + gravityAcc;
+    Vec3 acceleration = totalForceLocal * invMass + g;
 
     return StateDerivative{
         state.velocity,

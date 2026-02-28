@@ -31,7 +31,6 @@
     "guidance": [
         {
             "stage": 1,
-            "tolerance": 1e-10,
             "maxSteeringRate": 5.0,
             "algorithms": [
                 {
@@ -40,8 +39,9 @@
                     "steeringHoldTime": 15.0,
                     "maxConvergenceIterations": 100,
                     "timeToGoConvergenceTolerance": 1e-5,
-                    "K1K2Hold": 35,
-                    "K3K4Hold": 15,
+                    "tolerance": 1e-10,
+                    "pitchCorrectionStopTime": 35,
+                    "yawCorrectionStopTime": 15,
                     "exitCriteria": {
                         "and": [
                             { "semiMajorAxis": { "exceedsBy": 0 } },

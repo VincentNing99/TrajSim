@@ -255,14 +255,14 @@ static SimConfig parseSimulation(const json& j, std::vector<std::string>& warnin
 
 static std::vector<Guidance::Config> parseGuidance(const json& arr, std::vector<std::string>& warnings) {
     static const std::vector<std::string> knownStageKeys = {
-        "stage", "tolerance", "maxSteeringRate", "algorithms"
+        "stage", "maxSteeringRate", "algorithms"
     };
     static const std::vector<std::string> knownIgmKeys = {
         "type", "guidanceCycle", "steeringHoldTime",
-        "maxConvergenceIterations", "timeToGoConvergenceTolerance", "exitCriteria", "K1K2Hold", "K3K4Hold"
+        "maxConvergenceIterations", "timeToGoConvergenceTolerance", "tolerance", "exitCriteria", "pitchCorrectionStopTime", "yawCorrectionStopTime"
     };
     static const std::vector<std::string> knownOpenLoopKeys = {
-        "type"
+        "type", "tolerance"
     };
     std::vector<Guidance::Config> configs;
     configs.reserve(arr.size());
@@ -278,7 +278,6 @@ static std::vector<Guidance::Config> parseGuidance(const json& arr, std::vector<
 
         Guidance::Config cfg;
         cfg.stage = requireField<int>(g, "stage", ctx);
-        cfg.tolerance = requireField<double>(g, "tolerance", ctx);
         cfg.maxSteeringRate = requireField<double>(g, "maxSteeringRate", ctx);
 
         if (!g.contains("algorithms") || !g.at("algorithms").is_array() || g.at("algorithms").empty())
@@ -304,8 +303,9 @@ static std::vector<Guidance::Config> parseGuidance(const json& arr, std::vector<
                 entry.igmConfig.steeringHoldTime = requireField<double>(a, "steeringHoldTime", actx);
                 entry.igmConfig.maxConvergenceIterations = requireField<int>(a, "maxConvergenceIterations", actx);
                 entry.igmConfig.timeToGoConvergenceTolerance = requireField<double>(a, "timeToGoConvergenceTolerance", actx);
-                entry.igmConfig.K1K2Hold = requireField<int> (a, "K1K2Hold", actx);
-                entry.igmConfig.K3K4Hold = requireField<int> (a, "K3K4Hold", actx);
+                entry.igmConfig.tolerance = requireField<double>(a, "tolerance", actx);
+                entry.igmConfig.pitchCorrectionStopTime = requireField<int>(a, "pitchCorrectionStopTime", actx);
+                entry.igmConfig.yawCorrectionStopTime   = requireField<int>(a, "yawCorrectionStopTime",   actx);
 
 
                 if (a.contains("exitCriteria")) {
@@ -314,7 +314,7 @@ static std::vector<Guidance::Config> parseGuidance(const json& arr, std::vector<
                 }
             } else if (type == "OpenLoopGuidance") {
                 warnUnknownKeys(a, knownOpenLoopKeys, actx, warnings);
-                entry.openLoopConfig.tolerance = cfg.tolerance;
+                entry.openLoopConfig.tolerance = requireField<double>(a, "tolerance", actx);
             }
 
             cfg.algorithms.push_back(std::move(entry));

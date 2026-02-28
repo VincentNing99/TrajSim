@@ -67,6 +67,12 @@
 },
 {
   "directory": "/Users/vincentning/Desktop/TrajSim/build",
+  "command": "/usr/bin/c++  -I/Users/vincentning/Desktop/TrajSim/include -I/Users/vincentning/Desktop/TrajSim/build/_deps/nlohmann_json-src/include -std=gnu++20 -arch arm64 -Wall -Wextra -Wpedantic -Wconversion -Wshadow -o CMakeFiles/scratch.dir/src/models/scratch.cpp.o -c /Users/vincentning/Desktop/TrajSim/src/models/scratch.cpp",
+  "file": "/Users/vincentning/Desktop/TrajSim/src/models/scratch.cpp",
+  "output": "CMakeFiles/scratch.dir/src/models/scratch.cpp.o"
+},
+{
+  "directory": "/Users/vincentning/Desktop/TrajSim/build",
   "command": "/usr/bin/c++  -I/Users/vincentning/Desktop/TrajSim/include -I/Users/vincentning/Desktop/TrajSim/build/_deps/nlohmann_json-src/include -isystem /Users/vincentning/Desktop/TrajSim/build/_deps/googletest-src/googletest/include -isystem /Users/vincentning/Desktop/TrajSim/build/_deps/googletest-src/googletest -std=gnu++20 -arch arm64 -Wall -Wextra -Wpedantic -Wconversion -Wshadow -o CMakeFiles/trajsim_tests.dir/tests/test_vec3.cpp.o -c /Users/vincentning/Desktop/TrajSim/tests/test_vec3.cpp",
   "file": "/Users/vincentning/Desktop/TrajSim/tests/test_vec3.cpp",
   "output": "CMakeFiles/trajsim_tests.dir/tests/test_vec3.cpp.o"

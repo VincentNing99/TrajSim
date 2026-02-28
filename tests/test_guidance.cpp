@@ -26,7 +26,8 @@ static Guidance::Config makeTestGuidanceConfig() {
         .guidanceCycle = 0.01,
         .steeringHoldTime = 15.0,
         .maxConvergenceIterations = 100,
-        .timeToGoConvergenceTolerance = 1e-5
+        .timeToGoConvergenceTolerance = 1e-5,
+        .tolerance = 1e-10
     };
     using EN = ExitNode;
     entry.exitCriteria = {
@@ -39,7 +40,6 @@ static Guidance::Config makeTestGuidanceConfig() {
 
     return Guidance::Config{
         .stage = 1,
-        .tolerance = 1e-10,
         .maxSteeringRate = 5.0,
         .algorithms = {entry}
     };

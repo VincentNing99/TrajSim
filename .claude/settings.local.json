@@ -22,7 +22,9 @@
       "Bash(/opt/homebrew/bin/ninja:*)",
       "Bash(CXX=/opt/homebrew/bin/g++-14 CC=/opt/homebrew/bin/gcc-14 /opt/homebrew/bin/cmake:*)",
       "Bash(cmake:*)",
-      "Bash(./trajsim:*)"
+      "Bash(./trajsim:*)",
+      "Bash(./build/trajsim_tests:*)",
+      "Bash(./build/scratch)"
     ]
   }
 }

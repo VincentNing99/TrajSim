@@ -1,5 +1,6 @@
 /Users/vincentning/Desktop/TrajSim/build/CMakeFiles/trajsim_lib.dir
 /Users/vincentning/Desktop/TrajSim/build/CMakeFiles/trajsim.dir
+/Users/vincentning/Desktop/TrajSim/build/CMakeFiles/scratch.dir
 /Users/vincentning/Desktop/TrajSim/build/CMakeFiles/trajsim_tests.dir
 /Users/vincentning/Desktop/TrajSim/build/CMakeFiles/test.dir
 /Users/vincentning/Desktop/TrajSim/build/CMakeFiles/edit_cache.dir

@@ -41,13 +41,10 @@ public:
 
     struct Config {
         int stage;                              ///< 1-based stage number
-        double tolerance;                       ///< Shared numerical tolerance
         double maxSteeringRate;                 ///< Max steering rate [deg/s]
         std::vector<AlgorithmEntry> algorithms; ///< Ordered algorithm entries
 
         void validate() const {
-            if (tolerance <= 0)
-                throw std::invalid_argument("Guidance::Config: tolerance must be > 0");
             if (maxSteeringRate <= 0)
                 throw std::invalid_argument("Guidance::Config: maxSteeringRate must be > 0");
             if (algorithms.empty())

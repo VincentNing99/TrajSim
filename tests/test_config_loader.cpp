@@ -51,7 +51,7 @@ static const char* SIMULATION_SECTION =
     R"("simulation":{"timeStepRK4":0.001,"tolerance":1e-10})";
 
 static const char* GUIDANCE_SECTION =
-    R"("guidance":[{"stage":1,"tolerance":1e-10,"maxSteeringRate":5,"algorithms":[{"type":"IterativeGuidance","guidanceCycle":0.01,"steeringHoldTime":15,"maxConvergenceIterations":100,"timeToGoConvergenceTolerance":1e-5,"K1K2Hold":35,"K3K4Hold":15,"exitCriteria":{"and":[{"semiMajorAxis":{"exceedsBy":0}},{"eccentricity":{"withinTolerance":0.005}},{"inclination":{"withinTolerance":0.07}}]}}]}])";
+    R"("guidance":[{"stage":1,"maxSteeringRate":5,"algorithms":[{"type":"IterativeGuidance","guidanceCycle":0.01,"steeringHoldTime":15,"maxConvergenceIterations":100,"timeToGoConvergenceTolerance":1e-5,"tolerance":1e-10,"pitchCorrectionStopTime":35,"yawCorrectionStopTime":15,"exitCriteria":{"and":[{"semiMajorAxis":{"exceedsBy":0}},{"eccentricity":{"withinTolerance":0.005}},{"inclination":{"withinTolerance":0.07}}]}}]}])";
 
 static const char* MISSION_SECTION =
     R"("mission":{"semiMajorAxis":6903085,"longitudeAscendingNode":260,"inclination":97.5,)"
@@ -236,7 +236,7 @@ TEST_F(ConfigLoaderTest, ThrowsOnNegativeTimeStep) {
 TEST_F(ConfigLoaderTest, ThrowsOnInvalidAlgorithmType) {
     auto path = writeTemp(std::string("{") + VEHICLE_SECTION + ","
         + SIMULATION_SECTION + ","
-        + R"("guidance":[{"stage":1,"tolerance":1e-10,"maxSteeringRate":5,"algorithms":[{"type":"INVALID_TYPE","guidanceCycle":0.01,"steeringHoldTime":15,"maxConvergenceIterations":100,"timeToGoConvergenceTolerance":1e-5}]}],)"
+        + R"("guidance":[{"stage":1,"maxSteeringRate":5,"algorithms":[{"type":"INVALID_TYPE","guidanceCycle":0.01,"steeringHoldTime":15,"maxConvergenceIterations":100,"timeToGoConvergenceTolerance":1e-5,"tolerance":1e-10}]}],)"
         + MISSION_SECTION + "}", "bad_mode");
     EXPECT_THROW(loadConfig(path), std::invalid_argument);
 }
