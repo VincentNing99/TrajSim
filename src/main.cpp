@@ -20,6 +20,7 @@
 
 #include <iostream>
 #include <iomanip>
+#include <fstream>
 #include <cmath>
 #include <numbers>
 
@@ -52,7 +53,7 @@ int main() {
     // =========================================================================
     // 3. Create vehicle (engine + aerodynamics from CSV tables)
     // =========================================================================
-    const auto& engineCfg = cfg.vehicle.stages[0].engine;
+    const auto& engineCfg = cfg.vehicle.stage.engineCfg[0];
     LiquidEngine::Config leCfg{
         .id = "UpperStage",
         .thrust = engineCfg.thrust,
@@ -69,10 +70,9 @@ int main() {
 
     auto highSpeedTable = readCsv("files/highspeed.csv");
     auto lowSpeedTable = readCsv("files/lowspeed.csv");
-    Aerodynamics aero(cfg.aerodynamics, highSpeedTable, lowSpeedTable);
+    Aerodynamics aero(cfg.vehicle.aeroCfg, highSpeedTable, lowSpeedTable);
 
-    Vehicle::Config vCfg{.numberOfStage = 1, .mass = cfg.vehicle.mass};
-    Vehicle vehicle(vCfg, std::move(aero), std::move(engine));
+    Vehicle vehicle(cfg.vehicle, std::move(aero), std::move(engine));
 
     // =========================================================================
     // 4. Create dynamics
@@ -97,7 +97,7 @@ int main() {
 
     // Engine output at full throttle in vacuum
     EngineOutput engineOut = vehicle.getEngine().computeOutput(1.0, 0.0, 0.0, Vec3::zero());
-    const double thrustMag = engineOut.force.x;
+    const double thrustMag = engineOut.force.mag();
     const double mdot = engineOut.mdot;
 
     // =========================================================================
@@ -113,17 +113,41 @@ int main() {
     // =========================================================================
     // 8. Simulation loop
     // =========================================================================
-    std::cout << std::fixed << std::setprecision(4);
-    std::cout << std::setw(10) << "Time"
-              << std::setw(16) << "Pos_X"
-              << std::setw(16) << "Pos_Y"
-              << std::setw(16) << "Pos_Z"
-              << std::setw(14) << "|V| (m/s)"
-              << std::setw(12) << "Mass (kg)"
-              << std::setw(12) << "Phi (deg)"
-              << std::setw(12) << "Psi (deg)"
+
+    // Open CSV for telemetry export
+    std::ofstream csv("output/telemetry.csv");
+    csv << std::setprecision(10);
+    csv << "time,pos_x,pos_y,pos_z,vel_x,vel_y,vel_z,mass,"
+        << "altitude,delta_pos_x,delta_pos_y,delta_pos_z,"
+        << "delta_vel_x,delta_vel_y,delta_vel_z,"
+        << "phi_deg,psi_deg,time_to_go,"
+        << "sma,eccentricity,inclination_deg,"
+        << "target_sma,target_ecc,target_inc_deg\n";
+
+    std::cout << std::fixed << std::setprecision(2);
+    std::cout << std::setw(8) << "Time"
+              << std::setw(9) << "TGO"
+              << std::setw(10) << "Phi"
+              << std::setw(10) << "Psi"
+              << std::setw(12) << "SMA"
+              << std::setw(12) << "Ecc"
+              << std::setw(9) << "Inc"
+              << std::setw(10) << "|dPos|"
+              << std::setw(10) << "|dVel|"
+              << std::setw(10) << "Mass"
               << "\n";
-    std::cout << std::string(118, '-') << "\n";
+    std::cout << std::setw(8) << "(s)"
+              << std::setw(9) << "(s)"
+              << std::setw(10) << "(deg)"
+              << std::setw(10) << "(deg)"
+              << std::setw(12) << "(m)"
+              << std::setw(12) << "(-)"
+              << std::setw(9) << "(deg)"
+              << std::setw(10) << "(m)"
+              << std::setw(10) << "(m/s)"
+              << std::setw(10) << "(kg)"
+              << "\n";
+    std::cout << std::string(100, '-') << "\n";
 
     double t = mission.initialTime;
     double nextPrint = t;
@@ -131,19 +155,44 @@ int main() {
     bool exitMet = false;
 
     while (t < mission.cutoffTime) {
-        // Print every ~1 second
+        // Record every ~1 second
         if (t >= nextPrint) {
-            double vMag = state.velocity.mag();
-            SteeringAngles steer = guidance.computeSteering(t, gravity.computeAcceleration(state.position));
-            std::cout << std::setw(10) << t
-                      << std::setw(16) << state.position.x
-                      << std::setw(16) << state.position.y
-                      << std::setw(16) << state.position.z
-                      << std::setw(14) << vMag
-                      << std::setw(12) << state.vehicleMass
-                      << std::setw(12) << steer.phi * radToDeg
-                      << std::setw(12) << steer.psi * radToDeg
+            Vec3 g0Print = gravity.computeAcceleration(state.position);
+            SteeringAngles steer = guidance.computeSteering(t, g0Print);
+            double tgo = guidance.getTimeToGo();
+            OrbitalElements oe = guidance.computeOrbitalElements(state);
+            double alt = gravity.computeAltitude(state.position);
+
+            Vec3 dPos = state.position - mission.positionTerminal;
+            Vec3 dVel = state.velocity - mission.velocityTerminal;
+
+            // Console
+            std::cout << std::setprecision(1) << std::setw(8) << t
+                      << std::setprecision(2) << std::setw(9) << tgo
+                      << std::setprecision(2) << std::setw(10) << steer.phi * radToDeg
+                      << std::setprecision(2) << std::setw(10) << steer.psi * radToDeg
+                      << std::setprecision(0) << std::setw(12) << oe.semiMajorAxis
+                      << std::setprecision(6) << std::setw(12) << oe.eccentricity
+                      << std::setprecision(3) << std::setw(9) << oe.inclination * radToDeg
+                      << std::setprecision(0) << std::setw(10) << dPos.mag()
+                      << std::setprecision(1) << std::setw(10) << dVel.mag()
+                      << std::setprecision(1) << std::setw(10) << state.vehicleMass
                       << "\n";
+
+            // CSV
+            csv << t << ","
+                << state.position.x << "," << state.position.y << "," << state.position.z << ","
+                << state.velocity.x << "," << state.velocity.y << "," << state.velocity.z << ","
+                << state.vehicleMass << ","
+                << alt << ","
+                << dPos.x << "," << dPos.y << "," << dPos.z << ","
+                << dVel.x << "," << dVel.y << "," << dVel.z << ","
+                << steer.phi * radToDeg << "," << steer.psi * radToDeg << ","
+                << tgo << ","
+                << oe.semiMajorAxis << "," << oe.eccentricity << "," << oe.inclination * radToDeg << ","
+                << mission.semiMajorAxis << "," << mission.eccentricity << ","
+                << mission.inclination * radToDeg << "\n";
+
             nextPrint += printInterval;
         }
 
@@ -164,24 +213,67 @@ int main() {
         }
     }
 
+    csv.close();
+
     // =========================================================================
     // 9. Final output
     // =========================================================================
-    std::cout << "\n=== Simulation Complete ===\n";
-    std::cout << "Final time:     " << t << " s\n";
-    std::cout << "Final position: (" << state.position.x << ", "
-              << state.position.y << ", " << state.position.z << ") m\n";
-    std::cout << "Final velocity: (" << state.velocity.x << ", "
-              << state.velocity.y << ", " << state.velocity.z << ") m/s\n";
-    std::cout << "Final |V|:      " << state.velocity.mag() << " m/s\n";
-    std::cout << "Final mass:     " << state.vehicleMass << " kg\n";
-    std::cout << "Exit criteria:  " << (exitMet ? "MET" : "NOT MET") << "\n";
+    // Final orbital elements
+    OrbitalElements oeFinal = guidance.computeOrbitalElements(state);
+    Vec3 dPosFinal = state.position - mission.positionTerminal;
+    Vec3 dVelFinal = state.velocity - mission.velocityTerminal;
 
-    // Print target vs actual terminal state
-    std::cout << "\nTarget position: (" << mission.positionTerminal.x << ", "
-              << mission.positionTerminal.y << ", " << mission.positionTerminal.z << ") m\n";
-    std::cout << "Target velocity: (" << mission.velocityTerminal.x << ", "
-              << mission.velocityTerminal.y << ", " << mission.velocityTerminal.z << ") m/s\n";
+    std::cout << "\n" << std::string(60, '=') << "\n";
+    std::cout << "  SIMULATION COMPLETE — Exit criteria: "
+              << (exitMet ? "MET" : "NOT MET") << "\n";
+    std::cout << std::string(60, '=') << "\n";
+    std::cout << "Telemetry: output/telemetry.csv\n";
+    std::cout << "Final time: " << std::setprecision(4) << t << " s\n";
+    std::cout << "Final mass: " << std::setprecision(2) << state.vehicleMass << " kg\n\n";
+
+    std::cout << std::setw(20) << "Parameter"
+              << std::setw(16) << "Actual"
+              << std::setw(16) << "Target"
+              << std::setw(16) << "Error" << "\n";
+    std::cout << std::string(68, '-') << "\n";
+
+    std::cout << std::setprecision(1)
+              << std::setw(20) << "SMA (m)"
+              << std::setw(16) << oeFinal.semiMajorAxis
+              << std::setw(16) << mission.semiMajorAxis
+              << std::setw(16) << oeFinal.semiMajorAxis - mission.semiMajorAxis << "\n";
+
+    std::cout << std::setprecision(7)
+              << std::setw(20) << "Eccentricity"
+              << std::setw(16) << oeFinal.eccentricity
+              << std::setw(16) << mission.eccentricity
+              << std::setw(16) << oeFinal.eccentricity - mission.eccentricity << "\n";
+
+    std::cout << std::setprecision(4)
+              << std::setw(20) << "Inclination (deg)"
+              << std::setw(16) << oeFinal.inclination * radToDeg
+              << std::setw(16) << mission.inclination * radToDeg
+              << std::setw(16) << (oeFinal.inclination - mission.inclination) * radToDeg << "\n";
+
+    std::cout << "\n" << std::setprecision(2)
+              << std::setw(20) << "Pos error (m)"
+              << std::setw(16) << dPosFinal.mag() << "\n"
+              << std::setw(20) << "  dX"
+              << std::setw(16) << dPosFinal.x << "\n"
+              << std::setw(20) << "  dY"
+              << std::setw(16) << dPosFinal.y << "\n"
+              << std::setw(20) << "  dZ"
+              << std::setw(16) << dPosFinal.z << "\n";
+
+    std::cout << std::setprecision(3)
+              << std::setw(20) << "Vel error (m/s)"
+              << std::setw(16) << dVelFinal.mag() << "\n"
+              << std::setw(20) << "  dVx"
+              << std::setw(16) << dVelFinal.x << "\n"
+              << std::setw(20) << "  dVy"
+              << std::setw(16) << dVelFinal.y << "\n"
+              << std::setw(20) << "  dVz"
+              << std::setw(16) << dVelFinal.z << "\n";
 
     return 0;
 }

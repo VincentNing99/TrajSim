@@ -9,6 +9,8 @@ Aerodynamics::Aerodynamics(const Config& config,
     : cfg(config)
     , highSpeedTable(highSpeedTable)
     , lowSpeedTable(lowSpeedTable)
+    , refArea{config.refArea}
+    , refLength{config.refLength}
 {
     cfg.validate();
     validateTable(highSpeedTable, "highSpeedTable");
@@ -150,7 +152,7 @@ AeroCoefficients Aerodynamics::interpolate(const AeroGrid& grid,
     };
 }
 
-AeroResult Aerodynamics::compute(double mach, double alpha, double beta, double q) const
+AeroResult Aerodynamics::compute(double mach, double alpha, double beta, double q, double stage) const
 {
     // Validate inputs with descriptive errors
     if (std::isnan(mach)) throw std::invalid_argument("mach is NaN");
@@ -175,8 +177,8 @@ AeroResult Aerodynamics::compute(double mach, double alpha, double beta, double 
 
     AeroCoefficients coef = interpolate(grid, table, m, beta, alpha);
 
-    double qS = q * cfg.refArea;
-    double qSL = qS * cfg.refLength;
+    double qS = q * getRefArea(stage);
+    double qSL = qS * getRefLength(stage);
 
     return AeroResult{
         .force  = coef.forceCoef * qS,

@@ -53,12 +53,10 @@ SteeringAngles IterativeGuidance::computeSteering(const GuidanceInput& input) {
 
     // tau = m / mdot  -- characteristic time for propellant depletion
     double tau = -state.vehicleMass / massFlowRate;
-
-    // Transform all vectors into the terminal guidance frame for targeting
     instantaneousVelocity = rmInertialToTerminal * state.velocity;
-    instantaneousPosition = rmInertialToTerminal * state.position;
+    instantaneousPosition = rmInertialToTerminal * (state.position + positionLaunchSite);
     terminalVelocity = rmInertialToTerminal * terminalState.velocity;
-    terminalPosition = rmInertialToTerminal * terminalState.position;
+    terminalPosition = rmInertialToTerminal * (terminalState.position + positionLaunchSite);
 
     // Thrust-to-weight ratio selects the time-to-go update method
     double thrust = std::abs(massFlowRate) * exitVelocity;
@@ -71,14 +69,6 @@ SteeringAngles IterativeGuidance::computeSteering(const GuidanceInput& input) {
     convergeTimeToGo(g, instantaneousVelocity, tau, exitVelocity, thrustToWeight);
 
     computeDeltaV(g, instantaneousVelocity);
-
-    // DEBUG: track timeToGo evolution
-    static int dbgCount = 0;
-    if (dbgCount++ % 1000 == 0) {
-        std::cerr << "[DBG] t=" << input.time << " tgo=" << timeToGo
-                  << " tau=" << tau << " T/W=" << thrustToWeight
-                  << " dV=" << deltaV.dV << "\n";
-    }
 
     SteeringAngles velocityAngles = computeVelocitySteeringAngles();
 
@@ -94,6 +84,9 @@ SteeringAngles IterativeGuidance::computeSteering(const GuidanceInput& input) {
     // Return raw steering — rate limiting is handled by the coordinator
     steering = inertialAngles;
     steeringLastStep = steering;
+
+    // Decrement time-to-go by one guidance cycle (matches old code's set_time_to_go)
+    timeToGo -= config.guidanceCycle;
 
     return steering;
 }
@@ -163,7 +156,8 @@ void IterativeGuidance::convergeTimeToGo(const Vec3& g, const Vec3& vC, double t
 void IterativeGuidance::computeDeltaV(const Vec3& g, const Vec3& currentVelocity) {
     deltaV.dvXi = terminalVelocity.x - currentVelocity.x - g.x * timeToGo;
     deltaV.dvEta = terminalVelocity.y - currentVelocity.y - g.y * timeToGo;
-    deltaV.dvZeta = terminalVelocity.z - currentVelocity.z - g.z * timeToGo;
+    // Zeta uses opposite sign convention: current - terminal + gravity
+    deltaV.dvZeta = currentVelocity.z - terminalVelocity.z + g.z * timeToGo;
     deltaV.dV = std::sqrt(std::pow(deltaV.dvXi, 2) + std::pow(deltaV.dvEta, 2) + std::pow(deltaV.dvZeta, 2));
 }
 
@@ -193,25 +187,30 @@ SteeringAngles IterativeGuidance::applyPositionCorrections(const SteeringAngles&
     double S = engineExitVelocity * ((tau - timeToGo) * log(tau / (tau - timeToGo)) - timeToGo);
     double Q = engineExitVelocity * (0.5 * std::pow(timeToGo, 2) + tau * ((tau - timeToGo) * log(tau / (tau - timeToGo)) - timeToGo));
 
-    double betaE = std::atan2(-instantaneousPosition.x, instantaneousPosition.y);
+    // Compute betaE/betaT in the orbital frame, matching old code's update_terminal_frame.
+    // Position includes launch site offset (launch_inertial_to_ECSF equivalent).
+    Vec3 posOrbital = rmInertialToOrbital * (vehicleState.position + positionLaunchSite);
+    Vec3 velOrbital = rmInertialToOrbital * vehicleState.velocity;
+    Vec3 terminalPosOrbital = rmInertialToOrbital * terminalPosition;
+    double betaE = std::atan2(-posOrbital.x, posOrbital.y);
     double betaT;
-    if (std::fabs(instantaneousPosition.y) < tolerance) {
+    if (std::fabs(terminalPosition.y) < tolerance) {
         betaT = 0.0;
     } else {
-        betaT = (instantaneousVelocity.x * timeToGo - S + 0.5 * g.x * std::pow(timeToGo, 2)) / instantaneousPosition.y;
+        betaT = (velOrbital.x * timeToGo - S + 0.5 * g.x * std::pow(timeToGo, 2)) / terminalPosition.y;
     }
-    double rangeAngle;
-
-    if (betaE + betaT > terminalState.argumentOfLatitude) {
-        rangeAngle = betaE - betaT;
-    } else {
-        rangeAngle = betaE + betaT;
-    }
+    double rangeAngle = (posOrbital.x < terminalPosOrbital.x) ? betaE + betaT : betaE - betaT;
 
     Mat3 rmOrbitalToTerminal = {std::cos(rangeAngle), std::sin(rangeAngle), 0,
                         -std::sin(rangeAngle), std::cos(rangeAngle), 0,
                         0, 0, 1};
     rmInertialToTerminal = rmOrbitalToTerminal * rmInertialToOrbital;
+
+    // Retransform state vectors into the updated terminal frame
+    terminalPosition = rmInertialToTerminal * (terminalState.position + positionLaunchSite);
+    terminalVelocity = rmInertialToTerminal * terminalState.velocity;
+    instantaneousPosition = rmInertialToTerminal * (vehicleState.position + positionLaunchSite);
+    instantaneousVelocity = rmInertialToTerminal * vehicleState.velocity;
 
     double Ay = A;
     double By = J;
@@ -227,23 +226,28 @@ SteeringAngles IterativeGuidance::applyPositionCorrections(const SteeringAngles&
     if (std::fabs(detY) < tolerance) {
         return corrected;
     }
-
-    double K3 = By * Ey / detY;
-    double K4 = Ay * K3 / By;
-
-    double Ap = Ay;
-    double Bp = By;
-    double Cp = Cy * std::cos(velocityAngles.phi);
-    double Dp = Q * std::cos(velocityAngles.phi);
-    double Ep = -terminalPosition.y + instantaneousPosition.y + instantaneousVelocity.y * timeToGo + 0.5 * g.y * std::pow(timeToGo, 2) - S * std::sin(velocityAngles.phi);
-
-    double detP = Ap * Dp - Bp * Cp;
-    if (std::fabs(detP) < tolerance) {
-        return corrected;
+    double K3 = 0.0, K4 = 0.0;
+    if (timeToGo > config.K3K4Hold) {
+        K3 = By * Ey / detY;
+        K4 = Ay * K3 / By;
     }
 
-    double K1 = Bp * Ep / detP;
-    double K2 = Ap * K1 / Bp;
+    double K1 = 0.0, K2 = 0.0;
+    if (timeToGo > config.K1K2Hold) {
+        double Ap = Ay;
+        double Bp = By;
+        double Cp = Cy * std::cos(velocityAngles.phi);
+        double Dp = Q * std::cos(velocityAngles.phi);
+        double Ep = -terminalPosition.y + instantaneousPosition.y + instantaneousVelocity.y * timeToGo + 0.5 * g.y * std::pow(timeToGo, 2) - S * std::sin(velocityAngles.phi);
+
+        double detP = Ap * Dp - Bp * Cp;
+        if (std::fabs(detP) < tolerance) {
+            return corrected;
+        }
+
+        K1 = Bp * Ep / detP;
+        K2 = Ap * K1 / Bp;
+    }
 
     corrected.phi = velocityAngles.phi + K2 * config.guidanceCycle - K1;
     corrected.psi = velocityAngles.psi + K4 * config.guidanceCycle - K3;
@@ -304,6 +308,34 @@ bool IterativeGuidance::exit(const VehicleState& state) const {
     ctx.set(static_cast<size_t>(ExitNode::Parameter::Eccentricity), eccentricity, terminalState.eccentricity);
     ctx.set(static_cast<size_t>(ExitNode::Parameter::Inclination), inclination, terminalState.inclination);
     return exitCriteria.root->evaluate(ctx);
+}
+
+OrbitalElements IterativeGuidance::computeOrbitalElements(const VehicleState& state) const {
+    Vec3 positionECI = state.position + positionLaunchSite;
+    Vec3 positionEquatorial = rmLaunchToEquatorial * positionECI;
+    Vec3 velocityEquatorial = rmLaunchToEquatorial * state.velocity;
+
+    double positionMag = positionEquatorial.mag();
+    if (positionMag < tolerance) {
+        return {0.0, 0.0, 0.0};
+    }
+
+    double energy = std::pow(velocityEquatorial.mag(), 2) - 2 * EarthConstants::GRAVITATIONAL_CONST / positionMag;
+    double semiMajorAxis = -EarthConstants::GRAVITATIONAL_CONST / energy;
+
+    Vec3 angularMomentum = cross(positionEquatorial, velocityEquatorial);
+    double angularMomentumMag = angularMomentum.mag();
+    if (angularMomentumMag < tolerance) {
+        return {semiMajorAxis, 0.0, 0.0};
+    }
+
+    double inclination = std::acos(angularMomentum.z / angularMomentumMag);
+
+    Vec3 eccentricityVector = 1 / EarthConstants::GRAVITATIONAL_CONST *
+        ((std::pow(velocityEquatorial.mag(), 2) - EarthConstants::GRAVITATIONAL_CONST / positionMag) * positionEquatorial
+         - dot(positionEquatorial, velocityEquatorial) * velocityEquatorial);
+
+    return {semiMajorAxis, eccentricityVector.mag(), inclination};
 }
 
 void IterativeGuidance::buildRotationMatrix() {

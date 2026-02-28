@@ -1,25 +1,28 @@
 {
     "vehicle": {
-        "mass": 108936.6
-    },
-    "engines": [
-        {
-            "stage": 1,
-            "propellant": "liquid",
-            "nozzleType": "vacuum",
-            "numberOfEngine": 1,
-            "thrustPerEngine": 1025000,
-            "ISP": 329.776,
-            "massFlowRate": 316.945,
-            "exitArea": 7.4506
+        "mass": 108936.6,
+        "stages": 1,
+        "stageCfg": {
+            "stageMass": [108936.6],
+            "numberOfEngine": [1],
+            "engine": [
+                {
+                    "propellant": "liquid",
+                    "nozzleType": "vacuum",
+                    "thrust": 1025000,
+                    "ISP": 329.776,
+                    "massFlowRate": 316.945,
+                    "exitArea": 7.4506
+                }
+            ]
+        },
+        "aerodynamics": {
+            "refArea": 11.341149,
+            "refLength": 70.582,
+            "machMin": 0.1,
+            "machMax": 8.0,
+            "machTransition": 0.3
         }
-    ],
-    "aerodynamics": {
-        "refArea": 11.341149,
-        "refLength": 70.582,
-        "machMin": 0.1,
-        "machMax": 8.0,
-        "machTransition": 0.3
     },
     "simulation": {
         "timeStepRK4": 0.001,
@@ -37,6 +40,8 @@
                     "steeringHoldTime": 15.0,
                     "maxConvergenceIterations": 100,
                     "timeToGoConvergenceTolerance": 1e-5,
+                    "K1K2Hold": 35,
+                    "K3K4Hold": 15,
                     "exitCriteria": {
                         "and": [
                             { "semiMajorAxis": { "exceedsBy": 0 } },

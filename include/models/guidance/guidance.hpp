@@ -95,6 +95,12 @@ public:
     /// @brief Get terminal state from active algorithm (if available).
     [[nodiscard]] const TerminalState* getTerminalState() const noexcept;
 
+    /// @brief Get time-to-go from active algorithm.
+    [[nodiscard]] double getTimeToGo() const noexcept;
+
+    /// @brief Compute current orbital elements from vehicle state.
+    [[nodiscard]] OrbitalElements computeOrbitalElements(const VehicleState& state) const;
+
 private:
     Config guidanceConfig;
     const VehicleState& vehicleState;
@@ -104,6 +110,9 @@ private:
     // Rate limiting state
     SteeringAngles prevSteering;
     bool hasPrevSteering = false;
+
+    // Guidance cycle gating — only recompute every guidanceCycle seconds
+    double lastGuidanceTime = -1e30;
 };
 
 }  // namespace trajsim

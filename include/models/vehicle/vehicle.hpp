@@ -16,21 +16,18 @@ namespace trajsim {
 /// @brief Top-level vehicle model owning aerodynamics and engine subsystems.
 class Vehicle {
 public:
-    struct StageConfig {
-        int stage;                      ///< Stage number (1-based)
-        int numberOfEngine;             ///< Number of engines in this stage
-        EngineModel::Config engine;     ///< Per-engine configuration
-    };
-
-    struct Stage {
-        int stage;
-        std::vector<EngineModel> engines;
+    struct StageCfg 
+    {
+        std::vector<double> mass;
+        std::vector<int> numberOfEngine;
+        std::vector<Engine::Config> engineCfg;
     };
 
     struct Config {
-        double numberOfStage = 1;
+        int numberOfStage = 1;
         double mass = 0.0;                      ///< Total initial mass [kg]
-        std::vector<StageConfig> stages;        ///< Per-stage engine configs
+        StageCfg stage;
+        Aerodynamics::Config aeroCfg;
     };
 
     /// @brief Construct vehicle with subsystems.
@@ -39,12 +36,14 @@ public:
     /// @param engine  Engine model (ownership transferred, may be nullptr).
     Vehicle(const Config& config,
             Aerodynamics aero,
-            std::unique_ptr<EngineModel> engine)
-        : numberOfStage{config.numberOfStage}
+            std::unique_ptr<Engine> engine)
+        : numberOfStage(config.numberOfStage)
         , mass{config.mass}
         , aero{std::move(aero)}
         , engine{std::move(engine)}
-    {}
+    {
+        currentStage = 1;
+    }
 
     virtual ~Vehicle() = default;
     Vehicle(const Vehicle&) = delete;
@@ -55,14 +54,16 @@ public:
     [[nodiscard]] double getMass() const noexcept { return mass; }
     [[nodiscard]] double getNumberOfStage() const noexcept { return numberOfStage; }
     [[nodiscard]] const Aerodynamics& getAero() const noexcept { return aero; }
-    [[nodiscard]] const EngineModel& getEngine() const { return *engine; }
-    [[nodiscard]] EngineModel& getEngine() { return *engine; }
+    [[nodiscard]] const Engine& getEngine() const { return *engine; }
+    [[nodiscard]] Engine& getEngine() { return *engine; }
+    [[nodiscard]] double getStage() const noexcept { return currentStage; }
 
 private:
+    double currentStage;
     double numberOfStage;
     double mass;
     Aerodynamics aero;
-    std::unique_ptr<EngineModel> engine;
+    std::unique_ptr<Engine> engine;
 };
 
 }  // namespace trajsim

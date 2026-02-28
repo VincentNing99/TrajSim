@@ -56,6 +56,20 @@ SteeringAngles Guidance::computeSteering(double t,
         advanceAlgorithm();
     }
 
+    // Determine guidance cycle from the active algorithm's config
+    double guidanceCycle = 0.01;
+    const auto& entry = guidanceConfig.algorithms[activeIndex];
+    if (entry.type == "IterativeGuidance") {
+        guidanceCycle = entry.igmConfig.guidanceCycle;
+    }
+
+    // Guidance cycle gating: only recompute at guidanceCycle intervals,
+    // return cached steering otherwise (old code ran every 10 RK4 steps = 0.01s)
+    if (hasPrevSteering && (t - lastGuidanceTime) < guidanceCycle - 1e-12) {
+        return prevSteering;
+    }
+    lastGuidanceTime = t;
+
     GuidanceInput input{};
     input.time = t;
     input.state = vehicleState;
@@ -65,14 +79,7 @@ SteeringAngles Guidance::computeSteering(double t,
 
     // Apply rate limiting
     if (hasPrevSteering) {
-        // Find the guidance cycle from the active algorithm's config
-        double dt = 0.0;
-        const auto& entry = guidanceConfig.algorithms[activeIndex];
-        if (entry.type == "IterativeGuidance") {
-            dt = entry.igmConfig.guidanceCycle;
-        } else {
-            dt = 0.01; // Default for algorithms without explicit cycle
-        }
+        double dt = guidanceCycle;
 
         if (dt > 0.0) {
             double maxRate = guidanceConfig.maxSteeringRate * degToRad;
@@ -116,6 +123,20 @@ const TerminalState* Guidance::getTerminalState() const noexcept {
         return algorithms[activeIndex]->getTerminalState();
     }
     return nullptr;
+}
+
+double Guidance::getTimeToGo() const noexcept {
+    if (activeIndex < algorithms.size()) {
+        return algorithms[activeIndex]->getTimeToGo();
+    }
+    return 0.0;
+}
+
+OrbitalElements Guidance::computeOrbitalElements(const VehicleState& state) const {
+    if (activeIndex < algorithms.size()) {
+        return algorithms[activeIndex]->computeOrbitalElements(state);
+    }
+    return {0.0, 0.0, 0.0};
 }
 
 }  // namespace trajsim

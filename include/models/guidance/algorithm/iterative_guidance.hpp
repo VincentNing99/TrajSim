@@ -29,6 +29,8 @@ public:
         double steeringHoldTime;                ///< Time before cutoff to hold steering [s]
         int maxConvergenceIterations;           ///< Max iterations for time-to-go convergence
         double timeToGoConvergenceTolerance;    ///< Convergence tolerance for time-to-go [s]
+        int K1K2Hold;
+        int K3K4Hold;
 
         void validate() const {
             if (guidanceCycle <= 0)
@@ -39,6 +41,10 @@ public:
                 throw std::invalid_argument("IterativeGuidance::Config: maxConvergenceIterations must be >= 1");
             if (timeToGoConvergenceTolerance <= 0)
                 throw std::invalid_argument("IterativeGuidance::Config: timeToGoConvergenceTolerance must be > 0");
+            if (K1K2Hold < 0)
+                throw std::invalid_argument("IterativeGuidance::Config: pitch positional corrections coefficients hold time must be > 0");
+            if (K3K4Hold < 0)
+                throw std::invalid_argument("IterativeGuidance::Config: yaw positional corrections coefficients hold time must be > 0");
         }
     };
 
@@ -62,6 +68,8 @@ public:
     [[nodiscard]] bool exit(const VehicleState& state) const override;
     [[nodiscard]] std::string_view name() const noexcept override { return "IterativeGuidance"; }
     [[nodiscard]] const TerminalState* getTerminalState() const noexcept override { return &terminalState; }
+    [[nodiscard]] double getTimeToGo() const noexcept override { return timeToGo; }
+    [[nodiscard]] OrbitalElements computeOrbitalElements(const VehicleState& state) const override;
 
     // Public methods for test compatibility
     void updateTimeToGoLttw(double delV, double tau, const Vec3& g, const Vec3& vt, const Vec3& vc);

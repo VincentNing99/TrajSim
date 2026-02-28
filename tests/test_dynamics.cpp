@@ -261,25 +261,25 @@ TEST_F(DynamicsTest, ThrustAlongBodyXProducesLocalXAcceleration) {
     EXPECT_GT(deriv.velocityDot.x, 9.0);
 }
 
-TEST_F(DynamicsTest, ThrustWithPitchProducesNegativeYAcceleration) {
-    // phi = π/2 rotates body x toward -y in local frame
+TEST_F(DynamicsTest, ThrustWithPitchProducesPositiveYAcceleration) {
+    // bodyToLocal = Rz(-φ). At φ=π/2: body x → local +y
     VehicleState state{Vec3{0.0, START_ALT, 0.0}, Vec3::zero(), Vec3::zero(), 50000.0};
     SteeringAngles pitched{std::numbers::pi / 2.0, 0.0, 0.0};
 
     StateDerivative deriv = dynamics->evaluate(state, pitched, 500000.0, 0.0, 0.0);
 
-    // Thrust component in -y direction should dominate gravity
-    EXPECT_LT(deriv.velocityDot.y, -5.0);
+    // Thrust component in +y direction minus gravity
+    EXPECT_GT(deriv.velocityDot.y, 0.0);
 }
 
-TEST_F(DynamicsTest, ThrustWithYawProducesZAcceleration) {
-    // psi = π/2 rotates body x toward +z in local frame
+TEST_F(DynamicsTest, ThrustWithYawProducesNegativeZAcceleration) {
+    // bodyToLocal = Ry(-ψ). At ψ=π/2: body x → local -z
     VehicleState state{Vec3{0.0, START_ALT, 0.0}, Vec3::zero(), Vec3::zero(), 50000.0};
     SteeringAngles yawed{0.0, std::numbers::pi / 2.0, 0.0};
 
     StateDerivative deriv = dynamics->evaluate(state, yawed, 500000.0, 0.0, 0.0);
 
-    EXPECT_GT(deriv.velocityDot.z, 5.0);
+    EXPECT_LT(deriv.velocityDot.z, -5.0);
 }
 
 // =============================================================================

@@ -31,7 +31,7 @@ struct EngineOutput {
 ///
 /// Derived classes implement specific engine types (liquid, solid, hybrid).
 /// All outputs are in body frame with thrust along +X by convention.
-class EngineModel {
+class Engine {
 public:
     struct Config {
         std::string id;
@@ -45,11 +45,11 @@ public:
         Vec3 mountOffset;           ///< From CoM [m]
     };
 
-    virtual ~EngineModel() = default;
-    EngineModel(const EngineModel&) = delete;
-    EngineModel& operator=(const EngineModel&) = delete;
-    EngineModel(EngineModel&&) = default;
-    EngineModel& operator=(EngineModel&&) = default;
+    virtual ~Engine() = default;
+    Engine(const Engine&) = delete;
+    Engine& operator=(const Engine&) = delete;
+    Engine(Engine&&) = default;
+    Engine& operator=(Engine&&) = default;
 
     // =========================================================================
     // Core Interface
@@ -90,7 +90,7 @@ public:
     [[nodiscard]] virtual double getDryMass() const noexcept = 0;
 
 protected:
-    EngineModel() = default;
+    Engine() = default;
 };
 
 // =============================================================================
@@ -101,6 +101,6 @@ protected:
 /// @param config Engine configuration parameters.
 /// @return Owning pointer to engine model.
 /// @throws std::runtime_error on invalid config.
-[[nodiscard]] std::unique_ptr<EngineModel> createEngine(const EngineModel::Config& config);
+[[nodiscard]] std::unique_ptr<Engine> createEngine(const Engine::Config& config);
 
 }  // namespace trajsim

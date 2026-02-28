@@ -11,7 +11,7 @@
 
 namespace trajsim {
 
-class LiquidEngine final : public EngineModel {
+class LiquidEngine final : public Engine {
 public:
     struct Config {
         std::string id;

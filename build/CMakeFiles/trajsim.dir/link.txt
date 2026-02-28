@@ -1,1 +1,1 @@
-/usr/bin/c++ -g -arch arm64 -Wl,-search_paths_first -Wl,-headerpad_max_install_names CMakeFiles/trajsim.dir/src/main.cpp.o -o trajsim  libtrajsim_lib.a
+/usr/bin/c++  -arch arm64 -Wl,-search_paths_first -Wl,-headerpad_max_install_names CMakeFiles/trajsim.dir/src/main.cpp.o -o trajsim  libtrajsim_lib.a

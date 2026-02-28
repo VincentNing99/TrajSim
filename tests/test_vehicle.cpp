@@ -54,7 +54,7 @@ static Aerodynamics makeTestAero() {
 }
 
 /// @brief Create a valid LiquidEngine for testing.
-static std::unique_ptr<EngineModel> makeTestEngine() {
+static std::unique_ptr<Engine> makeTestEngine() {
     LiquidEngine::Config cfg{
         .id = "TestEngine",
         .thrust = 100000.0,
@@ -77,7 +77,7 @@ static std::unique_ptr<EngineModel> makeTestEngine() {
 class VehicleTest : public ::testing::Test {
 protected:
     static constexpr double MASS = 50000.0;
-    static constexpr double NUM_STAGES = 2.0;
+    static constexpr int NUM_STAGES = 2;
 };
 
 // =============================================================================
@@ -136,7 +136,7 @@ TEST_F(VehicleTest, MutableEngineAccessWorks) {
     Vehicle v(cfg, makeTestAero(), makeTestEngine());
 
     // Non-const access
-    EngineModel& engine = v.getEngine();
+    Engine& engine = v.getEngine();
     EXPECT_EQ(engine.getId(), "TestEngine");
 }
 
@@ -162,7 +162,7 @@ TEST_F(VehicleTest, AeroComputeWorksAfterConstruction) {
     Vehicle v(cfg, makeTestAero(), makeTestEngine());
 
     // Zero-coefficient aero should return zero forces
-    AeroResult result = v.getAero().compute(0.5, 0.0, 0.0, 1000.0);
+    AeroResult result = v.getAero().compute(0.5, 0.0, 0.0, 1000.0, 1.0);
     EXPECT_DOUBLE_EQ(result.force.x, 0.0);
     EXPECT_DOUBLE_EQ(result.force.y, 0.0);
     EXPECT_DOUBLE_EQ(result.force.z, 0.0);

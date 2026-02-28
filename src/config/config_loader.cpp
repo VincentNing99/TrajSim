@@ -162,54 +162,6 @@ static const json& requireSection(const json& root, const std::string& key, cons
 // Section parsers
 // =============================================================================
 
-static Vehicle::Config parseVehicle(const json& j, std::vector<std::string>& warnings) {
-    const std::string ctx = "vehicle";
-
-    static const std::vector<std::string> knownKeys = {
-        "mass"
-    };
-    warnUnknownKeys(j, knownKeys, ctx, warnings);
-
-    Vehicle::Config cfg;
-    cfg.mass = requireField<double>(j, "mass", ctx);
-
-    return cfg;
-}
-
-static std::vector<Vehicle::StageConfig> parseEngines(const json& arr, std::vector<std::string>& warnings) {
-    static const std::vector<std::string> knownKeys = {
-        "stage", "propellant", "nozzleType", "numberOfEngine",
-        "thrustPerEngine", "ISP", "massFlowRate", "exitArea"
-    };
-
-    std::vector<Vehicle::StageConfig> stages;
-    stages.reserve(arr.size());
-
-    for (size_t i = 0; i < arr.size(); ++i) {
-        const auto& e = arr[i];
-        const std::string ctx = "engines[" + std::to_string(i) + "]";
-
-        if (!e.is_object())
-            throw std::invalid_argument(ctx + ": each engine entry must be a JSON object");
-
-        warnUnknownKeys(e, knownKeys, ctx, warnings);
-
-        Vehicle::StageConfig sc;
-        sc.stage              = requireField<int>        (e, "stage",          ctx);
-        sc.numberOfEngine     = requireField<int>        (e, "numberOfEngine", ctx);
-        sc.engine.propellant  = requireField<std::string>(e, "propellant",     ctx);
-        sc.engine.nozzleType  = requireField<std::string>(e, "nozzleType",     ctx);
-        sc.engine.thrust      = requireField<double>     (e, "thrustPerEngine",ctx);
-        sc.engine.isp         = requireField<double>     (e, "ISP",            ctx);
-        sc.engine.mdot        = requireField<double>     (e, "massFlowRate",   ctx);
-        sc.engine.nozzleExitArea = requireField<double>  (e, "exitArea",       ctx);
-
-        stages.push_back(sc);
-    }
-
-    return stages;
-}
-
 static Aerodynamics::Config parseAerodynamics(const json& j, std::vector<std::string>& warnings) {
     const std::string ctx = "aerodynamics";
 
@@ -226,6 +178,62 @@ static Aerodynamics::Config parseAerodynamics(const json& j, std::vector<std::st
     cfg.machTransition = requireField<double>(j, "machTransition", ctx);
 
     cfg.validate();
+    return cfg;
+}
+
+static Vehicle::StageCfg parseStageCfg(const json& stageCfgObj, std::vector<std::string>& warnings) {
+    static const std::vector<std::string> stageKeys = {"stageMass", "numberOfEngine", "engine"};
+    static const std::vector<std::string> engineKeys = {"propellant", "nozzleType", "thrust", "ISP", "massFlowRate", "exitArea"};
+
+    const std::string ctx = "stageCfg";
+    if (!stageCfgObj.is_object()) throw std::invalid_argument(ctx + " must be a JSON object");
+    warnUnknownKeys(stageCfgObj, stageKeys, ctx, warnings);
+
+    Vehicle::StageCfg stage;
+    stage.numberOfEngine = requireField<std::vector<int>>(stageCfgObj, "numberOfEngine", ctx);
+    stage.mass           = requireField<std::vector<double>>(stageCfgObj, "stageMass", ctx);
+
+    if (!stageCfgObj.contains("engine") || !stageCfgObj.at("engine").is_array() || stageCfgObj.at("engine").empty())
+        throw std::invalid_argument(ctx + ": 'engine' must be a non-empty JSON array");
+
+    const auto& engineArr = stageCfgObj.at("engine");
+    stage.engineCfg.reserve(engineArr.size());
+
+    for (size_t i = 0; i < engineArr.size(); ++i) {
+        const auto& engineObj = engineArr[i];
+        const std::string engCtx = ctx + ".engine[" + std::to_string(i) + "]";
+
+        if (!engineObj.is_object()) throw std::invalid_argument(engCtx + " must be a JSON object");
+        warnUnknownKeys(engineObj, engineKeys, engCtx, warnings);
+
+        Engine::Config cfg;
+        cfg.propellant     = requireField<std::string>(engineObj, "propellant",   engCtx);
+        cfg.nozzleType     = requireField<std::string>(engineObj, "nozzleType",   engCtx);
+        cfg.thrust         = requireField<double>     (engineObj, "thrust",       engCtx);
+        cfg.isp            = requireField<double>     (engineObj, "ISP",          engCtx);
+        cfg.mdot           = requireField<double>     (engineObj, "massFlowRate", engCtx);
+        cfg.nozzleExitArea = requireField<double>     (engineObj, "exitArea",     engCtx);
+
+        stage.engineCfg.push_back(std::move(cfg));
+    }
+
+    return stage;
+}
+
+static Vehicle::Config parseVehicle(const json& j, std::vector<std::string>& warnings) {
+    const std::string ctx = "vehicle";
+
+    static const std::vector<std::string> knownKeys = {
+        "mass", "stages", "aerodynamics", "stageCfg"
+    };
+    warnUnknownKeys(j, knownKeys, ctx, warnings);
+
+    Vehicle::Config cfg;
+    cfg.mass          = requireField<double>(j, "mass", ctx);
+    cfg.numberOfStage = requireField<int>(j, "stages", ctx);
+    cfg.aeroCfg       = parseAerodynamics(requireSection(j, "aerodynamics", ctx), warnings);
+    cfg.stage         = parseStageCfg(requireSection(j, "stageCfg", ctx), warnings);
+
     return cfg;
 }
 
@@ -251,7 +259,7 @@ static std::vector<Guidance::Config> parseGuidance(const json& arr, std::vector<
     };
     static const std::vector<std::string> knownIgmKeys = {
         "type", "guidanceCycle", "steeringHoldTime",
-        "maxConvergenceIterations", "timeToGoConvergenceTolerance", "exitCriteria"
+        "maxConvergenceIterations", "timeToGoConvergenceTolerance", "exitCriteria", "K1K2Hold", "K3K4Hold"
     };
     static const std::vector<std::string> knownOpenLoopKeys = {
         "type"
@@ -296,6 +304,9 @@ static std::vector<Guidance::Config> parseGuidance(const json& arr, std::vector<
                 entry.igmConfig.steeringHoldTime = requireField<double>(a, "steeringHoldTime", actx);
                 entry.igmConfig.maxConvergenceIterations = requireField<int>(a, "maxConvergenceIterations", actx);
                 entry.igmConfig.timeToGoConvergenceTolerance = requireField<double>(a, "timeToGoConvergenceTolerance", actx);
+                entry.igmConfig.K1K2Hold = requireField<int> (a, "K1K2Hold", actx);
+                entry.igmConfig.K3K4Hold = requireField<int> (a, "K3K4Hold", actx);
+
 
                 if (a.contains("exitCriteria")) {
                     const std::string cctx = actx + ".exitCriteria";
@@ -366,25 +377,13 @@ ConfigResult<AppConfig> loadConfig(const std::string& path) {
     const json root = openJson(path);
 
     static const std::vector<std::string> knownSections = {
-        "vehicle", "engines", "aerodynamics", "simulation", "guidance", "mission"
+        "vehicle", "simulation", "guidance", "mission"
     };
 
     ConfigResult<AppConfig> result;
     warnUnknownKeys(root, knownSections, "Config", result.warnings);
 
     result.config.vehicle      = parseVehicle     (requireSection(root, "vehicle",      "Config"), result.warnings);
-
-    // Engines array
-    if (!root.contains("engines"))
-        throw std::invalid_argument("Config: required section 'engines' is missing");
-    if (!root.at("engines").is_array() || root.at("engines").empty())
-        throw std::invalid_argument("Config: 'engines' must be a non-empty JSON array");
-    result.config.vehicle.stages = parseEngines(root.at("engines"), result.warnings);
-
-    // Derive numberOfStage from engines array
-    result.config.vehicle.numberOfStage = static_cast<double>(result.config.vehicle.stages.size());
-
-    result.config.aerodynamics = parseAerodynamics(requireSection(root, "aerodynamics", "Config"), result.warnings);
     result.config.simulation   = parseSimulation  (requireSection(root, "simulation",   "Config"), result.warnings);
 
     // Guidance array (builds vectors from per-stage entries)

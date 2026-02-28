@@ -107,10 +107,15 @@ public:
     /// @param dynamicPressure Dynamic pressure [Pa] (must be non-negative)
     /// @return Forces [N], moments [N·m], and coefficients
     /// @throws std::invalid_argument if inputs are NaN or out of range
-    [[nodiscard]] AeroResult compute(double mach, double alpha, double beta, double dynamicPressure) const;
+    [[nodiscard]] AeroResult compute(double mach, double alpha, double beta, double dynamicPressure, double stage) const;
 
     /// Get current configuration
     [[nodiscard]] const Config& getConfig() const noexcept { return cfg; }
+
+    // Get current reference area
+    [[nodiscard]] double getRefArea(double stage) const noexcept { return refArea[static_cast<size_t>(stage - 1)]; }
+    // Get current reference length
+    [[nodiscard]] double getRefLength(double stage) const noexcept { return refLength[static_cast<size_t>(stage - 1)]; }
 
 private:
     // Methods
@@ -129,5 +134,7 @@ private:
     std::vector<std::vector<double>> lowSpeedTable;
     AeroGrid highSpeedGrid;
     AeroGrid lowSpeedGrid;
+    std::vector<double> refArea;
+    std::vector<double> refLength;
 };
 } // namespace trajsim

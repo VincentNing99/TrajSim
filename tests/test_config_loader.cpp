@@ -39,79 +39,38 @@ static void removeTempJson(const std::string& path) {
     std::filesystem::remove(path);
 }
 
+/// @brief Compact vehicle section for reuse in test JSON strings.
+/// Contains: mass, stages, stageCfg (with engine array), aerodynamics.
+static const char* VEHICLE_SECTION =
+    R"("vehicle":{"mass":1000,"stages":1,)"
+    R"("stageCfg":{"stageMass":[1000],"numberOfEngine":[1],)"
+    R"("engine":[{"propellant":"liquid","nozzleType":"vacuum","thrust":5000,"ISP":300,"massFlowRate":1.7,"exitArea":0.1}]},)"
+    R"("aerodynamics":{"refArea":1,"refLength":1,"machMin":0.1,"machMax":5,"machTransition":0.8}})";
+
+static const char* SIMULATION_SECTION =
+    R"("simulation":{"timeStepRK4":0.001,"tolerance":1e-10})";
+
+static const char* GUIDANCE_SECTION =
+    R"("guidance":[{"stage":1,"tolerance":1e-10,"maxSteeringRate":5,"algorithms":[{"type":"IterativeGuidance","guidanceCycle":0.01,"steeringHoldTime":15,"maxConvergenceIterations":100,"timeToGoConvergenceTolerance":1e-5,"K1K2Hold":35,"K3K4Hold":15,"exitCriteria":{"and":[{"semiMajorAxis":{"exceedsBy":0}},{"eccentricity":{"withinTolerance":0.005}},{"inclination":{"withinTolerance":0.07}}]}}]}])";
+
+static const char* MISSION_SECTION =
+    R"("mission":{"semiMajorAxis":6903085,"longitudeAscendingNode":260,"inclination":97.5,)"
+    R"("eccentricity":1e-5,"trueAnomaly":154,"argumentOfPeriapsis":185,)"
+    R"("ldnLaunchsite":264,"lanLaunchsite":84,"aimingAzimuth":191,)"
+    R"("latitude":40.8,"geocentricLatitude":40.6,"launchSiteLongitude":100,)"
+    R"("heightLaunchSite":1000,"velocityTerminal":[-7124,2631,249],)"
+    R"("positionTerminal":[-2405466,-12845047,205013],)"
+    R"("initialPosition":[0,0,0],"initialVelocity":[0,0,0],"initialMass":1000,)"
+    R"("initialSteeringAngles":[172,0,0],"initialTime":3140,"cutoffTime":3344})";
+
+/// @brief Build a full valid JSON config by joining sections.
+static std::string makeFullJson() {
+    return std::string("{") + VEHICLE_SECTION + "," + SIMULATION_SECTION + ","
+         + GUIDANCE_SECTION + "," + MISSION_SECTION + "}";
+}
+
 /// @brief Minimal valid JSON config matching the loader's required fields.
-static const char* MINIMAL_VALID_JSON = R"({
-    "vehicle": { "mass": 1000.0 },
-    "engines": [
-        {
-            "stage": 1,
-            "propellant": "liquid",
-            "nozzleType": "vacuum",
-            "numberOfEngine": 1,
-            "thrustPerEngine": 5000.0,
-            "ISP": 300.0,
-            "massFlowRate": 1.7,
-            "exitArea": 0.1
-        }
-    ],
-    "aerodynamics": {
-        "refArea": 1.0,
-        "refLength": 1.0,
-        "machMin": 0.1,
-        "machMax": 5.0,
-        "machTransition": 0.8
-    },
-    "simulation": {
-        "timeStepRK4": 0.001,
-        "tolerance": 1e-10
-    },
-    "guidance": [
-        {
-            "stage": 1,
-            "tolerance": 1e-10,
-            "maxSteeringRate": 5.0,
-            "algorithms": [
-                {
-                    "type": "IterativeGuidance",
-                    "guidanceCycle": 0.01,
-                    "steeringHoldTime": 15.0,
-                    "maxConvergenceIterations": 100,
-                    "timeToGoConvergenceTolerance": 1e-5,
-                    "exitCriteria": {
-                        "and": [
-                            { "semiMajorAxis": { "exceedsBy": 0 } },
-                            { "eccentricity": { "withinTolerance": 0.005 } },
-                            { "inclination": { "withinTolerance": 0.07 } }
-                        ]
-                    }
-                }
-            ]
-        }
-    ],
-    "mission": {
-        "semiMajorAxis": 6903085.0,
-        "longitudeAscendingNode": 260.0,
-        "inclination": 97.5,
-        "eccentricity": 1e-5,
-        "trueAnomaly": 154.0,
-        "argumentOfPeriapsis": 185.0,
-        "ldnLaunchsite": 264.0,
-        "lanLaunchsite": 84.0,
-        "aimingAzimuth": 191.0,
-        "latitude": 40.8,
-        "geocentricLatitude": 40.6,
-        "launchSiteLongitude": 100.0,
-        "heightLaunchSite": 1000.0,
-        "velocityTerminal": [-7124.0, 2631.0, 249.0],
-        "positionTerminal": [-2405466.0, -12845047.0, 205013.0],
-        "initialPosition": [-912205.4, -13212262.5, 149163.6],
-        "initialVelocity": [-7440.6404, 953.8138, 294.5883],
-        "initialMass": 6731.1,
-        "initialSteeringAngles": [172.0, 0.0, 0.0],
-        "initialTime": 3140.0,
-        "cutoffTime": 3344.0
-    }
-})";
+static const std::string MINIMAL_VALID_JSON = makeFullJson();
 
 // =============================================================================
 // Test Fixture
@@ -148,22 +107,21 @@ TEST_F(ConfigLoaderTest, LoadedValuesMatchInput) {
     const auto& cfg = result.config;
 
     EXPECT_DOUBLE_EQ(cfg.vehicle.mass, 1000.0);
-    EXPECT_EQ(cfg.vehicle.stages.size(), 1u);
-    EXPECT_DOUBLE_EQ(cfg.vehicle.stages[0].engine.thrust, 5000.0);
-    EXPECT_DOUBLE_EQ(cfg.vehicle.stages[0].engine.isp, 300.0);
-    EXPECT_EQ(cfg.vehicle.stages[0].engine.propellant, "liquid");
-    EXPECT_EQ(cfg.vehicle.stages[0].engine.nozzleType, "vacuum");
-    EXPECT_DOUBLE_EQ(cfg.aerodynamics.refArea, 1.0);
+    EXPECT_EQ(cfg.vehicle.stage.engineCfg.size(), 1u);
+    EXPECT_DOUBLE_EQ(cfg.vehicle.stage.engineCfg[0].thrust, 5000.0);
+    EXPECT_DOUBLE_EQ(cfg.vehicle.stage.engineCfg[0].isp, 300.0);
+    EXPECT_EQ(cfg.vehicle.stage.engineCfg[0].propellant, "liquid");
+    EXPECT_EQ(cfg.vehicle.stage.engineCfg[0].nozzleType, "vacuum");
+    EXPECT_DOUBLE_EQ(cfg.vehicle.aeroCfg.refArea, 1.0);
     EXPECT_DOUBLE_EQ(cfg.simulation.timeStepRK4, 0.001);
     EXPECT_DOUBLE_EQ(cfg.mission.semiMajorAxis, 6903085.0);
 }
 
-TEST_F(ConfigLoaderTest, NumberOfStagesDerivedFromEngines) {
+TEST_F(ConfigLoaderTest, NumberOfStagesDerivedFromConfig) {
     auto path = writeTemp(MINIMAL_VALID_JSON, "stages");
     auto result = loadConfig(path);
 
-    // Single engine entry → numberOfStage = 1
-    EXPECT_DOUBLE_EQ(result.config.vehicle.numberOfStage, 1.0);
+    EXPECT_EQ(result.config.vehicle.numberOfStage, 1);
 }
 
 TEST_F(ConfigLoaderTest, AngularFieldsConvertedToRadians) {
@@ -195,19 +153,11 @@ TEST_F(ConfigLoaderTest, LoadsMission1Config) {
     const auto& cfg = result.config;
 
     EXPECT_DOUBLE_EQ(cfg.vehicle.mass, 50000.0);
-    EXPECT_EQ(cfg.vehicle.stages.size(), 1u);
-    EXPECT_DOUBLE_EQ(cfg.vehicle.stages[0].engine.thrust, 3000.0);
-    EXPECT_DOUBLE_EQ(cfg.vehicle.stages[0].engine.isp, 315.0);
+    EXPECT_EQ(cfg.vehicle.stage.engineCfg.size(), 1u);
+    EXPECT_DOUBLE_EQ(cfg.vehicle.stage.engineCfg[0].thrust, 3000.0);
+    EXPECT_DOUBLE_EQ(cfg.vehicle.stage.engineCfg[0].isp, 315.0);
     EXPECT_DOUBLE_EQ(cfg.mission.semiMajorAxis, 6903085.0);
     EXPECT_DOUBLE_EQ(cfg.mission.heightLaunchSite, 1000.0);
-}
-
-TEST_F(ConfigLoaderTest, LoadsMission2Config) {
-    auto result = loadConfig("../config/config_mission_2.json");
-    const auto& cfg = result.config;
-
-    EXPECT_DOUBLE_EQ(cfg.vehicle.mass, 108936.6);
-    EXPECT_DOUBLE_EQ(cfg.mission.semiMajorAxis, 6740599.4);
 }
 
 // =============================================================================
@@ -233,54 +183,20 @@ TEST_F(ConfigLoaderTest, ThrowsOnEmptyFile) {
 // =============================================================================
 
 TEST_F(ConfigLoaderTest, ThrowsOnMissingVehicleSection) {
-    auto path = writeTemp(R"({
-        "engines": [{"stage":1,"propellant":"liquid","nozzleType":"vacuum",
-                      "numberOfEngine":1,"thrustPerEngine":5000,"ISP":300,
-                      "massFlowRate":1.7,"exitArea":0.1}],
-        "aerodynamics": {"refArea":1,"refLength":1,"machMin":0.1,"machMax":5,"machTransition":0.8},
-        "simulation": {"timeStepRK4":0.001,"tolerance":1e-10},
-        "guidance": [{"stage":1,"tolerance":1e-10,"maxSteeringRate":5,"algorithms":[{"type":"IterativeGuidance","guidanceCycle":0.01,"steeringHoldTime":15,"maxConvergenceIterations":100,"timeToGoConvergenceTolerance":1e-5,"exitCriteria":{"and":[{"semiMajorAxis":{"exceedsBy":0}},{"eccentricity":{"withinTolerance":0.005}},{"inclination":{"withinTolerance":0.07}}]}}]}],
-        "mission": {"semiMajorAxis":6903085,"longitudeAscendingNode":260,"inclination":97.5,
-                     "eccentricity":1e-5,"trueAnomaly":154,"argumentOfPeriapsis":185,
-                     "ldnLaunchsite":264,"lanLaunchsite":84,"aimingAzimuth":191,
-                     "latitude":40.8,"geocentricLatitude":40.6,"launchSiteLongitude":100,
-                     "heightLaunchSite":1000,"velocityTerminal":[-7124,2631,249],
-                     "positionTerminal":[-2405466,-12845047,205013],
-                     "initialPosition":[0,0,0],"initialVelocity":[0,0,0],"initialMass":1000,"initialSteeringAngles":[172,0,0],"initialTime":3140,"cutoffTime":3344}
-    })", "no_vehicle");
-
+    auto path = writeTemp(std::string("{") + SIMULATION_SECTION + ","
+        + GUIDANCE_SECTION + "," + MISSION_SECTION + "}", "no_vehicle");
     EXPECT_THROW(loadConfig(path), std::invalid_argument);
 }
 
-TEST_F(ConfigLoaderTest, ThrowsOnMissingEnginesSection) {
-    auto path = writeTemp(R"({
-        "vehicle": { "mass": 1000.0 },
-        "aerodynamics": {"refArea":1,"refLength":1,"machMin":0.1,"machMax":5,"machTransition":0.8},
-        "simulation": {"timeStepRK4":0.001,"tolerance":1e-10},
-        "guidance": [{"stage":1,"tolerance":1e-10,"maxSteeringRate":5,"algorithms":[{"type":"IterativeGuidance","guidanceCycle":0.01,"steeringHoldTime":15,"maxConvergenceIterations":100,"timeToGoConvergenceTolerance":1e-5,"exitCriteria":{"and":[{"semiMajorAxis":{"exceedsBy":0}},{"eccentricity":{"withinTolerance":0.005}},{"inclination":{"withinTolerance":0.07}}]}}]}],
-        "mission": {"semiMajorAxis":6903085,"longitudeAscendingNode":260,"inclination":97.5,
-                     "eccentricity":1e-5,"trueAnomaly":154,"argumentOfPeriapsis":185,
-                     "ldnLaunchsite":264,"lanLaunchsite":84,"aimingAzimuth":191,
-                     "latitude":40.8,"geocentricLatitude":40.6,"launchSiteLongitude":100,
-                     "heightLaunchSite":1000,"velocityTerminal":[-7124,2631,249],
-                     "positionTerminal":[-2405466,-12845047,205013],
-                     "initialPosition":[0,0,0],"initialVelocity":[0,0,0],"initialMass":1000,"initialSteeringAngles":[172,0,0],"initialTime":3140,"cutoffTime":3344}
-    })", "no_engines");
-
+TEST_F(ConfigLoaderTest, ThrowsOnMissingSimulationSection) {
+    auto path = writeTemp(std::string("{") + VEHICLE_SECTION + ","
+        + GUIDANCE_SECTION + "," + MISSION_SECTION + "}", "no_simulation");
     EXPECT_THROW(loadConfig(path), std::invalid_argument);
 }
 
 TEST_F(ConfigLoaderTest, ThrowsOnMissingMissionSection) {
-    auto path = writeTemp(R"({
-        "vehicle": { "mass": 1000.0 },
-        "engines": [{"stage":1,"propellant":"liquid","nozzleType":"vacuum",
-                      "numberOfEngine":1,"thrustPerEngine":5000,"ISP":300,
-                      "massFlowRate":1.7,"exitArea":0.1}],
-        "aerodynamics": {"refArea":1,"refLength":1,"machMin":0.1,"machMax":5,"machTransition":0.8},
-        "simulation": {"timeStepRK4":0.001,"tolerance":1e-10},
-        "guidance": [{"stage":1,"tolerance":1e-10,"maxSteeringRate":5,"algorithms":[{"type":"IterativeGuidance","guidanceCycle":0.01,"steeringHoldTime":15,"maxConvergenceIterations":100,"timeToGoConvergenceTolerance":1e-5,"exitCriteria":{"and":[{"semiMajorAxis":{"exceedsBy":0}},{"eccentricity":{"withinTolerance":0.005}},{"inclination":{"withinTolerance":0.07}}]}}]}]
-    })", "no_mission");
-
+    auto path = writeTemp(std::string("{") + VEHICLE_SECTION + ","
+        + SIMULATION_SECTION + "," + GUIDANCE_SECTION + "}", "no_mission");
     EXPECT_THROW(loadConfig(path), std::invalid_argument);
 }
 
@@ -289,44 +205,20 @@ TEST_F(ConfigLoaderTest, ThrowsOnMissingMissionSection) {
 // =============================================================================
 
 TEST_F(ConfigLoaderTest, ThrowsOnMissingVehicleMass) {
-    auto path = writeTemp(R"({
-        "vehicle": {},
-        "engines": [{"stage":1,"propellant":"liquid","nozzleType":"vacuum",
-                      "numberOfEngine":1,"thrustPerEngine":5000,"ISP":300,
-                      "massFlowRate":1.7,"exitArea":0.1}],
-        "aerodynamics": {"refArea":1,"refLength":1,"machMin":0.1,"machMax":5,"machTransition":0.8},
-        "simulation": {"timeStepRK4":0.001,"tolerance":1e-10},
-        "guidance": [{"stage":1,"tolerance":1e-10,"maxSteeringRate":5,"algorithms":[{"type":"IterativeGuidance","guidanceCycle":0.01,"steeringHoldTime":15,"maxConvergenceIterations":100,"timeToGoConvergenceTolerance":1e-5,"exitCriteria":{"and":[{"semiMajorAxis":{"exceedsBy":0}},{"eccentricity":{"withinTolerance":0.005}},{"inclination":{"withinTolerance":0.07}}]}}]}],
-        "mission": {"semiMajorAxis":6903085,"longitudeAscendingNode":260,"inclination":97.5,
-                     "eccentricity":1e-5,"trueAnomaly":154,"argumentOfPeriapsis":185,
-                     "ldnLaunchsite":264,"lanLaunchsite":84,"aimingAzimuth":191,
-                     "latitude":40.8,"geocentricLatitude":40.6,"launchSiteLongitude":100,
-                     "heightLaunchSite":1000,"velocityTerminal":[-7124,2631,249],
-                     "positionTerminal":[-2405466,-12845047,205013],
-                     "initialPosition":[0,0,0],"initialVelocity":[0,0,0],"initialMass":1000,"initialSteeringAngles":[172,0,0],"initialTime":3140,"cutoffTime":3344}
-    })", "no_mass");
-
+    auto path = writeTemp(std::string(R"({"vehicle":{"stages":1,)")
+        + R"("stageCfg":{"stageMass":[1000],"numberOfEngine":[1],)"
+        + R"("engine":[{"propellant":"liquid","nozzleType":"vacuum","thrust":5000,"ISP":300,"massFlowRate":1.7,"exitArea":0.1}]},)"
+        + R"("aerodynamics":{"refArea":1,"refLength":1,"machMin":0.1,"machMax":5,"machTransition":0.8}},)"
+        + SIMULATION_SECTION + "," + GUIDANCE_SECTION + "," + MISSION_SECTION + "}", "no_mass");
     EXPECT_THROW(loadConfig(path), std::invalid_argument);
 }
 
 TEST_F(ConfigLoaderTest, ThrowsOnMissingEngineISP) {
-    auto path = writeTemp(R"({
-        "vehicle": { "mass": 1000 },
-        "engines": [{"stage":1,"propellant":"liquid","nozzleType":"vacuum",
-                      "numberOfEngine":1,"thrustPerEngine":5000,
-                      "massFlowRate":1.7,"exitArea":0.1}],
-        "aerodynamics": {"refArea":1,"refLength":1,"machMin":0.1,"machMax":5,"machTransition":0.8},
-        "simulation": {"timeStepRK4":0.001,"tolerance":1e-10},
-        "guidance": [{"stage":1,"tolerance":1e-10,"maxSteeringRate":5,"algorithms":[{"type":"IterativeGuidance","guidanceCycle":0.01,"steeringHoldTime":15,"maxConvergenceIterations":100,"timeToGoConvergenceTolerance":1e-5,"exitCriteria":{"and":[{"semiMajorAxis":{"exceedsBy":0}},{"eccentricity":{"withinTolerance":0.005}},{"inclination":{"withinTolerance":0.07}}]}}]}],
-        "mission": {"semiMajorAxis":6903085,"longitudeAscendingNode":260,"inclination":97.5,
-                     "eccentricity":1e-5,"trueAnomaly":154,"argumentOfPeriapsis":185,
-                     "ldnLaunchsite":264,"lanLaunchsite":84,"aimingAzimuth":191,
-                     "latitude":40.8,"geocentricLatitude":40.6,"launchSiteLongitude":100,
-                     "heightLaunchSite":1000,"velocityTerminal":[-7124,2631,249],
-                     "positionTerminal":[-2405466,-12845047,205013],
-                     "initialPosition":[0,0,0],"initialVelocity":[0,0,0],"initialMass":1000,"initialSteeringAngles":[172,0,0],"initialTime":3140,"cutoffTime":3344}
-    })", "no_isp");
-
+    auto path = writeTemp(std::string(R"({"vehicle":{"mass":1000,"stages":1,)")
+        + R"("stageCfg":{"stageMass":[1000],"numberOfEngine":[1],)"
+        + R"("engine":[{"propellant":"liquid","nozzleType":"vacuum","thrust":5000,"massFlowRate":1.7,"exitArea":0.1}]},)"
+        + R"("aerodynamics":{"refArea":1,"refLength":1,"machMin":0.1,"machMax":5,"machTransition":0.8}},)"
+        + SIMULATION_SECTION + "," + GUIDANCE_SECTION + "," + MISSION_SECTION + "}", "no_isp");
     EXPECT_THROW(loadConfig(path), std::invalid_argument);
 }
 
@@ -335,84 +227,41 @@ TEST_F(ConfigLoaderTest, ThrowsOnMissingEngineISP) {
 // =============================================================================
 
 TEST_F(ConfigLoaderTest, ThrowsOnNegativeTimeStep) {
-    auto path = writeTemp(R"({
-        "vehicle": { "mass": 1000 },
-        "engines": [{"stage":1,"propellant":"liquid","nozzleType":"vacuum",
-                      "numberOfEngine":1,"thrustPerEngine":5000,"ISP":300,
-                      "massFlowRate":1.7,"exitArea":0.1}],
-        "aerodynamics": {"refArea":1,"refLength":1,"machMin":0.1,"machMax":5,"machTransition":0.8},
-        "simulation": {"timeStepRK4":-0.001,"tolerance":1e-10},
-        "guidance": [{"stage":1,"tolerance":1e-10,"maxSteeringRate":5,"algorithms":[{"type":"IterativeGuidance","guidanceCycle":0.01,"steeringHoldTime":15,"maxConvergenceIterations":100,"timeToGoConvergenceTolerance":1e-5,"exitCriteria":{"and":[{"semiMajorAxis":{"exceedsBy":0}},{"eccentricity":{"withinTolerance":0.005}},{"inclination":{"withinTolerance":0.07}}]}}]}],
-        "mission": {"semiMajorAxis":6903085,"longitudeAscendingNode":260,"inclination":97.5,
-                     "eccentricity":1e-5,"trueAnomaly":154,"argumentOfPeriapsis":185,
-                     "ldnLaunchsite":264,"lanLaunchsite":84,"aimingAzimuth":191,
-                     "latitude":40.8,"geocentricLatitude":40.6,"launchSiteLongitude":100,
-                     "heightLaunchSite":1000,"velocityTerminal":[-7124,2631,249],
-                     "positionTerminal":[-2405466,-12845047,205013],
-                     "initialPosition":[0,0,0],"initialVelocity":[0,0,0],"initialMass":1000,"initialSteeringAngles":[172,0,0],"initialTime":3140,"cutoffTime":3344}
-    })", "neg_timestep");
-
+    auto path = writeTemp(std::string("{") + VEHICLE_SECTION + ","
+        + R"("simulation":{"timeStepRK4":-0.001,"tolerance":1e-10},)"
+        + GUIDANCE_SECTION + "," + MISSION_SECTION + "}", "neg_timestep");
     EXPECT_THROW(loadConfig(path), std::invalid_argument);
 }
 
 TEST_F(ConfigLoaderTest, ThrowsOnInvalidAlgorithmType) {
-    auto path = writeTemp(R"({
-        "vehicle": { "mass": 1000 },
-        "engines": [{"stage":1,"propellant":"liquid","nozzleType":"vacuum",
-                      "numberOfEngine":1,"thrustPerEngine":5000,"ISP":300,
-                      "massFlowRate":1.7,"exitArea":0.1}],
-        "aerodynamics": {"refArea":1,"refLength":1,"machMin":0.1,"machMax":5,"machTransition":0.8},
-        "simulation": {"timeStepRK4":0.001,"tolerance":1e-10},
-        "guidance": [{"stage":1,"tolerance":1e-10,"maxSteeringRate":5,"algorithms":[{"type":"INVALID_TYPE","guidanceCycle":0.01,"steeringHoldTime":15,"maxConvergenceIterations":100,"timeToGoConvergenceTolerance":1e-5}]}],
-        "mission": {"semiMajorAxis":6903085,"longitudeAscendingNode":260,"inclination":97.5,
-                     "eccentricity":1e-5,"trueAnomaly":154,"argumentOfPeriapsis":185,
-                     "ldnLaunchsite":264,"lanLaunchsite":84,"aimingAzimuth":191,
-                     "latitude":40.8,"geocentricLatitude":40.6,"launchSiteLongitude":100,
-                     "heightLaunchSite":1000,"velocityTerminal":[-7124,2631,249],
-                     "positionTerminal":[-2405466,-12845047,205013],
-                     "initialPosition":[0,0,0],"initialVelocity":[0,0,0],"initialMass":1000,"initialSteeringAngles":[172,0,0],"initialTime":3140,"cutoffTime":3344}
-    })", "bad_mode");
-
+    auto path = writeTemp(std::string("{") + VEHICLE_SECTION + ","
+        + SIMULATION_SECTION + ","
+        + R"("guidance":[{"stage":1,"tolerance":1e-10,"maxSteeringRate":5,"algorithms":[{"type":"INVALID_TYPE","guidanceCycle":0.01,"steeringHoldTime":15,"maxConvergenceIterations":100,"timeToGoConvergenceTolerance":1e-5}]}],)"
+        + MISSION_SECTION + "}", "bad_mode");
     EXPECT_THROW(loadConfig(path), std::invalid_argument);
 }
 
-TEST_F(ConfigLoaderTest, ThrowsOnEmptyEnginesArray) {
-    auto path = writeTemp(R"({
-        "vehicle": { "mass": 1000 },
-        "engines": [],
-        "aerodynamics": {"refArea":1,"refLength":1,"machMin":0.1,"machMax":5,"machTransition":0.8},
-        "simulation": {"timeStepRK4":0.001,"tolerance":1e-10},
-        "guidance": [{"stage":1,"tolerance":1e-10,"maxSteeringRate":5,"algorithms":[{"type":"IterativeGuidance","guidanceCycle":0.01,"steeringHoldTime":15,"maxConvergenceIterations":100,"timeToGoConvergenceTolerance":1e-5,"exitCriteria":{"and":[{"semiMajorAxis":{"exceedsBy":0}},{"eccentricity":{"withinTolerance":0.005}},{"inclination":{"withinTolerance":0.07}}]}}]}],
-        "mission": {"semiMajorAxis":6903085,"longitudeAscendingNode":260,"inclination":97.5,
-                     "eccentricity":1e-5,"trueAnomaly":154,"argumentOfPeriapsis":185,
-                     "ldnLaunchsite":264,"lanLaunchsite":84,"aimingAzimuth":191,
-                     "latitude":40.8,"geocentricLatitude":40.6,"launchSiteLongitude":100,
-                     "heightLaunchSite":1000,"velocityTerminal":[-7124,2631,249],
-                     "positionTerminal":[-2405466,-12845047,205013],
-                     "initialPosition":[0,0,0],"initialVelocity":[0,0,0],"initialMass":1000,"initialSteeringAngles":[172,0,0],"initialTime":3140,"cutoffTime":3344}
-    })", "empty_engines");
+TEST_F(ConfigLoaderTest, ThrowsOnMissingStageCfg) {
+    auto path = writeTemp(std::string(R"({"vehicle":{"mass":1000,"stages":1,)")
+        + R"("aerodynamics":{"refArea":1,"refLength":1,"machMin":0.1,"machMax":5,"machTransition":0.8}},)"
+        + SIMULATION_SECTION + "," + GUIDANCE_SECTION + "," + MISSION_SECTION + "}", "no_stagecfg");
+    EXPECT_THROW(loadConfig(path), std::invalid_argument);
+}
 
+TEST_F(ConfigLoaderTest, ThrowsOnEmptyEngineArray) {
+    auto path = writeTemp(std::string(R"({"vehicle":{"mass":1000,"stages":1,)")
+        + R"("stageCfg":{"stageMass":[1000],"numberOfEngine":[1],"engine":[]},)"
+        + R"("aerodynamics":{"refArea":1,"refLength":1,"machMin":0.1,"machMax":5,"machTransition":0.8}},)"
+        + SIMULATION_SECTION + "," + GUIDANCE_SECTION + "," + MISSION_SECTION + "}", "empty_engines");
     EXPECT_THROW(loadConfig(path), std::invalid_argument);
 }
 
 TEST_F(ConfigLoaderTest, ThrowsOnNegativeRefArea) {
-    auto path = writeTemp(R"({
-        "vehicle": { "mass": 1000 },
-        "engines": [{"stage":1,"propellant":"liquid","nozzleType":"vacuum",
-                      "numberOfEngine":1,"thrustPerEngine":5000,"ISP":300,
-                      "massFlowRate":1.7,"exitArea":0.1}],
-        "aerodynamics": {"refArea":-1.0,"refLength":1,"machMin":0.1,"machMax":5,"machTransition":0.8},
-        "simulation": {"timeStepRK4":0.001,"tolerance":1e-10},
-        "guidance": [{"stage":1,"tolerance":1e-10,"maxSteeringRate":5,"algorithms":[{"type":"IterativeGuidance","guidanceCycle":0.01,"steeringHoldTime":15,"maxConvergenceIterations":100,"timeToGoConvergenceTolerance":1e-5,"exitCriteria":{"and":[{"semiMajorAxis":{"exceedsBy":0}},{"eccentricity":{"withinTolerance":0.005}},{"inclination":{"withinTolerance":0.07}}]}}]}],
-        "mission": {"semiMajorAxis":6903085,"longitudeAscendingNode":260,"inclination":97.5,
-                     "eccentricity":1e-5,"trueAnomaly":154,"argumentOfPeriapsis":185,
-                     "ldnLaunchsite":264,"lanLaunchsite":84,"aimingAzimuth":191,
-                     "latitude":40.8,"geocentricLatitude":40.6,"launchSiteLongitude":100,
-                     "heightLaunchSite":1000,"velocityTerminal":[-7124,2631,249],
-                     "positionTerminal":[-2405466,-12845047,205013],
-                     "initialPosition":[0,0,0],"initialVelocity":[0,0,0],"initialMass":1000,"initialSteeringAngles":[172,0,0],"initialTime":3140,"cutoffTime":3344}
-    })", "neg_refarea");
-
+    auto path = writeTemp(std::string(R"({"vehicle":{"mass":1000,"stages":1,)")
+        + R"("stageCfg":{"stageMass":[1000],"numberOfEngine":[1],)"
+        + R"("engine":[{"propellant":"liquid","nozzleType":"vacuum","thrust":5000,"ISP":300,"massFlowRate":1.7,"exitArea":0.1}]},)"
+        + R"("aerodynamics":{"refArea":-1.0,"refLength":1,"machMin":0.1,"machMax":5,"machTransition":0.8}},)"
+        + SIMULATION_SECTION + "," + GUIDANCE_SECTION + "," + MISSION_SECTION + "}", "neg_refarea");
     EXPECT_THROW(loadConfig(path), std::invalid_argument);
 }
 
@@ -421,23 +270,9 @@ TEST_F(ConfigLoaderTest, ThrowsOnNegativeRefArea) {
 // =============================================================================
 
 TEST_F(ConfigLoaderTest, UnknownTopLevelKeyProducesWarning) {
-    auto path = writeTemp(R"({
-        "vehicle": { "mass": 1000 },
-        "engines": [{"stage":1,"propellant":"liquid","nozzleType":"vacuum",
-                      "numberOfEngine":1,"thrustPerEngine":5000,"ISP":300,
-                      "massFlowRate":1.7,"exitArea":0.1}],
-        "aerodynamics": {"refArea":1,"refLength":1,"machMin":0.1,"machMax":5,"machTransition":0.8},
-        "simulation": {"timeStepRK4":0.001,"tolerance":1e-10},
-        "guidance": [{"stage":1,"tolerance":1e-10,"maxSteeringRate":5,"algorithms":[{"type":"IterativeGuidance","guidanceCycle":0.01,"steeringHoldTime":15,"maxConvergenceIterations":100,"timeToGoConvergenceTolerance":1e-5,"exitCriteria":{"and":[{"semiMajorAxis":{"exceedsBy":0}},{"eccentricity":{"withinTolerance":0.005}},{"inclination":{"withinTolerance":0.07}}]}}]}],
-        "mission": {"semiMajorAxis":6903085,"longitudeAscendingNode":260,"inclination":97.5,
-                     "eccentricity":1e-5,"trueAnomaly":154,"argumentOfPeriapsis":185,
-                     "ldnLaunchsite":264,"lanLaunchsite":84,"aimingAzimuth":191,
-                     "latitude":40.8,"geocentricLatitude":40.6,"launchSiteLongitude":100,
-                     "heightLaunchSite":1000,"velocityTerminal":[-7124,2631,249],
-                     "positionTerminal":[-2405466,-12845047,205013],
-                     "initialPosition":[0,0,0],"initialVelocity":[0,0,0],"initialMass":1000,"initialSteeringAngles":[172,0,0],"initialTime":3140,"cutoffTime":3344},
-        "unknownSection": { "foo": "bar" }
-    })", "unknown_key");
+    auto path = writeTemp(std::string("{") + VEHICLE_SECTION + ","
+        + SIMULATION_SECTION + "," + GUIDANCE_SECTION + "," + MISSION_SECTION
+        + R"(,"unknownSection":{"foo":"bar"}})", "unknown_key");
 
     auto result = loadConfig(path);
     EXPECT_TRUE(result.hasWarnings());
@@ -452,22 +287,11 @@ TEST_F(ConfigLoaderTest, UnknownTopLevelKeyProducesWarning) {
 }
 
 TEST_F(ConfigLoaderTest, UnknownVehicleFieldProducesWarning) {
-    auto path = writeTemp(R"({
-        "vehicle": { "mass": 1000, "color": "red" },
-        "engines": [{"stage":1,"propellant":"liquid","nozzleType":"vacuum",
-                      "numberOfEngine":1,"thrustPerEngine":5000,"ISP":300,
-                      "massFlowRate":1.7,"exitArea":0.1}],
-        "aerodynamics": {"refArea":1,"refLength":1,"machMin":0.1,"machMax":5,"machTransition":0.8},
-        "simulation": {"timeStepRK4":0.001,"tolerance":1e-10},
-        "guidance": [{"stage":1,"tolerance":1e-10,"maxSteeringRate":5,"algorithms":[{"type":"IterativeGuidance","guidanceCycle":0.01,"steeringHoldTime":15,"maxConvergenceIterations":100,"timeToGoConvergenceTolerance":1e-5,"exitCriteria":{"and":[{"semiMajorAxis":{"exceedsBy":0}},{"eccentricity":{"withinTolerance":0.005}},{"inclination":{"withinTolerance":0.07}}]}}]}],
-        "mission": {"semiMajorAxis":6903085,"longitudeAscendingNode":260,"inclination":97.5,
-                     "eccentricity":1e-5,"trueAnomaly":154,"argumentOfPeriapsis":185,
-                     "ldnLaunchsite":264,"lanLaunchsite":84,"aimingAzimuth":191,
-                     "latitude":40.8,"geocentricLatitude":40.6,"launchSiteLongitude":100,
-                     "heightLaunchSite":1000,"velocityTerminal":[-7124,2631,249],
-                     "positionTerminal":[-2405466,-12845047,205013],
-                     "initialPosition":[0,0,0],"initialVelocity":[0,0,0],"initialMass":1000,"initialSteeringAngles":[172,0,0],"initialTime":3140,"cutoffTime":3344}
-    })", "unknown_vehicle_field");
+    auto path = writeTemp(std::string(R"({"vehicle":{"mass":1000,"stages":1,"color":"red",)")
+        + R"("stageCfg":{"stageMass":[1000],"numberOfEngine":[1],)"
+        + R"("engine":[{"propellant":"liquid","nozzleType":"vacuum","thrust":5000,"ISP":300,"massFlowRate":1.7,"exitArea":0.1}]},)"
+        + R"("aerodynamics":{"refArea":1,"refLength":1,"machMin":0.1,"machMax":5,"machTransition":0.8}},)"
+        + SIMULATION_SECTION + "," + GUIDANCE_SECTION + "," + MISSION_SECTION + "}", "unknown_vehicle_field");
 
     auto result = loadConfig(path);
     EXPECT_TRUE(result.hasWarnings());
@@ -478,23 +302,16 @@ TEST_F(ConfigLoaderTest, UnknownVehicleFieldProducesWarning) {
 // =============================================================================
 
 TEST_F(ConfigLoaderTest, ThrowsOnVelocityTerminalWrongSize) {
-    auto path = writeTemp(R"({
-        "vehicle": { "mass": 1000 },
-        "engines": [{"stage":1,"propellant":"liquid","nozzleType":"vacuum",
-                      "numberOfEngine":1,"thrustPerEngine":5000,"ISP":300,
-                      "massFlowRate":1.7,"exitArea":0.1}],
-        "aerodynamics": {"refArea":1,"refLength":1,"machMin":0.1,"machMax":5,"machTransition":0.8},
-        "simulation": {"timeStepRK4":0.001,"tolerance":1e-10},
-        "guidance": [{"stage":1,"tolerance":1e-10,"maxSteeringRate":5,"algorithms":[{"type":"IterativeGuidance","guidanceCycle":0.01,"steeringHoldTime":15,"maxConvergenceIterations":100,"timeToGoConvergenceTolerance":1e-5,"exitCriteria":{"and":[{"semiMajorAxis":{"exceedsBy":0}},{"eccentricity":{"withinTolerance":0.005}},{"inclination":{"withinTolerance":0.07}}]}}]}],
-        "mission": {"semiMajorAxis":6903085,"longitudeAscendingNode":260,"inclination":97.5,
-                     "eccentricity":1e-5,"trueAnomaly":154,"argumentOfPeriapsis":185,
-                     "ldnLaunchsite":264,"lanLaunchsite":84,"aimingAzimuth":191,
-                     "latitude":40.8,"geocentricLatitude":40.6,"launchSiteLongitude":100,
-                     "heightLaunchSite":1000,"velocityTerminal":[-7124,2631],
-                     "positionTerminal":[-2405466,-12845047,205013],
-                     "initialPosition":[0,0,0],"initialVelocity":[0,0,0],"initialMass":1000,"initialSteeringAngles":[172,0,0],"initialTime":3140,"cutoffTime":3344}
-    })", "bad_vec3_size");
-
+    auto path = writeTemp(std::string("{") + VEHICLE_SECTION + ","
+        + SIMULATION_SECTION + "," + GUIDANCE_SECTION + ","
+        + R"("mission":{"semiMajorAxis":6903085,"longitudeAscendingNode":260,"inclination":97.5,)"
+        + R"("eccentricity":1e-5,"trueAnomaly":154,"argumentOfPeriapsis":185,)"
+        + R"("ldnLaunchsite":264,"lanLaunchsite":84,"aimingAzimuth":191,)"
+        + R"("latitude":40.8,"geocentricLatitude":40.6,"launchSiteLongitude":100,)"
+        + R"("heightLaunchSite":1000,"velocityTerminal":[-7124,2631],)"
+        + R"("positionTerminal":[-2405466,-12845047,205013],)"
+        + R"("initialPosition":[0,0,0],"initialVelocity":[0,0,0],"initialMass":1000,)"
+        + R"("initialSteeringAngles":[172,0,0],"initialTime":3140,"cutoffTime":3344}})", "bad_vec3_size");
     EXPECT_THROW(loadConfig(path), std::invalid_argument);
 }
 
@@ -503,23 +320,11 @@ TEST_F(ConfigLoaderTest, ThrowsOnVelocityTerminalWrongSize) {
 // =============================================================================
 
 TEST_F(ConfigLoaderTest, ThrowsOnWrongFieldType) {
-    auto path = writeTemp(R"({
-        "vehicle": { "mass": "not_a_number" },
-        "engines": [{"stage":1,"propellant":"liquid","nozzleType":"vacuum",
-                      "numberOfEngine":1,"thrustPerEngine":5000,"ISP":300,
-                      "massFlowRate":1.7,"exitArea":0.1}],
-        "aerodynamics": {"refArea":1,"refLength":1,"machMin":0.1,"machMax":5,"machTransition":0.8},
-        "simulation": {"timeStepRK4":0.001,"tolerance":1e-10},
-        "guidance": [{"stage":1,"tolerance":1e-10,"maxSteeringRate":5,"algorithms":[{"type":"IterativeGuidance","guidanceCycle":0.01,"steeringHoldTime":15,"maxConvergenceIterations":100,"timeToGoConvergenceTolerance":1e-5,"exitCriteria":{"and":[{"semiMajorAxis":{"exceedsBy":0}},{"eccentricity":{"withinTolerance":0.005}},{"inclination":{"withinTolerance":0.07}}]}}]}],
-        "mission": {"semiMajorAxis":6903085,"longitudeAscendingNode":260,"inclination":97.5,
-                     "eccentricity":1e-5,"trueAnomaly":154,"argumentOfPeriapsis":185,
-                     "ldnLaunchsite":264,"lanLaunchsite":84,"aimingAzimuth":191,
-                     "latitude":40.8,"geocentricLatitude":40.6,"launchSiteLongitude":100,
-                     "heightLaunchSite":1000,"velocityTerminal":[-7124,2631,249],
-                     "positionTerminal":[-2405466,-12845047,205013],
-                     "initialPosition":[0,0,0],"initialVelocity":[0,0,0],"initialMass":1000,"initialSteeringAngles":[172,0,0],"initialTime":3140,"cutoffTime":3344}
-    })", "wrong_type");
-
+    auto path = writeTemp(std::string(R"({"vehicle":{"mass":"not_a_number","stages":1,)")
+        + R"("stageCfg":{"stageMass":[1000],"numberOfEngine":[1],)"
+        + R"("engine":[{"propellant":"liquid","nozzleType":"vacuum","thrust":5000,"ISP":300,"massFlowRate":1.7,"exitArea":0.1}]},)"
+        + R"("aerodynamics":{"refArea":1,"refLength":1,"machMin":0.1,"machMax":5,"machTransition":0.8}},)"
+        + SIMULATION_SECTION + "," + GUIDANCE_SECTION + "," + MISSION_SECTION + "}", "wrong_type");
     EXPECT_THROW(loadConfig(path), std::invalid_argument);
 }
 

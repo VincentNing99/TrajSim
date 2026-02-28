@@ -22,6 +22,13 @@ struct GuidanceInput {
     Vec3 gravity;               ///< Gravity at current position [m/s^2]
 };
 
+/// @brief Current orbital elements computed from vehicle state.
+struct OrbitalElements {
+    double semiMajorAxis;       ///< [m]
+    double eccentricity;        ///< [-]
+    double inclination;         ///< [rad]
+};
+
 // =============================================================================
 // GuidanceAlgorithm Base Class
 // =============================================================================
@@ -50,6 +57,14 @@ public:
 
     /// @brief Get terminal state if available (IGM provides this).
     [[nodiscard]] virtual const TerminalState* getTerminalState() const noexcept { return nullptr; }
+
+    /// @brief Get time-to-go if available (IGM provides this).
+    [[nodiscard]] virtual double getTimeToGo() const noexcept { return 0.0; }
+
+    /// @brief Compute current orbital elements from vehicle state.
+    [[nodiscard]] virtual OrbitalElements computeOrbitalElements(const VehicleState& /*state*/) const {
+        return OrbitalElements{0.0, 0.0, 0.0};
+    }
 
 protected:
     GuidanceAlgorithm() = default;

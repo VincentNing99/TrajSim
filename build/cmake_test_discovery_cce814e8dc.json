@@ -1563,137 +1563,137 @@
         {
           "name": "StationaryStateHasDownwardAcceleration",
           "file": "\/Users\/vincentning\/Desktop\/TrajSim\/tests\/test_integrator.cpp",
-          "line": 208
+          "line": 207
         },
         {
           "name": "EvaluateReturnsFiniteDerivatives",
           "file": "\/Users\/vincentning\/Desktop\/TrajSim\/tests\/test_integrator.cpp",
-          "line": 218
+          "line": 217
         },
         {
           "name": "ZeroMassFlowGivesZeroMassDot",
           "file": "\/Users\/vincentning\/Desktop\/TrajSim\/tests\/test_integrator.cpp",
-          "line": 227
+          "line": 226
         },
         {
           "name": "NonZeroMassFlowGivesNegativeMassDot",
           "file": "\/Users\/vincentning\/Desktop\/TrajSim\/tests\/test_integrator.cpp",
-          "line": 233
+          "line": 232
         },
         {
           "name": "PositionDotEqualsVelocity",
           "file": "\/Users\/vincentning\/Desktop\/TrajSim\/tests\/test_integrator.cpp",
-          "line": 241
+          "line": 240
         },
         {
           "name": "StepDoesNotModifyInputState",
           "file": "\/Users\/vincentning\/Desktop\/TrajSim\/tests\/test_integrator.cpp",
-          "line": 251
+          "line": 250
         },
         {
           "name": "FreeFallPositionAfterOneStep",
           "file": "\/Users\/vincentning\/Desktop\/TrajSim\/tests\/test_integrator.cpp",
-          "line": 267
+          "line": 266
         },
         {
           "name": "FreeFallVelocityAfterOneStep",
           "file": "\/Users\/vincentning\/Desktop\/TrajSim\/tests\/test_integrator.cpp",
-          "line": 281
+          "line": 280
         },
         {
           "name": "FreeFallMassConserved",
           "file": "\/Users\/vincentning\/Desktop\/TrajSim\/tests\/test_integrator.cpp",
-          "line": 291
+          "line": 290
         },
         {
           "name": "FreeFallMultipleStepsAccumulate",
           "file": "\/Users\/vincentning\/Desktop\/TrajSim\/tests\/test_integrator.cpp",
-          "line": 301
+          "line": 300
         },
         {
           "name": "CoastingPositionAdvances",
           "file": "\/Users\/vincentning\/Desktop\/TrajSim\/tests\/test_integrator.cpp",
-          "line": 322
+          "line": 321
         },
         {
           "name": "CoastingVelocityDecreasesDueToGravity",
           "file": "\/Users\/vincentning\/Desktop\/TrajSim\/tests\/test_integrator.cpp",
-          "line": 332
+          "line": 331
         },
         {
           "name": "CoastingHorizontalVelocityUnchanged",
           "file": "\/Users\/vincentning\/Desktop\/TrajSim\/tests\/test_integrator.cpp",
-          "line": 342
+          "line": 341
         },
         {
           "name": "ThrustIncreasesVelocity",
           "file": "\/Users\/vincentning\/Desktop\/TrajSim\/tests\/test_integrator.cpp",
-          "line": 357
+          "line": 356
         },
         {
           "name": "MassDepletionDuringBurn",
           "file": "\/Users\/vincentning\/Desktop\/TrajSim\/tests\/test_integrator.cpp",
-          "line": 369
+          "line": 368
         },
         {
           "name": "AccelerationFieldPopulated",
           "file": "\/Users\/vincentning\/Desktop\/TrajSim\/tests\/test_integrator.cpp",
-          "line": 380
+          "line": 379
         },
         {
           "name": "PhiRotatedThrustChangesYVelocity",
           "file": "\/Users\/vincentning\/Desktop\/TrajSim\/tests\/test_integrator.cpp",
-          "line": 397
+          "line": 396
         },
         {
           "name": "PsiRotatedThrustChangesZVelocity",
           "file": "\/Users\/vincentning\/Desktop\/TrajSim\/tests\/test_integrator.cpp",
-          "line": 413
+          "line": 412
         },
         {
           "name": "DifferentSteeringProducesDifferentResults",
           "file": "\/Users\/vincentning\/Desktop\/TrajSim\/tests\/test_integrator.cpp",
-          "line": 429
+          "line": 428
         },
         {
           "name": "ConvergenceOrderIsFourth",
           "file": "\/Users\/vincentning\/Desktop\/TrajSim\/tests\/test_integrator.cpp",
-          "line": 449
+          "line": 448
         },
         {
           "name": "ZeroTimestepReturnsOriginalState",
           "file": "\/Users\/vincentning\/Desktop\/TrajSim\/tests\/test_integrator.cpp",
-          "line": 500
+          "line": 499
         },
         {
           "name": "VerySmallTimestep",
           "file": "\/Users\/vincentning\/Desktop\/TrajSim\/tests\/test_integrator.cpp",
-          "line": 510
+          "line": 509
         },
         {
           "name": "LargeTimestepStillFinite",
           "file": "\/Users\/vincentning\/Desktop\/TrajSim\/tests\/test_integrator.cpp",
-          "line": 522
+          "line": 521
         },
         {
           "name": "NonZeroStartTime",
           "file": "\/Users\/vincentning\/Desktop\/TrajSim\/tests\/test_integrator.cpp",
-          "line": 534
+          "line": 533
         },
         {
           "name": "TwoHalfStepsMatchOneFullStep",
           "file": "\/Users\/vincentning\/Desktop\/TrajSim\/tests\/test_integrator.cpp",
-          "line": 551
+          "line": 550
         },
         {
           "name": "LongIntegrationRemainsPhysical",
           "file": "\/Users\/vincentning\/Desktop\/TrajSim\/tests\/test_integrator.cpp",
-          "line": 567
+          "line": 566
         },
         {
           "name": "SymmetricSteeringProducesSymmetricResult",
           "file": "\/Users\/vincentning\/Desktop\/TrajSim\/tests\/test_integrator.cpp",
-          "line": 591
+          "line": 590
         }
       ]
     },
@@ -1704,117 +1704,117 @@
         {
           "name": "LoadsMinimalValidConfig",
           "file": "\/Users\/vincentning\/Desktop\/TrajSim\/tests\/test_config_loader.cpp",
-          "line": 140
+          "line": 99
         },
         {
           "name": "LoadedValuesMatchInput",
           "file": "\/Users\/vincentning\/Desktop\/TrajSim\/tests\/test_config_loader.cpp",
-          "line": 145
+          "line": 104
         },
         {
-          "name": "NumberOfStagesDerivedFromEngines",
+          "name": "NumberOfStagesDerivedFromConfig",
           "file": "\/Users\/vincentning\/Desktop\/TrajSim\/tests\/test_config_loader.cpp",
-          "line": 161
+          "line": 120
         },
         {
           "name": "AngularFieldsConvertedToRadians",
           "file": "\/Users\/vincentning\/Desktop\/TrajSim\/tests\/test_config_loader.cpp",
-          "line": 169
+          "line": 127
         },
         {
           "name": "NoWarningsForCleanConfig",
           "file": "\/Users\/vincentning\/Desktop\/TrajSim\/tests\/test_config_loader.cpp",
-          "line": 182
+          "line": 140
         },
         {
           "name": "LoadsMission1Config",
           "file": "\/Users\/vincentning\/Desktop\/TrajSim\/tests\/test_config_loader.cpp",
-          "line": 193
-        },
-        {
-          "name": "LoadsMission2Config",
-          "file": "\/Users\/vincentning\/Desktop\/TrajSim\/tests\/test_config_loader.cpp",
-          "line": 205
+          "line": 151
         },
         {
           "name": "ThrowsOnMissingFile",
           "file": "\/Users\/vincentning\/Desktop\/TrajSim\/tests\/test_config_loader.cpp",
-          "line": 217
+          "line": 167
         },
         {
           "name": "ThrowsOnMalformedJson",
           "file": "\/Users\/vincentning\/Desktop\/TrajSim\/tests\/test_config_loader.cpp",
-          "line": 221
+          "line": 171
         },
         {
           "name": "ThrowsOnEmptyFile",
           "file": "\/Users\/vincentning\/Desktop\/TrajSim\/tests\/test_config_loader.cpp",
-          "line": 226
+          "line": 176
         },
         {
           "name": "ThrowsOnMissingVehicleSection",
           "file": "\/Users\/vincentning\/Desktop\/TrajSim\/tests\/test_config_loader.cpp",
-          "line": 235
+          "line": 185
         },
         {
-          "name": "ThrowsOnMissingEnginesSection",
+          "name": "ThrowsOnMissingSimulationSection",
           "file": "\/Users\/vincentning\/Desktop\/TrajSim\/tests\/test_config_loader.cpp",
-          "line": 255
+          "line": 191
         },
         {
           "name": "ThrowsOnMissingMissionSection",
           "file": "\/Users\/vincentning\/Desktop\/TrajSim\/tests\/test_config_loader.cpp",
-          "line": 273
+          "line": 197
         },
         {
           "name": "ThrowsOnMissingVehicleMass",
           "file": "\/Users\/vincentning\/Desktop\/TrajSim\/tests\/test_config_loader.cpp",
-          "line": 291
+          "line": 207
         },
         {
           "name": "ThrowsOnMissingEngineISP",
           "file": "\/Users\/vincentning\/Desktop\/TrajSim\/tests\/test_config_loader.cpp",
-          "line": 312
+          "line": 216
         },
         {
           "name": "ThrowsOnNegativeTimeStep",
           "file": "\/Users\/vincentning\/Desktop\/TrajSim\/tests\/test_config_loader.cpp",
-          "line": 337
+          "line": 229
         },
         {
           "name": "ThrowsOnInvalidAlgorithmType",
           "file": "\/Users\/vincentning\/Desktop\/TrajSim\/tests\/test_config_loader.cpp",
-          "line": 358
+          "line": 236
         },
         {
-          "name": "ThrowsOnEmptyEnginesArray",
+          "name": "ThrowsOnMissingStageCfg",
           "file": "\/Users\/vincentning\/Desktop\/TrajSim\/tests\/test_config_loader.cpp",
-          "line": 379
+          "line": 244
+        },
+        {
+          "name": "ThrowsOnEmptyEngineArray",
+          "file": "\/Users\/vincentning\/Desktop\/TrajSim\/tests\/test_config_loader.cpp",
+          "line": 251
         },
         {
           "name": "ThrowsOnNegativeRefArea",
           "file": "\/Users\/vincentning\/Desktop\/TrajSim\/tests\/test_config_loader.cpp",
-          "line": 398
+          "line": 259
         },
         {
           "name": "UnknownTopLevelKeyProducesWarning",
           "file": "\/Users\/vincentning\/Desktop\/TrajSim\/tests\/test_config_loader.cpp",
-          "line": 423
+          "line": 272
         },
         {
           "name": "UnknownVehicleFieldProducesWarning",
           "file": "\/Users\/vincentning\/Desktop\/TrajSim\/tests\/test_config_loader.cpp",
-          "line": 454
+          "line": 289
         },
         {
           "name": "ThrowsOnVelocityTerminalWrongSize",
           "file": "\/Users\/vincentning\/Desktop\/TrajSim\/tests\/test_config_loader.cpp",
-          "line": 480
+          "line": 304
         },
         {
           "name": "ThrowsOnWrongFieldType",
           "file": "\/Users\/vincentning\/Desktop\/TrajSim\/tests\/test_config_loader.cpp",
-          "line": 505
+          "line": 322
         }
       ]
     },
@@ -1825,12 +1825,12 @@
         {
           "name": "HasWarningsReturnsFalseWhenEmpty",
           "file": "\/Users\/vincentning\/Desktop\/TrajSim\/tests\/test_config_loader.cpp",
-          "line": 530
+          "line": 335
         },
         {
           "name": "HasWarningsReturnsTrueWhenNonEmpty",
           "file": "\/Users\/vincentning\/Desktop\/TrajSim\/tests\/test_config_loader.cpp",
-          "line": 536
+          "line": 341
         }
       ]
     },
@@ -1955,12 +1955,12 @@
           "line": 255
         },
         {
-          "name": "ThrustWithPitchProducesNegativeYAcceleration",
+          "name": "ThrustWithPitchProducesPositiveYAcceleration",
           "file": "\/Users\/vincentning\/Desktop\/TrajSim\/tests\/test_dynamics.cpp",
           "line": 264
         },
         {
-          "name": "ThrustWithYawProducesZAcceleration",
+          "name": "ThrustWithYawProducesNegativeZAcceleration",
           "file": "\/Users\/vincentning\/Desktop\/TrajSim\/tests\/test_dynamics.cpp",
           "line": 275
         },

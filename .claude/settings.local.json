@@ -1,0 +1,28 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(./trajsim_tests:*)",
+      "Bash(grep:*)",
+      "Bash(cmake --build:*)",
+      "Bash(./build/trajsim:*)",
+      "Bash(python3:*)",
+      "Bash(pip3 install:*)",
+      "Bash(/Users/vincentning/Desktop/TrajSim/.venv/bin/pip install:*)",
+      "Bash(.venv/bin/python:*)",
+      "Bash(git ls-tree:*)",
+      "Bash(xargs -I{} sh -c 'echo \"\"{}\"\"; git show \"\"main:{}\"\" | wc -l')",
+      "Bash(xargs -I{} sh -c 'echo \"\"{}\"\"; git show \"\"simulation-engine:{}\"\" | wc -l')",
+      "Bash(ctest:*)",
+      "Bash(/Users/vincentning/Desktop/TrajSim/build/trajsim:*)",
+      "Bash(/usr/bin/git show main:src/GNC.cpp)",
+      "Bash(/usr/bin/grep:*)",
+      "Bash(GIT_EXEC_PATH=/opt/homebrew/libexec/git-core /opt/homebrew/bin/git:*)",
+      "Bash(git -C /Users/vincentning/Desktop/TrajSim branch:*)",
+      "Bash(/opt/homebrew/bin/cmake --build:*)",
+      "Bash(/opt/homebrew/bin/ninja:*)",
+      "Bash(CXX=/opt/homebrew/bin/g++-14 CC=/opt/homebrew/bin/gcc-14 /opt/homebrew/bin/cmake:*)",
+      "Bash(cmake:*)",
+      "Bash(./trajsim:*)"
+    ]
+  }
+}

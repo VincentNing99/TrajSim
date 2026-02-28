@@ -8,9 +8,7 @@
 /// A single JSON file contains all configuration sections:
 /// @code
 ///     {
-///         "vehicle":      { ... },
-///         "engines":      [ { ... }, { ... } ],
-///         "aerodynamics": { ... },
+///         "vehicle":      { "stageCfg": { ... }, "aerodynamics": { ... }, ... },
 ///         "simulation":   { ... },
 ///         "guidance":     [ { ... } ],
 ///         "mission":      { ... }
@@ -61,7 +59,6 @@ struct ConfigResult {
 /// @brief All configuration needed for a single simulation run.
 struct AppConfig {
     Vehicle::Config                  vehicle;
-    Aerodynamics::Config             aerodynamics;
     SimConfig                        simulation;
     std::vector<Guidance::Config>    guidance;
     ReferenceMission                 mission;

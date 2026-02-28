@@ -53,11 +53,12 @@ AeroAngles Dynamics::computeAeroAngles(const SteeringAngles& steering, const Vec
 }
 
 Mat3 Dynamics::rmBodyToLocal(const SteeringAngles& angles) noexcept {
-    // 3-2-1 Euler rotation: Rz(φ) · Ry(ψ) · Rx(γ)
-    // Transforms vectors from body frame to local launch frame: v_local = R · v_body
-    return Mat3::rotation_z(angles.phi)
-         * Mat3::rotation_y(angles.psi)
-         * Mat3::rotation_x(angles.gamma);
+    // Body-to-local is the transpose (inverse) of local-to-body.
+    // Local-to-body = Rx(γ) · Ry(ψ) · Rz(φ)
+    // Body-to-local = [Rx(γ) · Ry(ψ) · Rz(φ)]^T = Rz(-φ) · Ry(-ψ) · Rx(-γ)
+    return Mat3::rotation_z(-angles.phi)
+         * Mat3::rotation_y(-angles.psi)
+         * Mat3::rotation_x(-angles.gamma);
 }
 
 StateDerivative Dynamics::evaluate(const VehicleState& state,
@@ -77,7 +78,7 @@ StateDerivative Dynamics::evaluate(const VehicleState& state,
         double alphaDeg = aeroAngles.alpha * (180.0 / std::numbers::pi);
         double betaDeg  = aeroAngles.beta  * (180.0 / std::numbers::pi);
         AeroResult aeroResult = vehicle.getAero().compute(atmoState.machNumber, alphaDeg, betaDeg,
-                                                           atmoState.dynamicPressure);
+                                                           atmoState.dynamicPressure, vehicle.getStage());
         aeroForceBody = aeroResult.force;
     }
 

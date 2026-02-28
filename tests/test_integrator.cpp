@@ -147,7 +147,7 @@ TEST_F(IntegratorTest, RotationIsOrthogonal) {
 
 TEST_F(IntegratorTest, PureGammaRotation) {
     // gamma controls X-axis rotation (roll)
-    // With passive convention Rx(π/2): body y → local -z, body z → local y
+    // bodyToLocal = Rx(-γ). At γ=π/2: Rx(-π/2) maps body y → local +z
     SteeringAngles angles{0.0, 0.0, std::numbers::pi / 2.0};  // phi=0, psi=0, gamma=π/2
     Mat3 R = Dynamics::rmBodyToLocal(angles);
 
@@ -155,12 +155,12 @@ TEST_F(IntegratorTest, PureGammaRotation) {
     Vec3 bodyY = R * Vec3{0.0, 1.0, 0.0};
     EXPECT_NEAR(bodyY.x, 0.0, TOL);
     EXPECT_NEAR(bodyY.y, 0.0, TOL);
-    EXPECT_NEAR(bodyY.z, -1.0, TOL);
+    EXPECT_NEAR(bodyY.z, 1.0, TOL);
 }
 
 TEST_F(IntegratorTest, PurePsiRotation) {
     // psi controls Y-axis rotation (yaw)
-    // With passive convention Ry(π/2): body x → local z, body z → local -x
+    // bodyToLocal = Ry(-ψ). At ψ=π/2: Ry(-π/2) maps body x → local -z
     SteeringAngles angles{0.0, std::numbers::pi / 2.0, 0.0};  // phi=0, psi=π/2, gamma=0
     Mat3 R = Dynamics::rmBodyToLocal(angles);
 
@@ -168,7 +168,7 @@ TEST_F(IntegratorTest, PurePsiRotation) {
     Vec3 bodyX = R * Vec3{1.0, 0.0, 0.0};
     EXPECT_NEAR(bodyX.x, 0.0, TOL);
     EXPECT_NEAR(bodyX.y, 0.0, TOL);
-    EXPECT_NEAR(bodyX.z, 1.0, TOL);
+    EXPECT_NEAR(bodyX.z, -1.0, TOL);
 }
 
 TEST_F(IntegratorTest, RotationPreservesVectorMagnitude) {
@@ -195,9 +195,8 @@ TEST_F(IntegratorTest, ComposedRotationMatchesSequential) {
     // SteeringAngles = {phi, psi, gamma}
     SteeringAngles angles{0.2, 0.4, 0.6};  // phi=0.2, psi=0.4, gamma=0.6
     Mat3 R = Dynamics::rmBodyToLocal(angles);
-    // Mat3::rotation_* are passive rotations
-    // bodyToLocal = Rz(phi) * Ry(psi) * Rx(gamma)
-    Mat3 expected = Mat3::rotation_z(0.2) * Mat3::rotation_y(0.4) * Mat3::rotation_x(0.6);
+    // bodyToLocal = Rz(-phi) * Ry(-psi) * Rx(-gamma) = transpose of localToBody
+    Mat3 expected = Mat3::rotation_z(-0.2) * Mat3::rotation_y(-0.4) * Mat3::rotation_x(-0.6);
     EXPECT_TRUE(near_equal(R, expected));
 }
 
@@ -396,8 +395,8 @@ TEST_F(IntegratorTest, AccelerationFieldPopulated) {
 
 TEST_F(IntegratorTest, PhiRotatedThrustChangesYVelocity) {
     // phi controls Z-axis rotation (pitch)
-    // phi = π/2: rotates body x toward -y in local frame (passive Rz convention)
-    // Thrust along body-X will have negative Y component in local frame
+    // bodyToLocal = Rz(-φ). At φ=π/2: Rz(-π/2) maps body x → local +y
+    // Thrust along body-X will have positive Y component in local frame
     auto state = poweredState();
     state.velocity = Vec3::zero();
     SteeringAngles angles{std::numbers::pi / 2.0, 0.0, 0.0};  // phi=π/2
@@ -406,14 +405,14 @@ TEST_F(IntegratorTest, PhiRotatedThrustChangesYVelocity) {
     VehicleState next = Integrator::stepRK4(*dynamics, state, angles,
                                              POWERED_THRUST, POWERED_MASS_FLOW, 0.0, dt);
 
-    // Thrust should decrease Y velocity (make it negative)
-    EXPECT_LT(next.velocity.y, -1.0);
+    // Thrust should increase Y velocity (positive, net of gravity)
+    EXPECT_GT(next.velocity.y, 0.0);
 }
 
 TEST_F(IntegratorTest, PsiRotatedThrustChangesZVelocity) {
     // psi controls Y-axis rotation (yaw)
-    // psi = π/2: body x → local z (passive Ry convention)
-    // Thrust along body-X goes to local +Z
+    // bodyToLocal = Ry(-ψ). At ψ=π/2: Ry(-π/2) maps body x → local -z
+    // Thrust along body-X goes to local -Z
     auto state = poweredState();
     state.velocity = Vec3::zero();
     SteeringAngles angles{0.0, std::numbers::pi / 2.0, 0.0};  // psi=π/2
@@ -422,8 +421,8 @@ TEST_F(IntegratorTest, PsiRotatedThrustChangesZVelocity) {
     VehicleState next = Integrator::stepRK4(*dynamics, state, angles,
                                              POWERED_THRUST, POWERED_MASS_FLOW, 0.0, dt);
 
-    // Thrust should increase Z velocity
-    EXPECT_GT(next.velocity.z, 0.0);
+    // Thrust should decrease Z velocity (negative)
+    EXPECT_LT(next.velocity.z, 0.0);
 }
 
 TEST_F(IntegratorTest, DifferentSteeringProducesDifferentResults) {
