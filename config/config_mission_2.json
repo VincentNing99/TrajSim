@@ -1,9 +1,9 @@
 {
     "vehicle": {
-        "mass": 108936.6,
+        "mass": 121175.5,
         "stages": 1,
         "stageCfg": {
-            "stageMass": [108936.6],
+            "stageMass": [121175.5],
             "numberOfEngine": [1],
             "engine": [
                 {

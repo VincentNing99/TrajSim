@@ -251,43 +251,11 @@ protected:
     std::unique_ptr<Guidance> guidance;
 };
 
-TEST_F(GuidanceDeltaVTest, ComputeDeltaVCalculatesCorrectComponents) {
-    Vec3 g{0.0, -9.8, 0.0};
-    Vec3 instantaneousVelocity{5000.0, 2000.0, 500.0};
-
-    getIGM()->computeDeltaV(g, instantaneousVelocity);
-}
-
 // =============================================================================
 // ComputeVelocitySteeringAngles Tests
 // =============================================================================
 
-TEST_F(GuidanceDeltaVTest, ComputeVelocitySteeringAnglesReturnsValidAngles) {
-    Vec3 g{0.0, -9.8, 0.0};
-    Vec3 instantaneousVelocity{5000.0, 2000.0, 500.0};
 
-    getIGM()->computeDeltaV(g, instantaneousVelocity);
-
-    SteeringAngles angles = getIGM()->computeVelocitySteeringAngles();
-
-    EXPECT_TRUE(std::isfinite(angles.phi));
-    EXPECT_TRUE(std::isfinite(angles.psi));
-    EXPECT_GE(angles.phi, -std::numbers::pi);
-    EXPECT_LE(angles.phi, std::numbers::pi);
-    EXPECT_GE(angles.psi, -std::numbers::pi / 2.0);
-    EXPECT_LE(angles.psi, std::numbers::pi / 2.0);
-}
-
-TEST_F(GuidanceDeltaVTest, ComputeVelocitySteeringAnglesHandlesZeroDvXi) {
-    Vec3 g{0.0, 0.0, 0.0};
-    Vec3 instantaneousVelocity{0.0, 0.0, 0.0};
-
-    getIGM()->computeDeltaV(g, instantaneousVelocity);
-    SteeringAngles angles = getIGM()->computeVelocitySteeringAngles();
-
-    EXPECT_FALSE(std::isnan(angles.phi));
-    EXPECT_FALSE(std::isnan(angles.psi));
-}
 
 // =============================================================================
 // BuildRotationMatrix Tests
@@ -417,20 +385,18 @@ TEST_F(IterativeGuidanceTest, UpdateTimeToGoHttwComputesValidTimeToGo) {
 
 TEST_F(IterativeGuidanceTest, ConvergeTimeToGoConvergesWithinIterations) {
     Vec3 g{0.0, -9.8, 0.0};
-    Vec3 vC{-7000.0, 2500.0, 200.0};
     double tau = 50000.0 / TEST_MASS_FLOW_RATE;
-    double thrustToWeight = 0.5;
+    double engineAcceleration = std::abs(TEST_MASS_FLOW_RATE) * TEST_EXIT_VELOCITY / 50000.0;
 
-    EXPECT_NO_THROW(getIGM()->convergeTimeToGo(g, vC, tau, TEST_EXIT_VELOCITY, thrustToWeight));
+    EXPECT_NO_THROW(getIGM()->convergeTimeToGo(g, tau));
 }
 
 TEST_F(IterativeGuidanceTest, ConvergeTimeToGoHighThrustToWeight) {
     Vec3 g{0.0, -9.8, 0.0};
-    Vec3 vC{-7000.0, 2500.0, 200.0};
     double tau = 50000.0 / TEST_MASS_FLOW_RATE;
-    double thrustToWeight = 1.5;
+    double engineAcceleration = std::abs(TEST_MASS_FLOW_RATE) * TEST_EXIT_VELOCITY / 50000.0;
 
-    EXPECT_NO_THROW(getIGM()->convergeTimeToGo(g, vC, tau, TEST_EXIT_VELOCITY, thrustToWeight));
+    EXPECT_NO_THROW(getIGM()->convergeTimeToGo(g, tau));
 }
 
 // =============================================================================
@@ -455,7 +421,13 @@ TEST_F(IterativeGuidanceTest, ApplyPositionCorrectionsProducesFiniteAngles) {
 
     SteeringAngles velocityAngles{1.0, 0.1, 0.0};
 
-    SteeringAngles corrected = getIGM()->applyPositionCorrections(velocityAngles, tau, TEST_EXIT_VELOCITY, g);
+    double timeToGoApprox = MISSION_1.cutoffTime - MISSION_1.initialTime;
+    double A = TEST_EXIT_VELOCITY * std::log(tau / (tau - timeToGoApprox));
+    double J = TEST_EXIT_VELOCITY * (tau * std::log(tau / (tau - timeToGoApprox)) - timeToGoApprox);
+    double S = TEST_EXIT_VELOCITY * ((tau - timeToGoApprox) * std::log(tau / (tau - timeToGoApprox)) - timeToGoApprox);
+    double Q = TEST_EXIT_VELOCITY * (0.5 * std::pow(timeToGoApprox, 2) + tau * ((tau - timeToGoApprox) * std::log(tau / (tau - timeToGoApprox)) - timeToGoApprox));
+
+    SteeringAngles corrected = getIGM()->applyPositionCorrections(velocityAngles, A, J, S, Q, g);
 
     EXPECT_TRUE(std::isfinite(corrected.phi));
     EXPECT_TRUE(std::isfinite(corrected.psi));

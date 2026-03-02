@@ -56,8 +56,8 @@ static const char* GUIDANCE_SECTION =
 static const char* MISSION_SECTION =
     R"("mission":{"semiMajorAxis":6903085,"longitudeAscendingNode":260,"inclination":97.5,)"
     R"("eccentricity":1e-5,"trueAnomaly":154,"argumentOfPeriapsis":185,)"
-    R"("ldnLaunchsite":264,"lanLaunchsite":84,"aimingAzimuth":191,)"
-    R"("latitude":40.8,"geocentricLatitude":40.6,"launchSiteLongitude":100,)"
+    R"("lanLaunchsite":84,"aimingAzimuth":191,)"
+    R"("latitude":40.8,"geocentricLatitude":40.6,)"
     R"("heightLaunchSite":1000,"velocityTerminal":[-7124,2631,249],)"
     R"("positionTerminal":[-2405466,-12845047,205013],)"
     R"("initialPosition":[0,0,0],"initialVelocity":[0,0,0],"initialMass":1000,)"
@@ -152,7 +152,7 @@ TEST_F(ConfigLoaderTest, LoadsMission1Config) {
     auto result = loadConfig("../config/config_mission_1.json");
     const auto& cfg = result.config;
 
-    EXPECT_DOUBLE_EQ(cfg.vehicle.mass, 50000.0);
+    EXPECT_DOUBLE_EQ(cfg.vehicle.mass, 6731.1);
     EXPECT_EQ(cfg.vehicle.stage.engineCfg.size(), 1u);
     EXPECT_DOUBLE_EQ(cfg.vehicle.stage.engineCfg[0].thrust, 3000.0);
     EXPECT_DOUBLE_EQ(cfg.vehicle.stage.engineCfg[0].isp, 315.0);

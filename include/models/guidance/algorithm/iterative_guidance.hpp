@@ -76,10 +76,10 @@ public:
     // Public methods for test compatibility
     void updateTimeToGoLttw(const Vec3& g, const Vec3& vt, const Vec3& vc);
     void updateTimeToGoHttw(double tau, double engineExitVelocity);
-    void convergeTimeToGo(const Vec3& g, const Vec3& vC, double tau, double engineExitVelocity, double thrustToWeight);
-    void computeDeltaV(const Vec3& g, const Vec3& currentVelocity);
+    void convergeTimeToGo(const Vec3& g, double tau);
+    void computeDeltaV(const Vec3& g);
     [[nodiscard]] SteeringAngles computeVelocitySteeringAngles();
-    [[nodiscard]] SteeringAngles applyPositionCorrections(const SteeringAngles& velocityAngles, double tau, double engineExitVelocity, const Vec3& g);
+    [[nodiscard]] SteeringAngles applyPositionCorrections(const SteeringAngles& velocityAngles, double A, double J, double S, double Q, const Vec3& g);
     [[nodiscard]] SteeringAngles transformSteeringToInertial(SteeringAngles correctedAngles);
     void buildRotationMatrix();
 

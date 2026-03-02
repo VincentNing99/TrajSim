@@ -41,38 +41,57 @@ IterativeGuidance::IterativeGuidance(Config config,
 SteeringAngles IterativeGuidance::computeSteering(const GuidanceInput& input) {
     const auto& state = input.state;
     double tau = state.vehicleMass / massFlowRate;
+
+    double thrust = std::abs(massFlowRate) * exitVelocity;
+    double engineAcceleration = thrust / state.vehicleMass;
+    Vec3 g = 0.5 * (rmInertialToTerminal * input.gravity + rmInertialToTerminal * gravityCutoff);
+    
+    double A = exitVelocity * log(tau / (tau - timeToGo));
+    double J = exitVelocity * (tau * log(tau / (tau - timeToGo)) - timeToGo);
+    double S = exitVelocity * ((tau - timeToGo) * log(tau / (tau - timeToGo)) - timeToGo);
+    double Q = exitVelocity * (0.5 * std::pow(timeToGo, 2) + tau * ((tau - timeToGo) * log(tau / (tau - timeToGo)) - timeToGo));
+
+    Vec3 posOrbital = rmInertialToOrbital * (vehicleState.position + positionLaunchSite);
+    Vec3 velOrbital = rmInertialToOrbital * vehicleState.velocity;
+    Vec3 terminalPosOrbital = rmInertialToOrbital * terminalPosition;
+    double betaE = std::atan2(-posOrbital.x, posOrbital.y);
+    double betaT;
+    if (std::fabs(terminalPosition.y) < config.tolerance) {
+        betaT = 0.0;
+    } else {
+        betaT = 1.0 / terminalPosition.y * (velOrbital.x * timeToGo - S + 0.5 * g.x * std::pow(timeToGo, 2));
+    }
+    double rangeAngle = (posOrbital.x < terminalPosOrbital.x) ? betaE + betaT : betaE - betaT;
+
+    Mat3 rmOrbitalToTerminal = {std::cos(rangeAngle), std::sin(rangeAngle), 0,
+                        -std::sin(rangeAngle), std::cos(rangeAngle), 0,
+                        0, 0, 1};
+    rmInertialToTerminal = rmOrbitalToTerminal * rmInertialToOrbital;
+
     instantaneousVelocity = rmInertialToTerminal * state.velocity;
     instantaneousPosition = rmInertialToTerminal * (state.position + positionLaunchSite);
     terminalVelocity = rmInertialToTerminal * terminalState.velocity;
     terminalPosition = rmInertialToTerminal * (terminalState.position + positionLaunchSite);
 
-    double thrust = std::abs(massFlowRate) * exitVelocity;
-    double engineAcceleration = thrust / state.vehicleMass;
-
-    // Average gravity over the remaining burn (linear approximation)
-    Vec3 g = 0.5 * (rmInertialToTerminal * input.gravity + rmInertialToTerminal * gravityCutoff);
-
-    computeDeltaV(g, instantaneousVelocity);
-    convergeTimeToGo(g, instantaneousVelocity, tau, exitVelocity, engineAcceleration);
+    computeDeltaV(g);
+    convergeTimeToGo(g, tau);
 
     SteeringAngles velocityAngles = computeVelocitySteeringAngles();
 
-    // Decrement time-to-go by one guidance cycle (matches old code's set_time_to_go)
-    timeToGo -= config.guidanceCycle;
-
     if (timeToGo <= config.steeringHoldTime) {
         // Hold steering commands for final seconds before cutoff
+        timeToGo -= config.guidanceCycle;
         return steering;
     }
 
-    SteeringAngles correctedAngles = applyPositionCorrections(velocityAngles, tau, exitVelocity, g);
+    SteeringAngles correctedAngles = applyPositionCorrections(velocityAngles, A, J, S, Q, g);
 
     SteeringAngles inertialAngles = transformSteeringToInertial(correctedAngles);
 
     // Return raw steering — rate limiting is handled by the coordinator
     steering = inertialAngles;
     steeringLastStep = steering;
-
+    timeToGo -= config.guidanceCycle;
     return steering;
 }
 
@@ -96,7 +115,6 @@ void IterativeGuidance::updateTimeToGoHttw(double tau, double engineExitVelocity
     if (tau - timeToGo < config.tolerance) {
         throw std::runtime_error("IGM failure: timeToGo exceeds propellant budget (tau - timeToGo <= 0)");
     }
-
     double A = engineExitVelocity * log(tau / (tau - timeToGo));
 
     if (std::fabs(A) < config.tolerance) {
@@ -109,12 +127,12 @@ void IterativeGuidance::updateTimeToGoHttw(double tau, double engineExitVelocity
     timeToGo = timeToGo + G * ((tau - timeToGo) / engineExitVelocity);
 }
 
-void IterativeGuidance::convergeTimeToGo(const Vec3& g, const Vec3& vC, double tau, double engineExitVelocity, double engineAcceleration) {
+void IterativeGuidance::convergeTimeToGo(const Vec3& g, double tau) {
     int iteration = 0;
-    
+    updateTimeToGoHttw(tau, exitVelocity);
     while (std::fabs(timeToGo - timeToGoLastStep) >= config.timeToGoConvergenceTolerance && iteration < config.maxConvergenceIterations) {
-        computeDeltaV(g, vC);
-        updateTimeToGoHttw(tau, engineExitVelocity);
+        computeDeltaV(g);
+        updateTimeToGoHttw(tau, exitVelocity);
         iteration++;
         if (std::isnan(timeToGo) || std::isinf(timeToGo)) {
             throw std::runtime_error("IGM convergence failure: timeToGo became NaN/infinity at iteration "
@@ -127,10 +145,10 @@ void IterativeGuidance::convergeTimeToGo(const Vec3& g, const Vec3& vC, double t
     }
 }
 
-void IterativeGuidance::computeDeltaV(const Vec3& g, const Vec3& currentVelocity) {
-    deltaV.dvXi = terminalVelocity.x - currentVelocity.x - g.x * timeToGo;
-    deltaV.dvEta = terminalVelocity.y - currentVelocity.y - g.y * timeToGo;
-    deltaV.dvZeta = currentVelocity.z - terminalVelocity.z + g.z * timeToGo;
+void IterativeGuidance::computeDeltaV(const Vec3& g) {
+    deltaV.dvXi = terminalVelocity.x - instantaneousVelocity.x - g.x * timeToGo;
+    deltaV.dvEta = terminalVelocity.y - instantaneousVelocity.y - g.y * timeToGo;
+    deltaV.dvZeta = instantaneousVelocity.z - terminalVelocity.z + g.z * timeToGo;
     deltaV.dV = std::sqrt(std::pow(deltaV.dvXi, 2) + std::pow(deltaV.dvEta, 2) + std::pow(deltaV.dvZeta, 2));
 }
 
@@ -153,37 +171,8 @@ SteeringAngles IterativeGuidance::computeVelocitySteeringAngles() {
     return angles;
 }
 
-SteeringAngles IterativeGuidance::applyPositionCorrections(const SteeringAngles& velocityAngles, double tau, double engineExitVelocity, const Vec3& g) {
+SteeringAngles IterativeGuidance::applyPositionCorrections(const SteeringAngles& velocityAngles, double A, double J, double S, double Q, const Vec3& g) {
     SteeringAngles corrected = velocityAngles;
-    double A = engineExitVelocity * log(tau / (tau - timeToGo));
-    double J = engineExitVelocity * (tau * log(tau / (tau - timeToGo)) - timeToGo);
-    double S = engineExitVelocity * ((tau - timeToGo) * log(tau / (tau - timeToGo)) - timeToGo);
-    double Q = engineExitVelocity * (0.5 * std::pow(timeToGo, 2) + tau * ((tau - timeToGo) * log(tau / (tau - timeToGo)) - timeToGo));
-
-    // Compute betaE/betaT in the orbital frame, matching old code's update_terminal_frame.
-    // Position includes launch site offset (launch_inertial_to_ECSF equivalent).
-    Vec3 posOrbital = rmInertialToOrbital * (vehicleState.position + positionLaunchSite);
-    Vec3 velOrbital = rmInertialToOrbital * vehicleState.velocity;
-    Vec3 terminalPosOrbital = rmInertialToOrbital * terminalPosition;
-    double betaE = std::atan2(-posOrbital.x, posOrbital.y);
-    double betaT;
-    if (std::fabs(terminalPosition.y) < config.tolerance) {
-        betaT = 0.0;
-    } else {
-        betaT = (velOrbital.x * timeToGo - S + 0.5 * g.x * std::pow(timeToGo, 2)) / terminalPosition.y;
-    }
-    double rangeAngle = (posOrbital.x < terminalPosOrbital.x) ? betaE + betaT : betaE - betaT;
-
-    Mat3 rmOrbitalToTerminal = {std::cos(rangeAngle), std::sin(rangeAngle), 0,
-                        -std::sin(rangeAngle), std::cos(rangeAngle), 0,
-                        0, 0, 1};
-    rmInertialToTerminal = rmOrbitalToTerminal * rmInertialToOrbital;
-
-    // Retransform state vectors into the updated terminal frame
-    terminalPosition = rmInertialToTerminal * (terminalState.position + positionLaunchSite);
-    terminalVelocity = rmInertialToTerminal * terminalState.velocity;
-    instantaneousPosition = rmInertialToTerminal * (vehicleState.position + positionLaunchSite);
-    instantaneousVelocity = rmInertialToTerminal * vehicleState.velocity;
 
     double Ay = A;
     double By = J;
