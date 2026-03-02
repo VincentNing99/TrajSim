@@ -126,6 +126,13 @@ double Guidance::getTimeToGo() const noexcept {
     return 0.0;
 }
 
+double Guidance::getRangeAngle() const noexcept {
+    if (activeIndex < algorithms.size()) {
+        return algorithms[activeIndex]->getRangeAngle();
+    }
+    return 0.0;
+}
+
 OrbitalElements Guidance::computeOrbitalElements(const VehicleState& state) const {
     if (activeIndex < algorithms.size()) {
         return algorithms[activeIndex]->computeOrbitalElements(state);

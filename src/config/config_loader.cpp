@@ -224,13 +224,15 @@ static Vehicle::Config parseVehicle(const json& j, std::vector<std::string>& war
     const std::string ctx = "vehicle";
 
     static const std::vector<std::string> knownKeys = {
-        "mass", "stages", "aerodynamics", "stageCfg"
+        "mass", "oxidizerMass", "fuelMass", "stages", "aerodynamics", "stageCfg"
     };
     warnUnknownKeys(j, knownKeys, ctx, warnings);
 
     Vehicle::Config cfg;
-    cfg.mass          = requireField<double>(j, "mass", ctx);
-    cfg.numberOfStage = requireField<int>(j, "stages", ctx);
+    cfg.mass          = requireField<double>(j, "mass",         ctx);
+    cfg.oxidizerMass  = requireField<double>(j, "oxidizerMass", ctx);
+    cfg.fuelMass      = requireField<double>(j, "fuelMass",     ctx);
+    cfg.numberOfStage = requireField<int>   (j, "stages",       ctx);
     cfg.aeroCfg       = parseAerodynamics(requireSection(j, "aerodynamics", ctx), warnings);
     cfg.stage         = parseStageCfg(requireSection(j, "stageCfg", ctx), warnings);
 
@@ -241,13 +243,14 @@ static SimConfig parseSimulation(const json& j, std::vector<std::string>& warnin
     const std::string ctx = "simulation";
 
     static const std::vector<std::string> knownKeys = {
-        "timeStepRK4", "tolerance"
+        "timeStepRK4", "tolerance", "atmosphereCeiling"
     };
     warnUnknownKeys(j, knownKeys, ctx, warnings);
 
     SimConfig cfg;
-    cfg.timeStepRK4 = requireField<double>(j, "timeStepRK4", ctx);
-    cfg.tolerance   = requireField<double>(j, "tolerance",   ctx);
+    cfg.timeStepRK4       = requireField<double>(j, "timeStepRK4",       ctx);
+    cfg.tolerance         = requireField<double>(j, "tolerance",         ctx);
+    cfg.atmosphereCeiling = requireField<double>(j, "atmosphereCeiling", ctx);
 
     cfg.validate();
     return cfg;

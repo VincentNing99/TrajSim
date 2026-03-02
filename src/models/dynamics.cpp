@@ -66,12 +66,11 @@ StateDerivative Dynamics::evaluate(const VehicleState& state,
                                     double thrustMagnitude,
                                     double massFlowRate,
                                     double t) const {
-    // 1. Altitude check — skip aerodynamics above the atmosphere (~86 km)
+    // 1. Altitude check — skip aerodynamics above the atmosphere
     double altitude = gravity.computeAltitude(state.position);
-    static constexpr double kAtmosphereCeiling = 86000.0;
 
     Vec3 aeroForceBody = Vec3::zero();
-    if (altitude < kAtmosphereCeiling) {
+    if (altitude < atmosphereCeiling) {
         AeroAngles aeroAngles = computeAeroAngles(steering, state.velocity, state.position);
         AtmosphereState atmoState = atmosphere.computeStates(velocityBody, altitude);
 

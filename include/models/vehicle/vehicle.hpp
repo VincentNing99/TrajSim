@@ -26,6 +26,8 @@ public:
     struct Config {
         int numberOfStage = 1;
         double mass = 0.0;                      ///< Total initial mass [kg]
+        double oxidizerMass = 0.0;              ///< Oxidizer mass [kg]
+        double fuelMass = 0.0;                  ///< Fuel mass [kg]
         StageCfg stage;
         Aerodynamics::Config aeroCfg;
     };
@@ -39,6 +41,7 @@ public:
             std::unique_ptr<Engine> engine)
         : numberOfStage(config.numberOfStage)
         , mass{config.mass}
+        , propellantMass{config.oxidizerMass + config.fuelMass}
         , aero{std::move(aero)}
         , engine{std::move(engine)}
     {
@@ -53,6 +56,8 @@ public:
 
     [[nodiscard]] double getMass() const noexcept { return mass; }
     [[nodiscard]] double getNumberOfStage() const noexcept { return numberOfStage; }
+    [[nodiscard]] double getPropellantMass() const noexcept { return propellantMass; }
+    void consumePropellant(double amount) { propellantMass -= amount; }
     [[nodiscard]] const Aerodynamics& getAero() const noexcept { return aero; }
     [[nodiscard]] const Engine& getEngine() const { return *engine; }
     [[nodiscard]] Engine& getEngine() { return *engine; }
@@ -62,6 +67,7 @@ private:
     double currentStage;
     double numberOfStage;
     double mass;
+    double propellantMass;
     Aerodynamics aero;
     std::unique_ptr<Engine> engine;
 };

@@ -39,7 +39,7 @@ int main() {
             std::cerr << "[WARN] " << w << "\n";
     }
 
-    std::cout << "=== TrajSim Mission 2 Simulation ===\n";
+    std::cout << "=== TrajSim Mission 1 Simulation ===\n";
     std::cout << "Target SMA: " << mission.semiMajorAxis << " m\n";
     std::cout << "Target ecc: " << mission.eccentricity << "\n";
     std::cout << "Target inc: " << mission.inclination * radToDeg << " deg\n\n";
@@ -77,7 +77,7 @@ int main() {
     // =========================================================================
     // 4. Create dynamics
     // =========================================================================
-    Dynamics dynamics(gravity, atmosphere, vehicle);
+    Dynamics dynamics(gravity, atmosphere, vehicle, cfg.simulation.atmosphereCeiling);
 
     // =========================================================================
     // 5. Set initial state
@@ -100,6 +100,7 @@ int main() {
     EngineOutput engineOut = vehicle.getEngine().computeOutput(1.0, 0.0, 0.0, Vec3::zero());
     const double thrustMag = engineOut.force.mag();
     const double mdot = engineOut.mdot;
+    const int nEngines = cfg.vehicle.stage.numberOfEngine[0];
 
     // =========================================================================
     // 7. Create guidance
@@ -109,7 +110,7 @@ int main() {
     std::cout << "Engine: thrust=" << thrustMag << " N, mdot=" << mdot
               << " kg/s, Ve=" << exitVelocity << " m/s\n";
     std::cout << "dt=" << dt << " s, t0=" << mission.initialTime
-              << " s, tCutoff=" << mission.cutoffTime << " s\n\n";
+              << " s, propellant=" << vehicle.getPropellantMass() << " kg\n\n";
 
     // =========================================================================
     // 8. Simulation loop
@@ -136,7 +137,7 @@ int main() {
               << std::setw(10) << "|dPos|"
               << std::setw(10) << "|dVel|"
               << std::setw(10) << "Mass"
-              << std::setw(10) << "Tau"
+              << std::setw(12) << "RangeAngle"
               << "\n";
     std::cout << std::setw(8) << "(s)"
               << std::setw(9) << "(s)"
@@ -148,9 +149,9 @@ int main() {
               << std::setw(10) << "(m)"
               << std::setw(10) << "(m/s)"
               << std::setw(10) << "(kg)"
-              << std::setw(10) << "(s)"
+              << std::setw(12) << "(deg)"
               << "\n";
-    std::cout << std::string(110, '-') << "\n";
+    std::cout << std::string(112, '-') << "\n";
 
     double t = mission.initialTime;
     double nextPrint = t;
@@ -158,7 +159,7 @@ int main() {
     bool exitMet = false;
     SteeringAngles steering = mission.initialSteeringAngles;
 
-    while (t < mission.cutoffTime) {
+    while (vehicle.getPropellantMass() > 0.0) {
         Vec3 g0 = gravity.computeAcceleration(state.position);
         if (t > mission.initialTime + guidanceCycle)
             steering = guidance.computeSteering(t, g0);
@@ -172,8 +173,6 @@ int main() {
             Vec3 dPos = state.position - mission.positionTerminal;
             Vec3 dVel = state.velocity - mission.velocityTerminal;
 
-            double tau = state.vehicleMass / mdot;
-
             // Console
             std::cout << std::setprecision(1) << std::setw(8) << t
                       << std::setprecision(2) << std::setw(9) << tgo
@@ -185,7 +184,7 @@ int main() {
                       << std::setprecision(0) << std::setw(10) << dPos.mag()
                       << std::setprecision(1) << std::setw(10) << dVel.mag()
                       << std::setprecision(1) << std::setw(10) << state.vehicleMass
-                      << std::setprecision(1) << std::setw(10) << tau
+                      << std::setprecision(3) << std::setw(12) << std::remainder(guidance.getRangeAngle() * radToDeg, 360.0)
                       << "\n";
 
             // CSV
@@ -207,6 +206,7 @@ int main() {
 
         // Integrate one RK4 step
         state = Integrator::stepRK4(dynamics, state, steering, thrustMag, mdot, t, dt);
+        vehicle.consumePropellant(nEngines * mdot * dt);
         t += dt;
 
         // Check exit criteria

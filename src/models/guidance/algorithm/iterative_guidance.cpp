@@ -30,43 +30,26 @@ IterativeGuidance::IterativeGuidance(Config config,
     , longitudeOfAnLaunchsite(mission.lanLaunchsite)
     , positionLaunchSite(mission.positionLaunchSite())
     , terminalState(terminalStateFromMission(mission))
+    , rangeAngle(mission.argumentOfPeriapsis + mission.trueAnomaly)
     , steering(mission.initialSteeringAngles)
     , steeringLastStep(mission.initialSteeringAngles)
 {
     timeToGo = mission.cutoffTime - mission.initialTime;
     timeToGoLastStep = timeToGo;
     buildRotationMatrix();
+    terminalVelocity = rmInertialToTerminal * terminalState.velocity;
+    terminalPosition = rmInertialToTerminal * (terminalState.position + positionLaunchSite);
 }
 
 SteeringAngles IterativeGuidance::computeSteering(const GuidanceInput& input) {
     const auto& state = input.state;
     double tau = state.vehicleMass / massFlowRate;
 
-    double thrust = std::abs(massFlowRate) * exitVelocity;
     Vec3 g = 0.5 * (rmInertialToTerminal * input.gravity + rmInertialToTerminal * gravityCutoff);
-    
     double A = exitVelocity * log(tau / (tau - timeToGo));
     double J = exitVelocity * (tau * log(tau / (tau - timeToGo)) - timeToGo);
     double S = exitVelocity * ((tau - timeToGo) * log(tau / (tau - timeToGo)) - timeToGo);
     double Q = exitVelocity * (0.5 * std::pow(timeToGo, 2) + tau * ((tau - timeToGo) * log(tau / (tau - timeToGo)) - timeToGo));
-
-    Vec3 posOrbital = rmInertialToOrbital * (vehicleState.position + positionLaunchSite);
-    Vec3 velOrbital = rmInertialToOrbital * vehicleState.velocity;
-    Vec3 terminalPosOrbital = rmInertialToOrbital * terminalPosition;
-    double betaE = std::atan2(-posOrbital.x, posOrbital.y);
-    double betaT;
-    if (std::fabs(terminalPosition.y) < config.tolerance) {
-        betaT = 0.0;
-    } else {
-        betaT = 1.0 / terminalPosition.y * (velOrbital.x * timeToGo - S + 0.5 * g.x * std::pow(timeToGo, 2));
-    }
-    double rangeAngle = (posOrbital.x < terminalPosOrbital.x) ? betaE + betaT : betaE - betaT;
-
-    Mat3 rmOrbitalToTerminal = {std::cos(rangeAngle), std::sin(rangeAngle), 0,
-                        -std::sin(rangeAngle), std::cos(rangeAngle), 0,
-                        0, 0, 1};
-    rmInertialToTerminal = rmOrbitalToTerminal * rmInertialToOrbital;
-
     instantaneousVelocity = rmInertialToTerminal * state.velocity;
     instantaneousPosition = rmInertialToTerminal * (state.position + positionLaunchSite);
     terminalVelocity = rmInertialToTerminal * terminalState.velocity;
@@ -87,17 +70,36 @@ SteeringAngles IterativeGuidance::computeSteering(const GuidanceInput& input) {
 
     SteeringAngles inertialAngles = transformSteeringToInertial(correctedAngles);
 
-    // Return raw steering — rate limiting is handled by the coordinator
+    Vec3 posOrbital = rmInertialToOrbital * (vehicleState.position + positionLaunchSite);
+    Vec3 velOrbital = rmInertialToOrbital * vehicleState.velocity;
+    Vec3 terminalPosOrbital = rmInertialToOrbital * terminalPosition;
+    double betaE = std::atan2(-posOrbital.x, posOrbital.y);
+    double betaT;
+    if (std::fabs(terminalPosition.y) < config.tolerance) {
+        betaT = 0.0;
+    } else {
+        betaT = 1.0 / terminalPosition.y * (velOrbital.x * timeToGo - S + 0.5 * g.x * std::pow(timeToGo, 2));
+    }
+
+    // rangeAngle = (posOrbital.x < terminalPosOrbital.x) ? betaE + betaT : betaE - betaT;
+    rangeAngle = betaE + betaT;
+
+
+    Mat3 rmOrbitalToTerminal = {std::cos(rangeAngle), std::sin(rangeAngle), 0,
+                        -std::sin(rangeAngle), std::cos(rangeAngle), 0,
+                        0, 0, 1};
+    rmInertialToTerminal = rmOrbitalToTerminal * rmInertialToOrbital;
+
     steering = inertialAngles;
     steeringLastStep = steering;
     timeToGo -= config.guidanceCycle;
     return steering;
 }
 
-void IterativeGuidance::updateTimeToGoLttw(const Vec3& g, const Vec3& vt, const Vec3& vc) {
+void IterativeGuidance::updateTimeToGoLttw(const Vec3& g) {
     // Low Thrust-to-Weight (LTTW) time-to-go approximation.
     double a1 = dot(g, g);
-    double b1 = 2 * (dot(vc, g) - dot(vt, g));
+    double b1 = 2 * (dot(instantaneousVelocity, g) - dot(terminalVelocity, g));
 
     double h;
     if (std::fabs(a1) < config.tolerance) {
@@ -177,7 +179,7 @@ SteeringAngles IterativeGuidance::applyPositionCorrections(const SteeringAngles&
     double By = J;
     double Cy = S * std::cos(velocityAngles.psi);
     double Dy = Q * std::cos(velocityAngles.psi);
-    double Ey = instantaneousPosition.z + instantaneousVelocity.z * timeToGo + 0.5 * g.z * std::pow(timeToGo, 2) + S * std::sin(velocityAngles.psi);
+    double Ey = -terminalPosition.z + instantaneousPosition.z + instantaneousVelocity.z * timeToGo + 0.5 * g.z * std::pow(timeToGo, 2) + S * std::sin(velocityAngles.psi);
 
     if (std::fabs(By) < config.tolerance) {
         return corrected;

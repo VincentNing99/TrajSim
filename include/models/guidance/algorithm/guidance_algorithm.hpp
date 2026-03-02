@@ -61,6 +61,9 @@ public:
     /// @brief Get time-to-go if available (IGM provides this).
     [[nodiscard]] virtual double getTimeToGo() const noexcept { return 0.0; }
 
+    /// @brief Get range angle [rad] if available (IGM provides this).
+    [[nodiscard]] virtual double getRangeAngle() const noexcept { return 0.0; }
+
     /// @brief Get guidance cycle interval [s]. Returns 0 if the algorithm has no fixed cycle.
     [[nodiscard]] virtual double getGuidanceCycle() const noexcept { return 0.0; }
 

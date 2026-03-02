@@ -54,15 +54,18 @@ struct StateDerivative {
 class Dynamics {
 public:
     /// @brief Construct dynamics with environment and vehicle models.
-    /// @param gravity    Gravity model (J2 oblate Earth)
-    /// @param atmosphere Atmosphere model (US Std 1976)
-    /// @param vehicle    Vehicle (owns aerodynamics and engine)
+    /// @param gravity            Gravity model (J2 oblate Earth)
+    /// @param atmosphere         Atmosphere model (US Std 1976)
+    /// @param vehicle            Vehicle (owns aerodynamics and engine)
+    /// @param atmosphereCeiling  Altitude above which aerodynamics are skipped [m]
     Dynamics(const Gravity& gravity,
              const AtmosphereModel& atmosphere,
-             const Vehicle& vehicle)
+             const Vehicle& vehicle,
+             double atmosphereCeiling)
         : gravity(gravity)
         , atmosphere(atmosphere)
         , vehicle(vehicle)
+        , atmosphereCeiling(atmosphereCeiling)
     {}
 
     // =========================================================================
@@ -100,6 +103,7 @@ private:
     const Gravity& gravity;
     const AtmosphereModel& atmosphere;
     const Vehicle& vehicle;
+    double atmosphereCeiling;
     mutable Vec3 velocityBody;
 };
 

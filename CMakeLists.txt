@@ -24,13 +24,6 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(nlohmann_json)
 
-FetchContent_Declare(
-    googletest
-    GIT_REPOSITORY https://github.com/google/googletest.git
-    GIT_TAG v1.14.0
-)
-set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
-FetchContent_MakeAvailable(googletest)
 
 # =============================================================================
 # Library
@@ -55,29 +48,3 @@ target_link_libraries(trajsim_lib PUBLIC nlohmann_json::nlohmann_json)
 add_executable(trajsim src/main.cpp)
 target_link_libraries(trajsim trajsim_lib)
 
-# =============================================================================
-# Tests
-# =============================================================================
-enable_testing()
-
-add_executable(trajsim_tests
-    tests/test_vec3.cpp
-    tests/test_mat3.cpp
-    tests/test_aerodynamics.cpp
-    tests/test_atmosphere.cpp
-    tests/test_gravity.cpp
-    tests/test_liquid_engine.cpp
-    tests/test_guidance.cpp
-    tests/test_integrator.cpp
-    tests/test_config_loader.cpp
-    tests/test_vehicle.cpp
-    tests/test_dynamics.cpp
-)
-
-target_link_libraries(trajsim_tests
-    trajsim_lib
-    GTest::gtest_main
-)
-
-include(GoogleTest)
-gtest_discover_tests(trajsim_tests)

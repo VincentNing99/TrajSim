@@ -70,11 +70,12 @@ public:
     [[nodiscard]] std::string_view name() const noexcept override { return "IterativeGuidance"; }
     [[nodiscard]] const TerminalState* getTerminalState() const noexcept override { return &terminalState; }
     [[nodiscard]] double getTimeToGo() const noexcept override { return timeToGo; }
+    [[nodiscard]] double getRangeAngle() const noexcept override { return rangeAngle; }
     [[nodiscard]] double getGuidanceCycle() const noexcept override { return config.guidanceCycle; }
     [[nodiscard]] OrbitalElements computeOrbitalElements(const VehicleState& state) const override;
 
     // Public methods for test compatibility
-    void updateTimeToGoLttw(const Vec3& g, const Vec3& vt, const Vec3& vc);
+    void updateTimeToGoLttw(const Vec3& g);
     void updateTimeToGoHttw(double tau);
     void convergeTimeToGo(const Vec3& g, double tau);
     void computeDeltaV(const Vec3& g);
@@ -125,6 +126,9 @@ private:
     // Timing
     double timeToGo;
     double timeToGoLastStep;
+
+    // Range angle
+    double rangeAngle;
 
     // Steering
     SteeringAngles steering;

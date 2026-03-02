@@ -1,6 +1,8 @@
 {
     "vehicle": {
         "mass": 6731.1,
+        "oxidizerMass": 581.1,
+        "fuelMass": 353.9,
         "stages": 1,
         "stageCfg" : {
             "stageMass": [6731.1],
@@ -28,7 +30,8 @@
 
     "simulation": {
         "timeStepRK4": 0.001,
-        "tolerance": 1e-10
+        "tolerance": 1e-10,
+        "atmosphereCeiling": 86000.0
     },
 
     "guidance": [

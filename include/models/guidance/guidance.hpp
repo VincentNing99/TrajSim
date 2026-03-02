@@ -95,6 +95,9 @@ public:
     /// @brief Get time-to-go from active algorithm.
     [[nodiscard]] double getTimeToGo() const noexcept;
 
+    /// @brief Get range angle [rad] from active algorithm.
+    [[nodiscard]] double getRangeAngle() const noexcept;
+
     /// @brief Compute current orbital elements from vehicle state.
     [[nodiscard]] OrbitalElements computeOrbitalElements(const VehicleState& state) const;
 
