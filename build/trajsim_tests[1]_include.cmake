@@ -1,5 +1,0 @@
-if(EXISTS "/Users/vincentning/Desktop/TrajSim/build/trajsim_tests[1]_tests.cmake")
-  include("/Users/vincentning/Desktop/TrajSim/build/trajsim_tests[1]_tests.cmake")
-else()
-  add_test(trajsim_tests_NOT_BUILT trajsim_tests_NOT_BUILT)
-endif()

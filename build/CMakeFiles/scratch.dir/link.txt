@@ -1,1 +1,0 @@
-/usr/bin/c++  -arch arm64 -Wl,-search_paths_first -Wl,-headerpad_max_install_names CMakeFiles/scratch.dir/src/models/scratch.cpp.o -o scratch  libtrajsim_lib.a
