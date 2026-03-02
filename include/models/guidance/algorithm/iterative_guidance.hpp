@@ -75,7 +75,7 @@ public:
 
     // Public methods for test compatibility
     void updateTimeToGoLttw(const Vec3& g, const Vec3& vt, const Vec3& vc);
-    void updateTimeToGoHttw(double tau, double engineExitVelocity);
+    void updateTimeToGoHttw(double tau);
     void convergeTimeToGo(const Vec3& g, double tau);
     void computeDeltaV(const Vec3& g);
     [[nodiscard]] SteeringAngles computeVelocitySteeringAngles();

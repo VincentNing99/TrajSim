@@ -1,0 +1,33 @@
+# Build
+build/
+cmake-build-*/
+CMakeUserPresets.json
+
+# Simulation output
+output/
+
+# Claude Code
+.claude/
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Compiled
+*.o
+*.a
+*.so
+*.dylib
+*.d
+
+# Archives
+*.tar.gz
+*.zip

@@ -43,7 +43,6 @@ SteeringAngles IterativeGuidance::computeSteering(const GuidanceInput& input) {
     double tau = state.vehicleMass / massFlowRate;
 
     double thrust = std::abs(massFlowRate) * exitVelocity;
-    double engineAcceleration = thrust / state.vehicleMass;
     Vec3 g = 0.5 * (rmInertialToTerminal * input.gravity + rmInertialToTerminal * gravityCutoff);
     
     double A = exitVelocity * log(tau / (tau - timeToGo));
@@ -111,11 +110,11 @@ void IterativeGuidance::updateTimeToGoLttw(const Vec3& g, const Vec3& vt, const 
     timeToGo = h;
 }
 
-void IterativeGuidance::updateTimeToGoHttw(double tau, double engineExitVelocity) {
+void IterativeGuidance::updateTimeToGoHttw(double tau) {
     if (tau - timeToGo < config.tolerance) {
         throw std::runtime_error("IGM failure: timeToGo exceeds propellant budget (tau - timeToGo <= 0)");
     }
-    double A = engineExitVelocity * log(tau / (tau - timeToGo));
+    double A = exitVelocity * log(tau / (tau - timeToGo));
 
     if (std::fabs(A) < config.tolerance) {
         timeToGoLastStep = timeToGo;
@@ -124,15 +123,15 @@ void IterativeGuidance::updateTimeToGoHttw(double tau, double engineExitVelocity
 
     double G = 0.5 * (std::pow(deltaV.dV, 2) / A - A);
     timeToGoLastStep = timeToGo;
-    timeToGo = timeToGo + G * ((tau - timeToGo) / engineExitVelocity);
+    timeToGo = timeToGo + G * ((tau - timeToGo) / exitVelocity);
 }
 
 void IterativeGuidance::convergeTimeToGo(const Vec3& g, double tau) {
     int iteration = 0;
-    updateTimeToGoHttw(tau, exitVelocity);
+    updateTimeToGoHttw(tau);
     while (std::fabs(timeToGo - timeToGoLastStep) >= config.timeToGoConvergenceTolerance && iteration < config.maxConvergenceIterations) {
         computeDeltaV(g);
-        updateTimeToGoHttw(tau, exitVelocity);
+        updateTimeToGoHttw(tau);
         iteration++;
         if (std::isnan(timeToGo) || std::isinf(timeToGo)) {
             throw std::runtime_error("IGM convergence failure: timeToGo became NaN/infinity at iteration "

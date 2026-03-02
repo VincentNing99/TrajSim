@@ -376,7 +376,7 @@ TEST_F(IterativeGuidanceTest, UpdateTimeToGoLttwComputesValidTimeToGo) {
 TEST_F(IterativeGuidanceTest, UpdateTimeToGoHttwComputesValidTimeToGo) {
     double tau = 50000.0 / TEST_MASS_FLOW_RATE;
 
-    getIGM()->updateTimeToGoHttw(tau, TEST_EXIT_VELOCITY);
+    getIGM()->updateTimeToGoHttw(tau);
 }
 
 // =============================================================================
