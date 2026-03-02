@@ -6,7 +6,7 @@ CXX_DEFINES =
 
 CXX_INCLUDES = -I/Users/vincentning/Desktop/TrajSim/include -I/Users/vincentning/Desktop/TrajSim/build/_deps/nlohmann_json-src/include -isystem /Users/vincentning/Desktop/TrajSim/build/_deps/googletest-src/googletest/include -isystem /Users/vincentning/Desktop/TrajSim/build/_deps/googletest-src/googletest
 
-CXX_FLAGSarm64 = -std=gnu++20 -arch arm64 -Wall -Wextra -Wpedantic -Wconversion -Wshadow
+CXX_FLAGSarm64 = -g -std=gnu++20 -arch arm64 -Wall -Wextra -Wpedantic -Wconversion -Wshadow
 
-CXX_FLAGS = -std=gnu++20 -arch arm64 -Wall -Wextra -Wpedantic -Wconversion -Wshadow
+CXX_FLAGS = -g -std=gnu++20 -arch arm64 -Wall -Wextra -Wpedantic -Wconversion -Wshadow
 

@@ -30,7 +30,7 @@ int main() {
     // =========================================================================
     // 1. Load configuration
     // =========================================================================
-    auto result = loadConfig("config/config_mission_1.json");
+    auto result = loadConfig("config/config_mission_2.json");
     const AppConfig& cfg = result.config;
     const ReferenceMission& mission = cfg.mission;
 
@@ -39,7 +39,7 @@ int main() {
             std::cerr << "[WARN] " << w << "\n";
     }
 
-    std::cout << "=== TrajSim Mission 1 Simulation ===\n";
+    std::cout << "=== TrajSim Mission 2 Simulation ===\n";
     std::cout << "Target SMA: " << mission.semiMajorAxis << " m\n";
     std::cout << "Target ecc: " << mission.eccentricity << "\n";
     std::cout << "Target inc: " << mission.inclination * radToDeg << " deg\n\n";
@@ -94,6 +94,7 @@ int main() {
     const double exitVelocity = engineCfg.isp * EarthConstants::GRAVITATIONAL_ACCELERATION;
     const Vec3 gCutoff = gravity.computeAcceleration(mission.positionTerminal);
     const double dt = cfg.simulation.timeStepRK4;
+    const double guidanceCycle = cfg.guidance[0].algorithms[0].igmConfig.guidanceCycle;
 
     // Engine output at full throttle in vacuum
     EngineOutput engineOut = vehicle.getEngine().computeOutput(1.0, 0.0, 0.0, Vec3::zero());
@@ -103,7 +104,7 @@ int main() {
     // =========================================================================
     // 7. Create guidance
     // =========================================================================
-    Guidance guidance(cfg.guidance[0], mission, state, gCutoff, exitVelocity, -mdot);
+    Guidance guidance(cfg.guidance[0], mission, state, gCutoff, exitVelocity, mdot);
 
     std::cout << "Engine: thrust=" << thrustMag << " N, mdot=" << mdot
               << " kg/s, Ve=" << exitVelocity << " m/s\n";
@@ -135,6 +136,7 @@ int main() {
               << std::setw(10) << "|dPos|"
               << std::setw(10) << "|dVel|"
               << std::setw(10) << "Mass"
+              << std::setw(10) << "Tau"
               << "\n";
     std::cout << std::setw(8) << "(s)"
               << std::setw(9) << "(s)"
@@ -146,19 +148,23 @@ int main() {
               << std::setw(10) << "(m)"
               << std::setw(10) << "(m/s)"
               << std::setw(10) << "(kg)"
+              << std::setw(10) << "(s)"
               << "\n";
-    std::cout << std::string(100, '-') << "\n";
+    std::cout << std::string(110, '-') << "\n";
 
     double t = mission.initialTime;
     double nextPrint = t;
     const double printInterval = 1.0;
     bool exitMet = false;
+    SteeringAngles steering = mission.initialSteeringAngles;
 
     while (t < mission.cutoffTime) {
+        Vec3 g0 = gravity.computeAcceleration(state.position);
+        if (t > mission.initialTime + guidanceCycle)
+            steering = guidance.computeSteering(t, g0);
+
         // Record every ~1 second
         if (t >= nextPrint) {
-            Vec3 g0Print = gravity.computeAcceleration(state.position);
-            SteeringAngles steer = guidance.computeSteering(t, g0Print);
             double tgo = guidance.getTimeToGo();
             OrbitalElements oe = guidance.computeOrbitalElements(state);
             double alt = gravity.computeAltitude(state.position);
@@ -166,17 +172,20 @@ int main() {
             Vec3 dPos = state.position - mission.positionTerminal;
             Vec3 dVel = state.velocity - mission.velocityTerminal;
 
+            double tau = state.vehicleMass / mdot;
+
             // Console
             std::cout << std::setprecision(1) << std::setw(8) << t
                       << std::setprecision(2) << std::setw(9) << tgo
-                      << std::setprecision(2) << std::setw(10) << steer.phi * radToDeg
-                      << std::setprecision(2) << std::setw(10) << steer.psi * radToDeg
+                      << std::setprecision(2) << std::setw(10) << steering.phi * radToDeg
+                      << std::setprecision(2) << std::setw(10) << steering.psi * radToDeg
                       << std::setprecision(0) << std::setw(12) << oe.semiMajorAxis
                       << std::setprecision(6) << std::setw(12) << oe.eccentricity
                       << std::setprecision(3) << std::setw(9) << oe.inclination * radToDeg
                       << std::setprecision(0) << std::setw(10) << dPos.mag()
                       << std::setprecision(1) << std::setw(10) << dVel.mag()
                       << std::setprecision(1) << std::setw(10) << state.vehicleMass
+                      << std::setprecision(1) << std::setw(10) << tau
                       << "\n";
 
             // CSV
@@ -187,7 +196,7 @@ int main() {
                 << alt << ","
                 << dPos.x << "," << dPos.y << "," << dPos.z << ","
                 << dVel.x << "," << dVel.y << "," << dVel.z << ","
-                << steer.phi * radToDeg << "," << steer.psi * radToDeg << ","
+                << steering.phi * radToDeg << "," << steering.psi * radToDeg << ","
                 << tgo << ","
                 << oe.semiMajorAxis << "," << oe.eccentricity << "," << oe.inclination * radToDeg << ","
                 << mission.semiMajorAxis << "," << mission.eccentricity << ","
@@ -195,12 +204,6 @@ int main() {
 
             nextPrint += printInterval;
         }
-
-        // Get current gravity for guidance
-        Vec3 g0 = gravity.computeAcceleration(state.position);
-
-        // Get steering command
-        SteeringAngles steering = guidance.computeSteering(t, g0);
 
         // Integrate one RK4 step
         state = Integrator::stepRK4(dynamics, state, steering, thrustMag, mdot, t, dt);
@@ -224,8 +227,8 @@ int main() {
     Vec3 dVelFinal = state.velocity - mission.velocityTerminal;
 
     std::cout << "\n" << std::string(60, '=') << "\n";
-    std::cout << "  SIMULATION COMPLETE — Exit criteria: "
-              << (exitMet ? "MET" : "NOT MET") << "\n";
+    std::cout << "  SIMULATION COMPLETE - Target Reached: "
+              << (exitMet ? "Yes" : "No") << "\n";
     std::cout << std::string(60, '=') << "\n";
     std::cout << "Telemetry: output/telemetry.csv\n";
     std::cout << "Final time: " << std::setprecision(4) << t << " s\n";

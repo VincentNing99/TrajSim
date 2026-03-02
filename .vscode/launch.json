@@ -1,0 +1,15 @@
+{
+    "configurations": [
+        {
+            "name": "Debug TrajSim",
+            "type": "lldb",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/trajsim",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": []
+        }
+    ],
+    "version": "2.0.0"
+}

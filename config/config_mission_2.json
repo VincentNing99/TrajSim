@@ -36,12 +36,12 @@
                 {
                     "type": "IterativeGuidance",
                     "guidanceCycle": 0.01,
-                    "steeringHoldTime": 15.0,
+                    "steeringHoldTime": 5.0,
                     "maxConvergenceIterations": 100,
                     "timeToGoConvergenceTolerance": 1e-5,
                     "tolerance": 1e-10,
-                    "pitchCorrectionStopTime": 35,
-                    "yawCorrectionStopTime": 15,
+                    "pitchCorrectionStopTime": 15,
+                    "yawCorrectionStopTime": 5,
                     "exitCriteria": {
                         "and": [
                             { "semiMajorAxis": { "exceedsBy": 0 } },
@@ -60,12 +60,10 @@
         "eccentricity": 2.402729e-02,
         "trueAnomaly": 0.451858,
         "argumentOfPeriapsis": 151.230742,
-        "ldnLaunchsite": 264.6916,
         "lanLaunchsite": 84.6916,
         "aimingAzimuth": 191.47506,
         "latitude": 40.80768,
         "geocentricLatitude": 40.61741,
-        "launchSiteLongitude": 100.13805,
         "heightLaunchSite": 1000.0,
         "velocityTerminal": [7677.0525, -1739.1305, -290.0255],
         "positionTerminal": [1427834.9, 45222.2, -153813.3],

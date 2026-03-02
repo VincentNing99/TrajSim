@@ -332,8 +332,8 @@ static ReferenceMission parseMission(const json& j, std::vector<std::string>& wa
 
     static const std::vector<std::string> knownKeys = {
         "semiMajorAxis", "longitudeAscendingNode", "inclination", "eccentricity",
-        "trueAnomaly", "argumentOfPeriapsis", "ldnLaunchsite", "lanLaunchsite",
-        "aimingAzimuth", "latitude", "geocentricLatitude", "launchSiteLongitude",
+        "trueAnomaly", "argumentOfPeriapsis", "lanLaunchsite",
+        "aimingAzimuth", "latitude", "geocentricLatitude",
         "heightLaunchSite", "velocityTerminal", "positionTerminal",
         "initialPosition", "initialVelocity", "initialMass",
         "initialSteeringAngles", "initialTime", "cutoffTime"
@@ -348,12 +348,10 @@ static ReferenceMission parseMission(const json& j, std::vector<std::string>& wa
     m.eccentricity           = requireField<double>(j, "eccentricity",           ctx);
     m.trueAnomaly            = requireField<double>(j, "trueAnomaly",            ctx) * degToRad;
     m.argumentOfPeriapsis    = requireField<double>(j, "argumentOfPeriapsis",    ctx) * degToRad;
-    m.ldnLaunchsite          = requireField<double>(j, "ldnLaunchsite",          ctx) * degToRad;
     m.lanLaunchsite          = requireField<double>(j, "lanLaunchsite",          ctx) * degToRad;
     m.aimingAzimuth          = requireField<double>(j, "aimingAzimuth",          ctx) * degToRad;
     m.latitude               = requireField<double>(j, "latitude",              ctx) * degToRad;
     m.geocentricLatitude     = requireField<double>(j, "geocentricLatitude",     ctx) * degToRad;
-    m.launchSiteLongitude    = requireField<double>(j, "launchSiteLongitude",    ctx) * degToRad;
     m.heightLaunchSite       = requireField<double>(j, "heightLaunchSite",       ctx);
 
     m.velocityTerminal      = requireVec3(j, "velocityTerminal",  ctx);

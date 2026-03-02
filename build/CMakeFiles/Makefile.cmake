@@ -106,7 +106,6 @@ set(CMAKE_MAKEFILE_PRODUCTS
 set(CMAKE_DEPEND_INFO_FILES
   "CMakeFiles/trajsim_lib.dir/DependInfo.cmake"
   "CMakeFiles/trajsim.dir/DependInfo.cmake"
-  "CMakeFiles/scratch.dir/DependInfo.cmake"
   "CMakeFiles/trajsim_tests.dir/DependInfo.cmake"
   "_deps/googletest-build/googlemock/CMakeFiles/gmock.dir/DependInfo.cmake"
   "_deps/googletest-build/googlemock/CMakeFiles/gmock_main.dir/DependInfo.cmake"

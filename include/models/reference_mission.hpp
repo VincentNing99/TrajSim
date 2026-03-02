@@ -26,7 +26,6 @@ struct ReferenceMission {
     double eccentricity;            ///< Orbital eccentricity [-]
     double trueAnomaly;             ///< True anomaly at injection [rad]
     double argumentOfPeriapsis;     ///< Argument of perigee [rad]
-    double ldnLaunchsite;           ///< Longitude to descending node from launch site [rad]
     double lanLaunchsite;           ///< Longitude to ascending node from launch site [rad]
 
     // ============================================================================
@@ -35,7 +34,6 @@ struct ReferenceMission {
     double aimingAzimuth;           ///< Angle from north to launch inertial frame x-axis [rad]
     double latitude;                ///< Geodetic latitude of launch site [rad]
     double geocentricLatitude;      ///< Geocentric latitude of launch site [rad]
-    double launchSiteLongitude;     ///< Longitude of launch site [rad]
     double heightLaunchSite;        ///< Altitude above reference ellipsoid [m]
 
     // ============================================================================
@@ -164,12 +162,10 @@ inline const ReferenceMission MISSION_1 = {
     .eccentricity = 8.851433e-06,
     .trueAnomaly = 154.051241 * degToRad,
     .argumentOfPeriapsis = 185.130932 * degToRad,
-    .ldnLaunchsite = (174.7704 + 90.0) * degToRad,
     .lanLaunchsite = (174.7704 - 90.0) * degToRad,
     .aimingAzimuth = 191.47506 * degToRad,
     .latitude = 40.80768 * degToRad,
     .geocentricLatitude = 40.61741 * degToRad,
-    .launchSiteLongitude = 100.13805 * degToRad,
     .heightLaunchSite = 1000.0,
     .velocityTerminal = {-7124.1826, 2631.5395, 249.9496},
     .positionTerminal = {-2405466.9, -12845047.6, 205013.6},
@@ -189,12 +185,10 @@ inline const ReferenceMission MISSION_2 = {
     .eccentricity = 2.402729e-02,
     .trueAnomaly = 0.451858 * degToRad,
     .argumentOfPeriapsis = 151.230742 * degToRad,
-    .ldnLaunchsite = (174.6916 + 90.0) * degToRad,
     .lanLaunchsite = (174.6916 - 90.0) * degToRad,
     .aimingAzimuth = 191.47506 * degToRad,
     .latitude = 40.80768 * degToRad,
     .geocentricLatitude = 40.61741 * degToRad,
-    .launchSiteLongitude = 100.13805 * degToRad,
     .heightLaunchSite = 1000.0,
     .velocityTerminal = {7677.0525, -1739.1305, -290.0255},
     .positionTerminal = {1427834.9, 45222.2, -153813.3},

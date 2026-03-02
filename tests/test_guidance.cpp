@@ -401,20 +401,14 @@ TEST_F(IterativeGuidanceTest, UpdateTimeToGoLttwComputesValidTimeToGo) {
     Vec3 g{0.0, -9.8, 0.0};
     Vec3 vt{-7100.0, 2600.0, 240.0};
     Vec3 vc{-7000.0, 2500.0, 200.0};
-    double delV = 500.0;
-    double tau = 50000.0 / TEST_MASS_FLOW_RATE;
 
-    getIGM()->updateTimeToGoLttw(delV, tau, g, vt, vc);
+    getIGM()->updateTimeToGoLttw(g, vt, vc);
 }
 
 TEST_F(IterativeGuidanceTest, UpdateTimeToGoHttwComputesValidTimeToGo) {
-    Vec3 g{0.0, -9.8, 0.0};
-    Vec3 vt{-7100.0, 2600.0, 240.0};
-    Vec3 vc{-7000.0, 2500.0, 200.0};
-    double delV = 500.0;
     double tau = 50000.0 / TEST_MASS_FLOW_RATE;
 
-    getIGM()->updateTimeToGoHttw(delV, tau, TEST_EXIT_VELOCITY, g, vt, vc);
+    getIGM()->updateTimeToGoHttw(tau, TEST_EXIT_VELOCITY);
 }
 
 // =============================================================================

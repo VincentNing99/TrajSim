@@ -1,9 +1,9 @@
 {
     "vehicle": {
-        "mass": 50000,
+        "mass": 6731.1,
         "stages": 1,
         "stageCfg" : {
-            "stageMass": [50000],
+            "stageMass": [6731.1],
             "numberOfEngine": [1],
             "engine": [
                 {
@@ -63,12 +63,10 @@
         "eccentricity": 8.851433e-06,
         "trueAnomaly": 154.051241,
         "argumentOfPeriapsis": 185.130932,
-        "ldnLaunchsite": 264.7704,
-        "lanLaunchsite": 84.7704,
+        "lanLaunchsite": 84.6980,
         "aimingAzimuth": 191.47506,
         "latitude": 40.80768,
         "geocentricLatitude": 40.61741,
-        "launchSiteLongitude": 100.13805,
         "heightLaunchSite": 1000.0,
         "velocityTerminal": [-7124.1826, 2631.5395, 249.9496],
         "positionTerminal": [-2405466.9, -12845047.6, 205013.6],

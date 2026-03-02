@@ -55,16 +55,11 @@ SteeringAngles Guidance::computeSteering(double t,
         advanceAlgorithm();
     }
 
-    // Determine guidance cycle from the active algorithm's config
-    double guidanceCycle = 0.01;
-    const auto& entry = guidanceConfig.algorithms[activeIndex];
-    if (entry.type == "IterativeGuidance") {
-        guidanceCycle = entry.igmConfig.guidanceCycle;
-    }
+    double guidanceCycle = algorithms[activeIndex]->getGuidanceCycle();
 
     // Guidance cycle gating: only recompute at guidanceCycle intervals,
     // return cached steering otherwise (old code ran every 10 RK4 steps = 0.01s)
-    if (hasPrevSteering && (t - lastGuidanceTime) < guidanceCycle - 1e-12) {
+    if (guidanceCycle > 0.0 && hasPrevSteering && (t - lastGuidanceTime) < guidanceCycle) {
         return prevSteering;
     }
     lastGuidanceTime = t;
@@ -78,7 +73,7 @@ SteeringAngles Guidance::computeSteering(double t,
 
     // Apply rate limiting
     if (hasPrevSteering) {
-        double dt = guidanceCycle;
+        double dt = guidanceCycle > 0.0 ? guidanceCycle : (t - lastGuidanceTime);
 
         if (dt > 0.0) {
             double maxRate = guidanceConfig.maxSteeringRate * degToRad;

@@ -70,11 +70,12 @@ public:
     [[nodiscard]] std::string_view name() const noexcept override { return "IterativeGuidance"; }
     [[nodiscard]] const TerminalState* getTerminalState() const noexcept override { return &terminalState; }
     [[nodiscard]] double getTimeToGo() const noexcept override { return timeToGo; }
+    [[nodiscard]] double getGuidanceCycle() const noexcept override { return config.guidanceCycle; }
     [[nodiscard]] OrbitalElements computeOrbitalElements(const VehicleState& state) const override;
 
     // Public methods for test compatibility
-    void updateTimeToGoLttw(double delV, double tau, const Vec3& g, const Vec3& vt, const Vec3& vc);
-    void updateTimeToGoHttw(double delV, double tau, double engineExitVelocity, const Vec3& g, const Vec3& vt, const Vec3& vc);
+    void updateTimeToGoLttw(const Vec3& g, const Vec3& vt, const Vec3& vc);
+    void updateTimeToGoHttw(double tau, double engineExitVelocity);
     void convergeTimeToGo(const Vec3& g, const Vec3& vC, double tau, double engineExitVelocity, double thrustToWeight);
     void computeDeltaV(const Vec3& g, const Vec3& currentVelocity);
     [[nodiscard]] SteeringAngles computeVelocitySteeringAngles();
@@ -128,7 +129,6 @@ private:
     // Steering
     SteeringAngles steering;
     SteeringAngles steeringLastStep;
-    bool firstCall = true;
 
     // Frame transforms & guidance state
     Mat3 rmLaunchToEquatorial;

@@ -40,27 +40,25 @@ IterativeGuidance::IterativeGuidance(Config config,
 
 SteeringAngles IterativeGuidance::computeSteering(const GuidanceInput& input) {
     const auto& state = input.state;
-
-    // tau = m / mdot  -- characteristic time for propellant depletion
-    double tau = -state.vehicleMass / massFlowRate;
+    double tau = state.vehicleMass / massFlowRate;
     instantaneousVelocity = rmInertialToTerminal * state.velocity;
     instantaneousPosition = rmInertialToTerminal * (state.position + positionLaunchSite);
     terminalVelocity = rmInertialToTerminal * terminalState.velocity;
     terminalPosition = rmInertialToTerminal * (terminalState.position + positionLaunchSite);
 
-    // Thrust-to-weight ratio selects the time-to-go update method
     double thrust = std::abs(massFlowRate) * exitVelocity;
-    double thrustToWeight = thrust / (state.vehicleMass * EarthConstants::GRAVITATIONAL_ACCELERATION);
+    double engineAcceleration = thrust / state.vehicleMass;
 
     // Average gravity over the remaining burn (linear approximation)
     Vec3 g = 0.5 * (rmInertialToTerminal * input.gravity + rmInertialToTerminal * gravityCutoff);
 
-    // Iteratively solve for time-to-go until convergence
-    convergeTimeToGo(g, instantaneousVelocity, tau, exitVelocity, thrustToWeight);
-
     computeDeltaV(g, instantaneousVelocity);
+    convergeTimeToGo(g, instantaneousVelocity, tau, exitVelocity, engineAcceleration);
 
     SteeringAngles velocityAngles = computeVelocitySteeringAngles();
+
+    // Decrement time-to-go by one guidance cycle (matches old code's set_time_to_go)
+    timeToGo -= config.guidanceCycle;
 
     if (timeToGo <= config.steeringHoldTime) {
         // Hold steering commands for final seconds before cutoff
@@ -71,28 +69,14 @@ SteeringAngles IterativeGuidance::computeSteering(const GuidanceInput& input) {
 
     SteeringAngles inertialAngles = transformSteeringToInertial(correctedAngles);
 
-    // On the first call, hold the initial steering so the rate limiter in the
-    // coordinator can ramp smoothly toward the IGM-computed command.
-    if (firstCall) {
-        firstCall = false;
-        steeringLastStep = inertialAngles;
-
-
-        timeToGo -= config.guidanceCycle;
-        return steering;
-    }
-
     // Return raw steering — rate limiting is handled by the coordinator
     steering = inertialAngles;
     steeringLastStep = steering;
 
-    // Decrement time-to-go by one guidance cycle (matches old code's set_time_to_go)
-    timeToGo -= config.guidanceCycle;
-
     return steering;
 }
 
-void IterativeGuidance::updateTimeToGoLttw(double /*delV*/, double /*tau*/, const Vec3& g, const Vec3& vt, const Vec3& vc) {
+void IterativeGuidance::updateTimeToGoLttw(const Vec3& g, const Vec3& vt, const Vec3& vc) {
     // Low Thrust-to-Weight (LTTW) time-to-go approximation.
     double a1 = dot(g, g);
     double b1 = 2 * (dot(vc, g) - dot(vt, g));
@@ -108,8 +92,7 @@ void IterativeGuidance::updateTimeToGoLttw(double /*delV*/, double /*tau*/, cons
     timeToGo = h;
 }
 
-void IterativeGuidance::updateTimeToGoHttw(double /*delV*/, double tau, double engineExitVelocity, const Vec3& /*g*/, const Vec3& /*vt*/, const Vec3& /*vc*/) {
-    // High Thrust-to-Weight (HTTW) time-to-go update using the rocket equation.
+void IterativeGuidance::updateTimeToGoHttw(double tau, double engineExitVelocity) {
     if (tau - timeToGo < config.tolerance) {
         throw std::runtime_error("IGM failure: timeToGo exceeds propellant budget (tau - timeToGo <= 0)");
     }
@@ -126,22 +109,12 @@ void IterativeGuidance::updateTimeToGoHttw(double /*delV*/, double tau, double e
     timeToGo = timeToGo + G * ((tau - timeToGo) / engineExitVelocity);
 }
 
-void IterativeGuidance::convergeTimeToGo(const Vec3& g, const Vec3& vC, double tau, double engineExitVelocity, double thrustToWeight) {
-    // Initial time-to-go estimate
-    if (thrustToWeight < 1.0) {
-        updateTimeToGoLttw(deltaV.dV, tau, g, terminalVelocity, vC);
-    } else {
-        updateTimeToGoHttw(deltaV.dV, tau, engineExitVelocity, g, terminalVelocity, vC);
-    }
-
+void IterativeGuidance::convergeTimeToGo(const Vec3& g, const Vec3& vC, double tau, double engineExitVelocity, double engineAcceleration) {
     int iteration = 0;
-
+    
     while (std::fabs(timeToGo - timeToGoLastStep) >= config.timeToGoConvergenceTolerance && iteration < config.maxConvergenceIterations) {
-        if (thrustToWeight < 1.0) {
-            updateTimeToGoLttw(deltaV.dV, tau, g, terminalVelocity, vC);
-        } else {
-            updateTimeToGoHttw(deltaV.dV, tau, engineExitVelocity, g, terminalVelocity, vC);
-        }
+        computeDeltaV(g, vC);
+        updateTimeToGoHttw(tau, engineExitVelocity);
         iteration++;
         if (std::isnan(timeToGo) || std::isinf(timeToGo)) {
             throw std::runtime_error("IGM convergence failure: timeToGo became NaN/infinity at iteration "
@@ -157,7 +130,6 @@ void IterativeGuidance::convergeTimeToGo(const Vec3& g, const Vec3& vC, double t
 void IterativeGuidance::computeDeltaV(const Vec3& g, const Vec3& currentVelocity) {
     deltaV.dvXi = terminalVelocity.x - currentVelocity.x - g.x * timeToGo;
     deltaV.dvEta = terminalVelocity.y - currentVelocity.y - g.y * timeToGo;
-    // Zeta uses opposite sign convention: current - terminal + gravity
     deltaV.dvZeta = currentVelocity.z - terminalVelocity.z + g.z * timeToGo;
     deltaV.dV = std::sqrt(std::pow(deltaV.dvXi, 2) + std::pow(deltaV.dvEta, 2) + std::pow(deltaV.dvZeta, 2));
 }
@@ -217,7 +189,7 @@ SteeringAngles IterativeGuidance::applyPositionCorrections(const SteeringAngles&
     double By = J;
     double Cy = S * std::cos(velocityAngles.psi);
     double Dy = Q * std::cos(velocityAngles.psi);
-    double Ey = -terminalPosition.z + instantaneousPosition.z + instantaneousVelocity.z * timeToGo + 0.5 * g.z * std::pow(timeToGo, 2) + S * std::sin(velocityAngles.psi);
+    double Ey = instantaneousPosition.z + instantaneousVelocity.z * timeToGo + 0.5 * g.z * std::pow(timeToGo, 2) + S * std::sin(velocityAngles.psi);
 
     if (std::fabs(By) < config.tolerance) {
         return corrected;
@@ -307,7 +279,7 @@ bool IterativeGuidance::exit(const VehicleState& state) const {
     ExitContext ctx;
     ctx.set(static_cast<size_t>(ExitNode::Parameter::SemiMajorAxis), semiMajorAxis, terminalState.semiMajorAxis);
     ctx.set(static_cast<size_t>(ExitNode::Parameter::Eccentricity), eccentricity, terminalState.eccentricity);
-    ctx.set(static_cast<size_t>(ExitNode::Parameter::Inclination), inclination, terminalState.inclination);
+    ctx.set(static_cast<size_t>(ExitNode::Parameter::Inclination), inclination * radToDeg, terminalState.inclination * radToDeg);
     return exitCriteria.root->evaluate(ctx);
 }
 
