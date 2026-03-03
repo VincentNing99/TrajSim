@@ -127,7 +127,7 @@ Mission parameters are defined in `config/config_mission_N.json`. Key fields:
 To run your own guidance simulation, please download one of the example json file and edit it according to your vehicle specifications and mission requirements.
 
 ## Notes
-Normally, if you are not doing a upper stage correction burn, the delta V gap should be easily closed by accleration from your engine. However, if that is not the case, and you find your time-to-go varible is diverging, try setting timeToGoMethod in the json setting file to 1 which uses a different method for time-to-go.
+If you are not doing a upper stage correction burn, the delta V gap should be easily closed by accleration from your engine. However, if that is not the case, and you find your time-to-go varible is diverging, try setting timeToGoMethod in the json file to 1 which uses a different method for time-to-go.
 ## License
 
 MIT — see [LICENSE](LICENSE).
