@@ -11,8 +11,7 @@ The mission aims for a **Sun-Synchronous Orbit (SSO)**. The specific parameters 
 * **Orbital Altitude:** 525 km x 525 km
 * **Orbital Inclination:** 97.4969°.
 
-## Trajectory Calculation Raw Data
-The following geophysical parameters and launch site coordinates are utilized for the primary ballistic calculations:
+## Launch Site
 * **Geodetic Longitude:** 100.13805° E
 * **Geodetic Latitude:** 40.80765° N
 * **Elevation:** 1000 m
