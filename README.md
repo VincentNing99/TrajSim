@@ -4,6 +4,18 @@ A 3-DOF launch vehicle trajectory simulation written in C++20.
 
 Models the ascent phase from liftoff to orbital insertion, using a closed-loop Iterative Guidance Mode (IGM) algorithm derived from Apollo/Space Shuttle guidance heritage. The simulation integrates aerodynamics, atmosphere, gravity, and propulsion physics at each timestep and writes telemetry to CSV.
 
+## Example
+Default mission
+
+**Flight path
+https://github.com/user-attachments/assets/4f277987-0eb7-45ac-b418-f6158e9be60c
+**Orbit
+
+
+https://github.com/user-attachments/assets/90c1c83a-dae7-4416-bc0d-f1a9a69ccaac
+
+
+
 ## Features
 
 - **Iterative Guidance Mode (IGM)** — closed-loop terminal targeting with time-to-go convergence and position corrections
