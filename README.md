@@ -6,6 +6,18 @@ Models the ascent phase from liftoff to orbital insertion, using a closed-loop I
 
 ## Example
 Default mission
+# Mission Orbital Specifications
+
+## Target Orbit Requirements
+The mission aims for a **Sun-Synchronous Orbit (SSO)**. The specific parameters required for this mission profile are:
+* **Orbital Altitude:** 525 km x 525 km (referenced against the Earth's equatorial radius).
+* **Orbital Inclination:** 97.4969°.
+
+## Trajectory Calculation Raw Data
+The following geophysical parameters and launch site coordinates are utilized for the primary ballistic calculations:
+* **Geodetic Longitude:** 100.13805° E
+* **Geodetic Latitude:** 40.80765° N
+* **Elevation:** 1000 m
 
 **Flight path
 
