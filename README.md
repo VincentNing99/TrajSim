@@ -8,7 +8,9 @@ Models the ascent phase from liftoff to orbital insertion, using a closed-loop I
 Default mission
 
 **Flight path
+
 https://github.com/user-attachments/assets/4f277987-0eb7-45ac-b418-f6158e9be60c
+
 **Orbit
 
 
