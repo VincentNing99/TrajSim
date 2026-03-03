@@ -41,6 +41,7 @@
             "algorithms": [
                 {
                     "type": "IterativeGuidance",
+                    "timeToGoMethod": 1,
                     "guidanceCycle": 0.01,
                     "steeringHoldTime": 2.0,
                     "maxConvergenceIterations": 100,

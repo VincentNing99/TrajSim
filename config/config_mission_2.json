@@ -38,8 +38,9 @@
             "algorithms": [
                 {
                     "type": "IterativeGuidance",
+                    "timeToGoMethod": 0,
                     "guidanceCycle": 0.01,
-                    "steeringHoldTime": 5.0,
+                    "steeringHoldTime": 1.0,
                     "maxConvergenceIterations": 100,
                     "timeToGoConvergenceTolerance": 1e-5,
                     "tolerance": 1e-10,

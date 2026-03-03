@@ -37,6 +37,7 @@
     .t-row { display: flex; justify-content: space-between; gap: 12px; }
     .t-lbl { color: #555; }
     .t-val { color: #6aa9f0; }
+    .t-val-orbit { color: #44ffcc; }
 
     /* ── Controls bar ── */
     #controls {
@@ -44,13 +45,16 @@
       background: rgba(0,0,0,0.72); border: 1px solid #222;
       padding: 12px 20px; display: none; align-items: center; gap: 14px;
     }
+    #flight-ctrls, #orbit-ctrls { display: flex; align-items: center; gap: 14px; }
     .btn {
       background: transparent; border: 1px solid #444; color: #999;
       font-family: inherit; font-size: 12px; padding: 5px 14px;
       cursor: pointer; letter-spacing: 1px; transition: all 0.15s;
     }
-    .btn:hover { border-color: #6aa9f0; color: #6aa9f0; }
-    .btn.on   { border-color: #6aa9f0; color: #6aa9f0; }
+    .btn:hover    { border-color: #6aa9f0; color: #6aa9f0; }
+    .btn.on       { border-color: #6aa9f0; color: #6aa9f0; }
+    .btn.orbit-on { border-color: #44ffcc; color: #44ffcc; }
+    .btn:hover.orbit-on { border-color: #44ffcc; color: #44ffcc; }
     #timeline {
       width: 280px; -webkit-appearance: none; height: 2px;
       background: #2a2a2a; outline: none; cursor: pointer;
@@ -59,7 +63,16 @@
       -webkit-appearance: none; width: 12px; height: 12px;
       background: #6aa9f0; border-radius: 50%; cursor: pointer;
     }
-    #t-elapsed { color: #6aa9f0; font-size: 12px; min-width: 80px; }
+    #orbit-timeline {
+      width: 280px; -webkit-appearance: none; height: 2px;
+      background: #1a2a1a; outline: none; cursor: pointer;
+    }
+    #orbit-timeline::-webkit-slider-thumb {
+      -webkit-appearance: none; width: 12px; height: 12px;
+      background: #44ffcc; border-radius: 50%; cursor: pointer;
+    }
+    #t-elapsed       { color: #6aa9f0; font-size: 12px; min-width: 80px; }
+    #orbit-nu-display { color: #44ffcc; font-size: 12px; min-width: 80px; }
   </style>
 </head>
 <body>
@@ -77,28 +90,54 @@
 
 <!-- Telemetry overlay -->
 <div id="telemetry">
-  <div class="t-section" style="margin-bottom:6px;">Flight</div>
-  <div class="t-row"><span class="t-lbl">T+</span>   <span class="t-val" id="d-time">—</span></div>
-  <div class="t-row"><span class="t-lbl">Alt</span>  <span class="t-val" id="d-alt">—</span></div>
-  <div class="t-row"><span class="t-lbl">|V|</span>  <span class="t-val" id="d-vel">—</span></div>
-  <div class="t-row"><span class="t-lbl">Mass</span> <span class="t-val" id="d-mass">—</span></div>
-  <div class="t-row"><span class="t-lbl">TGO</span>  <span class="t-val" id="d-tgo">—</span></div>
+  <div class="t-section" style="margin-bottom:6px;" id="telem-flight-header">Flight</div>
+  <div id="flight-telem">
+    <div class="t-row"><span class="t-lbl">T+</span>   <span class="t-val" id="d-time">—</span></div>
+    <div class="t-row"><span class="t-lbl">Alt</span>  <span class="t-val" id="d-alt">—</span></div>
+    <div class="t-row"><span class="t-lbl">|V|</span>  <span class="t-val" id="d-vel">—</span></div>
+    <div class="t-row"><span class="t-lbl">Mass</span> <span class="t-val" id="d-mass">—</span></div>
+    <div class="t-row"><span class="t-lbl">TGO</span>  <span class="t-val" id="d-tgo">—</span></div>
+  </div>
   <div class="t-section" style="margin-top:8px;margin-bottom:6px;">Orbit</div>
   <div class="t-row"><span class="t-lbl">SMA</span>  <span class="t-val" id="d-sma">—</span></div>
   <div class="t-row"><span class="t-lbl">Ecc</span>  <span class="t-val" id="d-ecc">—</span></div>
   <div class="t-row"><span class="t-lbl">Inc</span>  <span class="t-val" id="d-inc">—</span></div>
+  <!-- Orbit position telemetry (orbit view only) -->
+  <div id="orbit-telem" style="display:none">
+    <div class="t-section" style="margin-top:8px;margin-bottom:6px;color:#33aa88;border-color:#1a2a1a;">Position</div>
+    <div class="t-row"><span class="t-lbl">ν</span>      <span class="t-val-orbit" id="d-nu">—</span></div>
+    <div class="t-row"><span class="t-lbl">Alt</span>    <span class="t-val-orbit" id="d-orb-alt">—</span></div>
+    <div class="t-row"><span class="t-lbl">|V|</span>    <span class="t-val-orbit" id="d-orb-vel">—</span></div>
+    <div class="t-row"><span class="t-lbl">Period</span> <span class="t-val-orbit" id="d-period">—</span></div>
+  </div>
 </div>
 
 <!-- Playback controls -->
 <div id="controls">
-  <button class="btn on" id="btn-play" onclick="togglePlay()">▶ PLAY</button>
-  <button class="btn"    onclick="resetAnim()">↺ RESET</button>
-  <input  type="range" id="timeline" min="0" max="1" step="0.0005" value="0"
-          oninput="scrub(+this.value)">
-  <div id="t-elapsed">T+0.0 s</div>
-  <button class="btn"    id="sp1"  onclick="setSpeed(1)">1×</button>
-  <button class="btn"    id="sp10" onclick="setSpeed(10)">10×</button>
-  <button class="btn on" id="sp50" onclick="setSpeed(50)">50×</button>
+  <!-- Flight mode controls -->
+  <div id="flight-ctrls">
+    <button class="btn on" id="btn-play" onclick="togglePlay()">▶ PLAY</button>
+    <button class="btn"    onclick="resetAnim()">↺ RESET</button>
+    <input  type="range" id="timeline" min="0" max="1" step="0.0005" value="0"
+            oninput="scrub(+this.value)">
+    <div id="t-elapsed">T+0.0 s</div>
+    <button class="btn"    id="sp1"  onclick="setSpeed(1)">1×</button>
+    <button class="btn"    id="sp10" onclick="setSpeed(10)">10×</button>
+    <button class="btn on" id="sp50" onclick="setSpeed(50)">50×</button>
+    <button class="btn"    id="btn-orbit-view" onclick="enterOrbitView()">⊙ ORBIT</button>
+  </div>
+  <!-- Orbit mode controls (hidden by default) -->
+  <div id="orbit-ctrls" style="display:none">
+    <button class="btn orbit-on" id="btn-orb-play" onclick="toggleOrbitPlay()">▶ PLAY</button>
+    <button class="btn"          onclick="resetOrbitAnim()">↺ RESET</button>
+    <input  type="range" id="orbit-timeline" min="0" max="1" step="0.0001" value="0"
+            oninput="scrubOrbit(+this.value)">
+    <div id="orbit-nu-display">ν = 0.0°</div>
+    <button class="btn"          id="osp50"  onclick="setOrbitSpeed(50)">50×</button>
+    <button class="btn orbit-on" id="osp100" onclick="setOrbitSpeed(100)">100×</button>
+    <button class="btn"          id="osp500" onclick="setOrbitSpeed(500)">500×</button>
+    <button class="btn"          onclick="exitOrbitView()">✕ FLIGHT</button>
+  </div>
 </div>
 
 <!-- Three.js r128 — last version with examples/js/ (non-module) -->
@@ -125,14 +164,10 @@ const EARTH_B        = 6356752.314;
 const EARTH_R_MEAN   = 6371000.0;
 const EARTH_ROT_RATE = 7.2921150e-5;  // [rad/s]
 const SCALE          = 1e-6;          // m → Three.js units  (1 unit = 1000 km)
+const MU             = 3.986004418e14; // Earth GM [m³/s²]
 
 // ============================================================
 // Coordinate transform:  local launch frame → ECI → Three.js
-//
-//  Step 1: add launch-site geocentric position (in local frame)
-//  Step 2: apply rmLaunchToEquatorial → equatorial (ECI) coords
-//  Step 3: remap axes so ECI-Z (north pole) → Three.js Y (up)
-//          Three(x, y, z) = ECI(x, z, y)
 // ============================================================
 let gLP, gRM;
 
@@ -169,6 +204,30 @@ function localToThree(lx, ly, lz) {
   const ex = gRM[0]*fx + gRM[1]*fy + gRM[2]*fz;  // ECI-X
   const ey = gRM[3]*fx + gRM[4]*fy + gRM[5]*fz;  // ECI-Y
   const ez = gRM[6]*fx + gRM[7]*fy + gRM[8]*fz;  // ECI-Z (north pole)
+  return new THREE.Vector3(ex * SCALE, ez * SCALE, ey * SCALE);
+}
+
+// Local position → ECI (with launch-site offset), returns {x,y,z} in metres
+function localPosToECI(lx, ly, lz) {
+  const fx = lx + gLP.x, fy = ly + gLP.y, fz = lz + gLP.z;
+  return {
+    x: gRM[0]*fx + gRM[1]*fy + gRM[2]*fz,
+    y: gRM[3]*fx + gRM[4]*fy + gRM[5]*fz,
+    z: gRM[6]*fx + gRM[7]*fy + gRM[8]*fz,
+  };
+}
+
+// Local velocity → ECI (rotation only, no offset)
+function localVelToECI(lx, ly, lz) {
+  return {
+    x: gRM[0]*lx + gRM[1]*ly + gRM[2]*lz,
+    y: gRM[3]*lx + gRM[4]*ly + gRM[5]*lz,
+    z: gRM[6]*lx + gRM[7]*ly + gRM[8]*lz,
+  };
+}
+
+// ECI coords → Three.js Vector3 (same axis remap as localToThree)
+function eciToThree(ex, ey, ez) {
   return new THREE.Vector3(ex * SCALE, ez * SCALE, ey * SCALE);
 }
 
@@ -218,16 +277,14 @@ scene.add(new THREE.AmbientLight(0x112233, 1.2));
 // ── Earth ──
 const earthGeo = new THREE.SphereGeometry(EARTH_R_MEAN * SCALE, 72, 72);
 const earthMat = new THREE.MeshPhongMaterial({
-  color: 0x1a44aa,           // fallback blue if textures don't load
+  color: 0x1a44aa,
   specular: new THREE.Color(0x222222),
   shininess: 12,
 });
 const earth = new THREE.Mesh(earthGeo, earthMat);
-// Initial rotation: align launch-site longitude with ECI reference direction
 earth.rotation.y = -MISSION.launchSiteLongitude;
 scene.add(earth);
 
-// Earth textures — require internet access
 const texLoader = new THREE.TextureLoader();
 const TEX_BASE = 'https://threejs.org/examples/textures/planets/';
 texLoader.load(TEX_BASE + 'earth_atmos_2048.jpg',
@@ -245,18 +302,18 @@ scene.add(new THREE.Mesh(
 ));
 
 // ============================================================
-// Telemetry state
+// Flight telemetry state
 // ============================================================
 let rows      = [];   // number[][] — parsed CSV rows
 let cols      = {};   // column name → index
 let tPoints   = [];   // THREE.Vector3[] in Three.js units
 let playing   = false;
-let simSpeed  = 50;   // sim seconds per wall-clock second
-let curIdx    = 0;    // fractional row index
+let simSpeed  = 50;
+let curIdx    = 0;
 let prevWall  = null;
-let earthBaseRot = 0; // accumulated Earth rotation [rad]
+let earthBaseRot = 0;
 
-// ── Rocket marker ──
+// ── Flight rocket marker ──
 const markerMesh = new THREE.Mesh(
   new THREE.SphereGeometry(0.06, 12, 12),
   new THREE.MeshBasicMaterial({ color: 0xff3333 })
@@ -332,15 +389,9 @@ function parseCSV(text) {
 }
 
 function focusCamera() {
-  // Position camera to see the full trajectory arc and Earth
-  const first = tPoints[0];
-  const last  = tPoints[tPoints.length - 1];
-  const mid   = tPoints[Math.floor(tPoints.length / 2)];
-
-  // Place camera perpendicular to the arc midpoint, at 2.5× its distance
-  const dir = mid.clone().normalize();
+  const mid  = tPoints[Math.floor(tPoints.length / 2)];
+  const dir  = mid.clone().normalize();
   const dist = mid.length() * 2.5;
-  // Offset slightly sideways so trajectory arc is visible
   const perp = new THREE.Vector3().crossVectors(dir, new THREE.Vector3(0, 1, 0)).normalize();
   camera.position.copy(dir.multiplyScalar(dist)).addScaledVector(perp, dist * 0.3);
   camera.lookAt(0, 0, 0);
@@ -348,7 +399,7 @@ function focusCamera() {
 }
 
 // ============================================================
-// Playback controls
+// Flight playback controls
 // ============================================================
 function togglePlay() {
   playing = !playing;
@@ -384,7 +435,7 @@ function setSpeed(s) {
 }
 
 // ============================================================
-// Telemetry display + marker
+// Telemetry display + flight marker
 // ============================================================
 function refreshDisplay() {
   if (!rows.length) return;
@@ -414,34 +465,354 @@ function refreshDisplay() {
 }
 
 // ============================================================
+// Orbital mechanics
+// ============================================================
+
+// Compute full Keplerian elements from ECI state vectors (metres, m/s)
+function computeOrbitElements(r, v) {
+  const rMag = Math.sqrt(r.x*r.x + r.y*r.y + r.z*r.z);
+  const vMag = Math.sqrt(v.x*v.x + v.y*v.y + v.z*v.z);
+
+  // Angular momentum h = r × v
+  const hx = r.y*v.z - r.z*v.y;
+  const hy = r.z*v.x - r.x*v.z;
+  const hz = r.x*v.y - r.y*v.x;
+  const hMag = Math.sqrt(hx*hx + hy*hy + hz*hz);
+
+  // Eccentricity vector e = (v × h)/μ − r̂
+  const vhx = v.y*hz - v.z*hy;
+  const vhy = v.z*hx - v.x*hz;
+  const vhz = v.x*hy - v.y*hx;
+  const ex = vhx/MU - r.x/rMag;
+  const ey = vhy/MU - r.y/rMag;
+  const ez = vhz/MU - r.z/rMag;
+  const ecc = Math.sqrt(ex*ex + ey*ey + ez*ez);
+
+  // Semi-major axis:  ε = v²/2 − μ/r,  a = −μ/(2ε)
+  const eps = vMag*vMag/2 - MU/rMag;
+  const a   = -MU / (2*eps);
+
+  // Inclination
+  const inc = Math.acos(Math.max(-1, Math.min(1, hz / hMag)));
+
+  // Ascending-node vector n = k × h  (k = [0,0,1])
+  const nx = -hy, ny = hx;   // nz = 0
+  const nMag = Math.sqrt(nx*nx + ny*ny);
+
+  // RAAN Ω
+  let raan = 0;
+  if (nMag > 1e-10) {
+    raan = Math.acos(Math.max(-1, Math.min(1, nx / nMag)));
+    if (ny < 0) raan = 2*Math.PI - raan;
+  }
+
+  // Argument of periapsis ω
+  let aop = 0;
+  if (nMag > 1e-10 && ecc > 1e-10) {
+    const nDotE = nx*ex + ny*ey;   // nz = 0
+    aop = Math.acos(Math.max(-1, Math.min(1, nDotE / (nMag * ecc))));
+    if (ez < 0) aop = 2*Math.PI - aop;
+  }
+
+  // True anomaly ν at terminal state
+  let nu = 0;
+  if (ecc > 1e-10) {
+    const eDotR = ex*r.x + ey*r.y + ez*r.z;
+    nu = Math.acos(Math.max(-1, Math.min(1, eDotR / (ecc * rMag))));
+    const rDotV = r.x*v.x + r.y*v.y + r.z*v.z;
+    if (rDotV < 0) nu = 2*Math.PI - nu;
+  }
+
+  // Orbital period
+  const T = 2*Math.PI * Math.sqrt(a*a*a / MU);
+
+  return { a, ecc, inc, raan, aop, nu, T };
+}
+
+// Three.js point on orbit at true anomaly ν
+function orbitPointAtNu(orb, nu) {
+  const p = orb.a * (1 - orb.ecc * orb.ecc);
+  const r = p / (1 + orb.ecc * Math.cos(nu));
+  const P = r * Math.cos(nu);
+  const Q = r * Math.sin(nu);
+
+  // Perifocal → ECI via R(Ω, i, ω)
+  const cO = Math.cos(orb.raan), sO = Math.sin(orb.raan);
+  const ci = Math.cos(orb.inc),  si = Math.sin(orb.inc);
+  const cw = Math.cos(orb.aop),  sw = Math.sin(orb.aop);
+
+  const ex = (cO*cw - sO*sw*ci)*P + (-cO*sw - sO*cw*ci)*Q;
+  const ey = (sO*cw + cO*sw*ci)*P + (-sO*sw + cO*cw*ci)*Q;
+  const ez = (sw*si)*P + (cw*si)*Q;
+
+  return eciToThree(ex, ey, ez);
+}
+
+// True anomaly → time since periapsis [s]
+function nuToTimeSincePeriapsis(nu, orb) {
+  const E = 2 * Math.atan2(
+    Math.sqrt(1 - orb.ecc) * Math.sin(nu / 2),
+    Math.sqrt(1 + orb.ecc) * Math.cos(nu / 2)
+  );
+  let M = E - orb.ecc * Math.sin(E);
+  if (M < 0) M += 2 * Math.PI;
+  return (M / (2 * Math.PI)) * orb.T;
+}
+
+// Newton's method for Kepler's equation M = E − e·sin(E)
+function solveKepler(M, ecc) {
+  let E = M;
+  for (let i = 0; i < 100; i++) {
+    const dE = (M - E + ecc * Math.sin(E)) / (1 - ecc * Math.cos(E));
+    E += dE;
+    if (Math.abs(dE) < 1e-10) break;
+  }
+  return E;
+}
+
+// Time since periapsis → true anomaly
+function timeSincePeriapsisToNu(t, orb) {
+  const n  = 2 * Math.PI / orb.T;
+  let   M  = (n * t) % (2 * Math.PI);
+  if (M < 0) M += 2 * Math.PI;
+  const E  = solveKepler(M, orb.ecc);
+  let   nu = 2 * Math.atan2(
+    Math.sqrt(1 + orb.ecc) * Math.sin(E / 2),
+    Math.sqrt(1 - orb.ecc) * Math.cos(E / 2)
+  );
+  if (nu < 0) nu += 2 * Math.PI;
+  return nu;
+}
+
+// ============================================================
+// Orbit view state
+// ============================================================
+let orbitMode    = false;
+let termOrbit    = null;   // computed Keplerian elements
+let orbitMesh    = null;   // THREE.Line — orbit ellipse
+let orbitMarker  = null;   // THREE.Mesh — orbit vehicle dot
+let orbitT       = 0;      // seconds since periapsis (current position)
+let orbitPlaying = false;
+let orbitSpeed   = 100;
+let orbitPrevWall = null;
+
+// Build the orbit ellipse as a 720-segment line loop
+function buildOrbitMesh(orb) {
+  if (orbitMesh) {
+    scene.remove(orbitMesh);
+    orbitMesh.geometry.dispose();
+    orbitMesh.material.dispose();
+    orbitMesh = null;
+  }
+  const pts = [];
+  const N   = 720;
+  for (let i = 0; i <= N; i++) {
+    pts.push(orbitPointAtNu(orb, (i / N) * 2 * Math.PI));
+  }
+  const geo = new THREE.BufferGeometry().setFromPoints(pts);
+  const mat = new THREE.LineBasicMaterial({ color: 0x44ffcc, transparent: true, opacity: 0.7 });
+  orbitMesh = new THREE.Line(geo, mat);
+  scene.add(orbitMesh);
+}
+
+function formatPeriod(T) {
+  const m = Math.floor(T / 60);
+  const s = Math.round(T % 60);
+  return `${m}m ${s}s`;
+}
+
+// ── Enter orbit view ──
+function enterOrbitView() {
+  if (!rows.length) return;
+
+  // Stop flight playback
+  playing = false;
+  document.getElementById('btn-play').textContent = '▶ PLAY';
+  document.getElementById('btn-play').className   = 'btn on';
+
+  // Compute orbital elements from terminal (last) state
+  const last = rows[rows.length - 1];
+  const rECI = localPosToECI(last[cols.px], last[cols.py], last[cols.pz]);
+  const vECI = localVelToECI(last[cols.vx], last[cols.vy], last[cols.vz]);
+  termOrbit = computeOrbitElements(rECI, vECI);
+
+  // Start at terminal true anomaly
+  orbitT = nuToTimeSincePeriapsis(termOrbit.nu, termOrbit);
+  orbitPlaying = false;
+
+  // Build orbit ellipse
+  buildOrbitMesh(termOrbit);
+
+  // Create orbit marker (cyan, slightly larger than flight marker)
+  if (!orbitMarker) {
+    orbitMarker = new THREE.Mesh(
+      new THREE.SphereGeometry(0.07, 12, 12),
+      new THREE.MeshBasicMaterial({ color: 0x44ffcc })
+    );
+    scene.add(orbitMarker);
+  }
+  orbitMarker.visible = true;
+
+  // Dim trajectory tube
+  if (trajMesh) trajMesh.material.opacity = 0.18;
+
+  // Swap controls
+  orbitMode = true;
+  document.getElementById('flight-ctrls').style.display = 'none';
+  document.getElementById('orbit-ctrls').style.display  = 'flex';
+
+  // Swap telemetry
+  document.getElementById('flight-telem').style.display = 'none';
+  document.getElementById('orbit-telem').style.display  = 'block';
+  document.getElementById('telem-flight-header').style.display = 'none';
+
+  // Fill constant orbital element rows
+  document.getElementById('d-sma').textContent = `${(termOrbit.a/1000).toFixed(1)} km`;
+  document.getElementById('d-ecc').textContent = termOrbit.ecc.toFixed(6);
+  document.getElementById('d-inc').textContent = `${(termOrbit.inc * 180 / Math.PI).toFixed(4)}°`;
+  document.getElementById('d-period').textContent = formatPeriod(termOrbit.T);
+
+  // Zoom to show full orbit
+  focusOrbitCamera(termOrbit);
+
+  refreshOrbitDisplay();
+}
+
+// ── Exit orbit view ──
+function exitOrbitView() {
+  orbitMode    = false;
+  orbitPlaying = false;
+
+  // Remove orbit ellipse
+  if (orbitMesh) {
+    scene.remove(orbitMesh);
+    orbitMesh.geometry.dispose();
+    orbitMesh.material.dispose();
+    orbitMesh = null;
+  }
+  if (orbitMarker) orbitMarker.visible = false;
+
+  // Restore trajectory tube
+  if (trajMesh) trajMesh.material.opacity = 0.85;
+
+  // Swap controls back
+  document.getElementById('orbit-ctrls').style.display  = 'none';
+  document.getElementById('flight-ctrls').style.display = 'flex';
+
+  // Swap telemetry back
+  document.getElementById('orbit-telem').style.display  = 'none';
+  document.getElementById('flight-telem').style.display = 'block';
+  document.getElementById('telem-flight-header').style.display = 'block';
+
+  refreshDisplay();
+}
+
+function focusOrbitCamera(orb) {
+  const aU = orb.a * SCALE;  // semi-major axis in Three.js units
+  camera.position.set(aU * 2.2, aU * 1.2, aU * 2.0);
+  camera.lookAt(0, 0, 0);
+  orbit.update();
+}
+
+// ── Orbit playback controls ──
+function toggleOrbitPlay() {
+  orbitPlaying = !orbitPlaying;
+  const btn = document.getElementById('btn-orb-play');
+  btn.textContent = orbitPlaying ? '⏸ PAUSE' : '▶ PLAY';
+  if (orbitPlaying) orbitPrevWall = performance.now();
+}
+
+function resetOrbitAnim() {
+  orbitPlaying = false;
+  document.getElementById('btn-orb-play').textContent = '▶ PLAY';
+  if (termOrbit) {
+    orbitT = nuToTimeSincePeriapsis(termOrbit.nu, termOrbit);
+    refreshOrbitDisplay();
+  }
+}
+
+function scrubOrbit(val) {
+  orbitPlaying = false;
+  document.getElementById('btn-orb-play').textContent = '▶ PLAY';
+  if (termOrbit) {
+    orbitT = val * termOrbit.T;
+    refreshOrbitDisplay();
+  }
+}
+
+function setOrbitSpeed(s) {
+  orbitSpeed = s;
+  ['osp50','osp100','osp500'].forEach(id => document.getElementById(id).className = 'btn');
+  document.getElementById('osp' + s).className = 'btn orbit-on';
+}
+
+// ── Orbit telemetry + marker refresh ──
+function refreshOrbitDisplay() {
+  if (!termOrbit) return;
+
+  const nu  = timeSincePeriapsisToNu(orbitT, termOrbit);
+  const pos = orbitPointAtNu(termOrbit, nu);
+  if (orbitMarker) orbitMarker.position.copy(pos);
+
+  // Position stats from orbit equation
+  const p   = termOrbit.a * (1 - termOrbit.ecc * termOrbit.ecc);
+  const r   = p / (1 + termOrbit.ecc * Math.cos(nu));   // [m]
+  const alt = r - EARTH_R_MEAN;                         // [m]
+  const v   = Math.sqrt(MU * (2/r - 1/termOrbit.a));   // vis-viva [m/s]
+
+  document.getElementById('d-nu').textContent      = `${(nu * 180 / Math.PI).toFixed(2)}°`;
+  document.getElementById('d-orb-alt').textContent = `${(alt/1000).toFixed(1)} km`;
+  document.getElementById('d-orb-vel').textContent = `${(v/1000).toFixed(3)} km/s`;
+
+  // Slider and ν label
+  const sliderVal = orbitT / termOrbit.T;
+  document.getElementById('orbit-timeline').value       = Math.min(1, Math.max(0, sliderVal));
+  document.getElementById('orbit-nu-display').textContent = `ν = ${(nu * 180 / Math.PI).toFixed(1)}°`;
+}
+
+// ============================================================
 // Animation loop
 // ============================================================
 function animate(wallTime) {
   requestAnimationFrame(animate);
 
-  if (playing && rows.length > 0) {
-    const wallDt = (wallTime - prevWall) / 1000;
-    prevWall = wallTime;
-    const simDt = wallDt * simSpeed;
-
-    const t0  = rows[0][cols.time];
-    const t1  = rows[rows.length - 1][cols.time];
-    const dur = t1 - t0;
-    const tCur = t0 + (curIdx / (rows.length - 1)) * dur;
-    const tNew = Math.min(tCur + simDt, t1);
-    curIdx = (tNew - t0) / dur * (rows.length - 1);
-
-    earthBaseRot    += EARTH_ROT_RATE * simDt;
-    earth.rotation.y = -MISSION.launchSiteLongitude + earthBaseRot;
-
-    if (curIdx >= rows.length - 1) {
-      curIdx  = rows.length - 1;
-      playing = false;
-      document.getElementById('btn-play').textContent = '▶ PLAY';
-      document.getElementById('btn-play').className   = 'btn on';
+  if (orbitMode) {
+    // Orbit animation
+    if (orbitPlaying && termOrbit) {
+      const wallDt = (wallTime - orbitPrevWall) / 1000;
+      orbitPrevWall = wallTime;
+      orbitT = (orbitT + wallDt * orbitSpeed) % termOrbit.T;
+      // Earth rotates at real rate × speed multiplier
+      earthBaseRot    += EARTH_ROT_RATE * wallDt * orbitSpeed;
+      earth.rotation.y = -MISSION.launchSiteLongitude + earthBaseRot;
+      refreshOrbitDisplay();
     }
+  } else {
+    // Flight animation
+    if (playing && rows.length > 0) {
+      const wallDt = (wallTime - prevWall) / 1000;
+      prevWall = wallTime;
+      const simDt = wallDt * simSpeed;
 
-    refreshDisplay();
+      const t0  = rows[0][cols.time];
+      const t1  = rows[rows.length - 1][cols.time];
+      const dur = t1 - t0;
+      const tCur = t0 + (curIdx / (rows.length - 1)) * dur;
+      const tNew = Math.min(tCur + simDt, t1);
+      curIdx = (tNew - t0) / dur * (rows.length - 1);
+
+      earthBaseRot    += EARTH_ROT_RATE * simDt;
+      earth.rotation.y = -MISSION.launchSiteLongitude + earthBaseRot;
+
+      if (curIdx >= rows.length - 1) {
+        curIdx  = rows.length - 1;
+        playing = false;
+        document.getElementById('btn-play').textContent = '▶ PLAY';
+        document.getElementById('btn-play').className   = 'btn on';
+      }
+
+      refreshDisplay();
+    }
   }
 
   orbit.update();

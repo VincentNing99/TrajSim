@@ -45,11 +45,16 @@ SteeringAngles IterativeGuidance::computeSteering(const GuidanceInput& input) {
     const auto& state = input.state;
     double tau = state.vehicleMass / massFlowRate;
 
-    Vec3 g = 0.5 * (rmInertialToTerminal * input.gravity + rmInertialToTerminal * gravityCutoff);
     double A = exitVelocity * log(tau / (tau - timeToGo));
     double J = exitVelocity * (tau * log(tau / (tau - timeToGo)) - timeToGo);
     double S = exitVelocity * ((tau - timeToGo) * log(tau / (tau - timeToGo)) - timeToGo);
     double Q = exitVelocity * (0.5 * std::pow(timeToGo, 2) + tau * ((tau - timeToGo) * log(tau / (tau - timeToGo)) - timeToGo));
+    Vec3 g = 0.5 * (rmInertialToTerminal * input.gravity + rmInertialToTerminal * gravityCutoff);
+
+    Mat3 rmOrbitalToTerminal = {std::cos(rangeAngle), std::sin(rangeAngle), 0,
+                        -std::sin(rangeAngle), std::cos(rangeAngle), 0,
+                        0, 0, 1};
+    rmInertialToTerminal = rmOrbitalToTerminal * rmInertialToOrbital;
     instantaneousVelocity = rmInertialToTerminal * state.velocity;
     instantaneousPosition = rmInertialToTerminal * (state.position + positionLaunchSite);
     terminalVelocity = rmInertialToTerminal * terminalState.velocity;
@@ -70,25 +75,6 @@ SteeringAngles IterativeGuidance::computeSteering(const GuidanceInput& input) {
 
     SteeringAngles inertialAngles = transformSteeringToInertial(correctedAngles);
 
-    Vec3 posOrbital = rmInertialToOrbital * (vehicleState.position + positionLaunchSite);
-    Vec3 velOrbital = rmInertialToOrbital * vehicleState.velocity;
-    Vec3 terminalPosOrbital = rmInertialToOrbital * terminalPosition;
-    double betaE = std::atan2(-posOrbital.x, posOrbital.y);
-    double betaT;
-    if (std::fabs(terminalPosition.y) < config.tolerance) {
-        betaT = 0.0;
-    } else {
-        betaT = 1.0 / terminalPosition.y * (velOrbital.x * timeToGo - S + 0.5 * g.x * std::pow(timeToGo, 2));
-    }
-
-    // rangeAngle = (posOrbital.x < terminalPosOrbital.x) ? betaE + betaT : betaE - betaT;
-    rangeAngle = betaE + betaT;
-
-
-    Mat3 rmOrbitalToTerminal = {std::cos(rangeAngle), std::sin(rangeAngle), 0,
-                        -std::sin(rangeAngle), std::cos(rangeAngle), 0,
-                        0, 0, 1};
-    rmInertialToTerminal = rmOrbitalToTerminal * rmInertialToOrbital;
 
     steering = inertialAngles;
     steeringLastStep = steering;
@@ -96,8 +82,7 @@ SteeringAngles IterativeGuidance::computeSteering(const GuidanceInput& input) {
     return steering;
 }
 
-void IterativeGuidance::updateTimeToGoLttw(const Vec3& g) {
-    // Low Thrust-to-Weight (LTTW) time-to-go approximation.
+void IterativeGuidance::updateTimeToGoCorrectionBrun(const Vec3& g) {
     double a1 = dot(g, g);
     double b1 = 2 * (dot(instantaneousVelocity, g) - dot(terminalVelocity, g));
 
@@ -112,7 +97,7 @@ void IterativeGuidance::updateTimeToGoLttw(const Vec3& g) {
     timeToGo = h;
 }
 
-void IterativeGuidance::updateTimeToGoHttw(double tau) {
+void IterativeGuidance::updateTimeToGo(double tau) {
     if (tau - timeToGo < config.tolerance) {
         throw std::runtime_error("IGM failure: timeToGo exceeds propellant budget (tau - timeToGo <= 0)");
     }
@@ -130,10 +115,18 @@ void IterativeGuidance::updateTimeToGoHttw(double tau) {
 
 void IterativeGuidance::convergeTimeToGo(const Vec3& g, double tau) {
     int iteration = 0;
-    updateTimeToGoHttw(tau);
+    if (config.timeToGoMethod == 1) {
+        updateTimeToGoCorrectionBrun(g);
+    } else {
+        updateTimeToGo(tau);
+    }
     while (std::fabs(timeToGo - timeToGoLastStep) >= config.timeToGoConvergenceTolerance && iteration < config.maxConvergenceIterations) {
         computeDeltaV(g);
-        updateTimeToGoHttw(tau);
+        if (config.timeToGoMethod == 1) {
+            updateTimeToGoCorrectionBrun(g);
+        } else {
+            updateTimeToGo(tau);
+        }
         iteration++;
         if (std::isnan(timeToGo) || std::isinf(timeToGo)) {
             throw std::runtime_error("IGM convergence failure: timeToGo became NaN/infinity at iteration "

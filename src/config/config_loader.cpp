@@ -261,7 +261,7 @@ static std::vector<Guidance::Config> parseGuidance(const json& arr, std::vector<
         "stage", "maxSteeringRate", "algorithms"
     };
     static const std::vector<std::string> knownIgmKeys = {
-        "type", "guidanceCycle", "steeringHoldTime",
+        "type", "guidanceCycle", "steeringHoldTime", "timeToGoMethod"
         "maxConvergenceIterations", "timeToGoConvergenceTolerance", "tolerance", "exitCriteria", "pitchCorrectionStopTime", "yawCorrectionStopTime"
     };
     static const std::vector<std::string> knownOpenLoopKeys = {
@@ -309,6 +309,7 @@ static std::vector<Guidance::Config> parseGuidance(const json& arr, std::vector<
                 entry.igmConfig.tolerance = requireField<double>(a, "tolerance", actx);
                 entry.igmConfig.pitchCorrectionStopTime = requireField<int>(a, "pitchCorrectionStopTime", actx);
                 entry.igmConfig.yawCorrectionStopTime   = requireField<int>(a, "yawCorrectionStopTime",   actx);
+                entry.igmConfig.timeToGoMethod = requireField<int>(a, "timeToGoMethod", actx);
 
 
                 if (a.contains("exitCriteria")) {

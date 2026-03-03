@@ -9,6 +9,7 @@ usage() {
     echo "Options:"
     echo "  test           Run tests instead of simulation"
     echo "  --clean        Remove build directory and reconfigure"
+    echo "  --debug        Build with debug symbols (for breakpoints)"
     echo "  --mission N    Use config/config_mission_N.json (default: 1)"
     echo "  --help         Show this help"
     exit 0
@@ -18,12 +19,14 @@ BUILD_DIR="build"
 MISSION=1
 RUN_TESTS=false
 CLEAN=false
+BUILD_TYPE="Release"
 
 # ── arg parsing ───────────────────────────────────────────────────────────────
 for arg in "$@"; do
     case "$arg" in
         test)        RUN_TESTS=true ;;
         --clean)     CLEAN=true ;;
+        --debug)     BUILD_TYPE="Debug" ;;
         --mission=*) MISSION="${arg#--mission=}" ;;
         --mission)   ;;  # handled below with shift-like logic
         --help|-h)   usage ;;
@@ -47,12 +50,12 @@ fi
 # ── configure ─────────────────────────────────────────────────────────────────
 if [[ ! -d "$BUILD_DIR" ]]; then
     echo "==> Configuring CMake..."
-    cmake -S . -B "$BUILD_DIR" -DCMAKE_BUILD_TYPE=Release
+    cmake -S . -B "$BUILD_DIR" -DCMAKE_BUILD_TYPE="$BUILD_TYPE"
 fi
 
 # ── build ─────────────────────────────────────────────────────────────────────
-echo "==> Building..."
-cmake --build "$BUILD_DIR" --config Release 2>&1 \
+echo "==> Building ($BUILD_TYPE)..."
+cmake --build "$BUILD_DIR" --config "$BUILD_TYPE" 2>&1 \
     | grep -E "error:|warning:|Building|Linking|Built target" \
     | grep -vE "warning:.*(nodiscard|unused)"
 

@@ -39,7 +39,7 @@ int main() {
             std::cerr << "[WARN] " << w << "\n";
     }
 
-    std::cout << "=== TrajSim Mission 1 Simulation ===\n";
+    std::cout << "=== TrajSim Mission 2 Simulation ===\n";
     std::cout << "Target SMA: " << mission.semiMajorAxis << " m\n";
     std::cout << "Target ecc: " << mission.eccentricity << "\n";
     std::cout << "Target inc: " << mission.inclination * radToDeg << " deg\n\n";

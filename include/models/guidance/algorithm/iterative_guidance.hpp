@@ -32,6 +32,7 @@ public:
         double tolerance;                       ///< Numerical tolerance for guard checks
         int pitchCorrectionStopTime;  ///< tgo threshold below which pitch position corrections deactivate [s]
         int yawCorrectionStopTime;    ///< tgo threshold below which yaw position corrections deactivate [s]
+        int timeToGoMethod;           ///< Method for time-to-go update (0=Regular, 1=CorrectionBrun)
 
         void validate() const {
             if (guidanceCycle <= 0)
@@ -75,8 +76,8 @@ public:
     [[nodiscard]] OrbitalElements computeOrbitalElements(const VehicleState& state) const override;
 
     // Public methods for test compatibility
-    void updateTimeToGoLttw(const Vec3& g);
-    void updateTimeToGoHttw(double tau);
+    void updateTimeToGoCorrectionBrun(const Vec3& g);
+    void updateTimeToGo(double tau);
     void convergeTimeToGo(const Vec3& g, double tau);
     void computeDeltaV(const Vec3& g);
     [[nodiscard]] SteeringAngles computeVelocitySteeringAngles();
