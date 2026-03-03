@@ -4,9 +4,7 @@ A 3-DOF launch vehicle trajectory simulation written in C++20.
 
 Models the ascent phase from liftoff to orbital insertion, using a closed-loop Iterative Guidance Mode (IGM) algorithm derived from Apollo/Space Shuttle guidance heritage. The simulation integrates aerodynamics, atmosphere, gravity, and propulsion physics at each timestep and writes telemetry to CSV.
 
-## Example
-Default mission
-# Mission Orbital Specifications
+# Example Mission Orbital Specifications
 
 ## Target Orbit Requirements
 The mission aims for a **Sun-Synchronous Orbit (SSO)**. The specific parameters required for this mission profile are:
