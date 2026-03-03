@@ -8,7 +8,7 @@ Models the ascent phase from liftoff to orbital insertion, using a closed-loop I
 
 ## Target Orbit Requirements
 The mission aims for a **Sun-Synchronous Orbit (SSO)**. The specific parameters required for this mission profile are:
-* **Orbital Altitude:** 525 km x 525 km (referenced against the Earth's equatorial radius).
+* **Orbital Altitude:** 525 km x 525 km
 * **Orbital Inclination:** 97.4969°.
 
 ## Trajectory Calculation Raw Data
